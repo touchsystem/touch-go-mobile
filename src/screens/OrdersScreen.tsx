@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Dimensions,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,12 +21,17 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 export default function OrdersScreen() {
   const { cart, updateQuantity, removeFromCart, getTotal, clearCart } = useCart();
   const { selectedTable, setSelectedTable } = useTable();
   const { user } = useAuth();
   const [tableNumber, setTableNumber] = useState('');
   const router = useRouter();
+  
+  // Calcula altura disponível para a lista (tela - header - footer - outros elementos)
+  const listHeight = SCREEN_HEIGHT - 300; // Ajuste conforme necessário
 
   const handleTableSelect = () => {
     if (!tableNumber.trim()) {
@@ -114,10 +121,13 @@ export default function OrdersScreen() {
               <Text style={styles.emptyCartText}>Carrinho vazio</Text>
             </View>
           ) : (
-            <FlatList
-              data={cart}
-              keyExtractor={(item) => item.uuid}
-              renderItem={({ item }) => (
+            <View style={[styles.listContainer, { maxHeight: listHeight }]}>
+              <FlatList
+                data={cart}
+                keyExtractor={(item) => item.uuid}
+                contentContainerStyle={{ paddingBottom: 150 }}
+                showsVerticalScrollIndicator={true}
+                renderItem={({ item }) => (
                 <Card style={styles.cartItem}>
                   <View style={styles.cartItemContent}>
                     <View style={styles.cartItemInfo}>
@@ -150,7 +160,8 @@ export default function OrdersScreen() {
                   </View>
                 </Card>
               )}
-            />
+              />
+            </View>
           )}
 
           {cart.length > 0 && (
@@ -242,6 +253,11 @@ const styles = StyleSheet.create({
   },
   orderSection: {
     marginBottom: 16,
+    flex: 1,
+  },
+  listContainer: {
+    flex: 1,
+    minHeight: 200,
   },
   orderHeader: {
     flexDirection: 'row',
