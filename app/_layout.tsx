@@ -1,24 +1,40 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { AppProviders } from '@/src/providers/AppProviders';
+import { AuthGuard } from '@/src/components/auth/AuthGuard';
+import { useTheme } from '@/src/contexts/ThemeContext';
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function ThemedLayout() {
+  const { isDark } = useTheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      <AuthGuard>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="code-access" options={{ headerShown: false }} />
+          <Stack.Screen name="product-groups" options={{ headerShown: false }} />
+          <Stack.Screen name="products" options={{ headerShown: false }} />
+          <Stack.Screen name="orders" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+      </AuthGuard>
+    </NavigationThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AppProviders>
+      <ThemedLayout />
+    </AppProviders>
   );
 }

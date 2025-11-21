@@ -1,0 +1,157 @@
+import React, { useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useProducts } from '../hooks/useProducts';
+import { ProductGroupCard } from '../components/ui/ProductGroupCard';
+import { Button } from '../components/ui/Button';
+import { useCart } from '../contexts/CartContext';
+import { formatCurrency } from '../utils/format';
+
+export default function ProductGroupsScreen() {
+  const { groups, loading, fetchGroups } = useProducts();
+  const { getTotal, getTotalItems, clearCart } = useCart();
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchGroups();
+  }, []);
+
+  const handleGroupPress = (group: ProductGroup) => {
+    router.push({
+      pathname: '/products',
+      params: { codGp: group.cod_gp },
+    });
+  };
+
+  const handleSendOrder = () => {
+    // Implementar envio de pedido
+    console.log('Enviar pedido');
+  };
+
+  const handleSave = () => {
+    // Implementar salvar pedido
+    console.log('Salvar pedido');
+  };
+
+  const handleClear = () => {
+    clearCart();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#333" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Grupos de Produtos</Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      <FlatList
+        data={groups}
+        numColumns={2}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <ProductGroupCard
+            group={item}
+            onPress={() => handleGroupPress(item)}
+          />
+        )}
+        contentContainerStyle={styles.listContent}
+        columnWrapperStyle={styles.row}
+      />
+
+      <View style={styles.footer}>
+        <Button
+          title="Enviar Pedido"
+          onPress={handleSendOrder}
+          icon={<Ionicons name="paper-plane-outline" size={20} color="#fff" />}
+          style={styles.sendButton}
+        />
+        <View style={styles.footerButtons}>
+          <Button
+            title="Salvar"
+            variant="outline"
+            onPress={handleSave}
+            icon={<Ionicons name="lock-closed-outline" size={18} color="#333" />}
+            style={styles.footerButton}
+          />
+          <Button
+            title="Limpar"
+            variant="outline"
+            onPress={handleClear}
+            icon={<Ionicons name="trash-outline" size={18} color="#333" />}
+            style={styles.footerButton}
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    paddingTop: 40,
+    backgroundColor: '#fff',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  headerRight: {
+    width: 24,
+  },
+  listContent: {
+    padding: 12,
+  },
+  row: {
+    justifyContent: 'space-between',
+  },
+  footer: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  sendButton: {
+    marginBottom: 12,
+  },
+  footerButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  footerButton: {
+    flex: 1,
+  },
+});
+
