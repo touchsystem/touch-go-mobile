@@ -14,7 +14,7 @@ import { useProducts } from '../hooks/useProducts';
 import { ProductCard } from '../components/ui/ProductCard';
 import { useCart } from '../contexts/CartContext';
 import { useTable } from '../contexts/TableContext';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Product } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -174,10 +174,14 @@ export default function ProductsScreen() {
   });
 
   const handleAddProduct = (product: Product) => {
-    const nome = product.nome || product.des2 || product.des1 || 'Produto';
-    const descricao = product.descricao || product.des1 || '';
+    const nomeRaw = product.nome || product.des2 || product.des1 || 'Produto';
+    const descricaoRaw = product.descricao || product.des1 || '';
     const preco = product.preco || product.pv || 0;
     const id = product.id || parseInt(product.codm || '0') || 0;
+
+    // Capitaliza apenas a primeira letra
+    const nome = capitalizeFirstLetter(nomeRaw);
+    const descricao = descricaoRaw ? capitalizeFirstLetter(descricaoRaw) : '';
 
     addToCart({
       id,

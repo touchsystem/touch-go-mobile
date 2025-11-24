@@ -16,7 +16,7 @@ import { useCart } from '../contexts/CartContext';
 import { useTable } from '../contexts/TableContext';
 import { Table } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -293,7 +293,7 @@ export default function OrdersScreen() {
                 <Card style={styles.cartItem}>
                   <View style={styles.cartItemContent}>
                     <View style={styles.cartItemInfo}>
-                      <Text style={styles.cartItemName}>{item.nome}</Text>
+                      <Text style={styles.cartItemName}>{capitalizeFirstLetter(item.nome)}</Text>
                       <Text style={styles.cartItemPrice}>
                         {formatCurrency(item.preco)}
                       </Text>

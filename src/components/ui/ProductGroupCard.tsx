@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { ProductGroup } from '../../types';
 import { Card } from './Card';
 import { useTheme } from '../../contexts/ThemeContext';
+import { capitalizeFirstLetter } from '../../utils/format';
 
 interface ProductGroupCardProps {
   group: ProductGroup;
@@ -48,12 +49,14 @@ export const ProductGroupCard: React.FC<ProductGroupCardProps> = ({ group, onPre
     [colors, isDark]
   );
 
+  const displayName = capitalizeFirstLetter(group.nome);
+
   return (
     <Card onPress={onPress} style={styles.card}>
       <View style={styles.imagePlaceholder}>
-        <Text style={styles.imagePlaceholderText}>{group.nome}</Text>
+        <Text style={styles.imagePlaceholderText}>{displayName}</Text>
       </View>
-      <Text style={styles.name}>{group.nome}</Text>
+      <Text style={styles.name}>{displayName}</Text>
       <Text style={styles.count}>{group.quantidadeItens} itens</Text>
     </Card>
   );

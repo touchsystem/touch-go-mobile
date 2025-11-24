@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
+import { capitalizeFirstLetter } from '../../utils/format';
 
 interface ProductCardProps {
   product: Product;
@@ -66,9 +67,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
   };
 
   // Mapeia os campos possíveis do produto
-  const nome = product.nome || product.des2 || product.des1 || 'Produto sem nome';
-  const descricao = product.descricao || product.des1 || '';
+  const nomeRaw = product.nome || product.des2 || product.des1 || 'Produto sem nome';
+  const descricaoRaw = product.descricao || product.des1 || '';
   const preco = product.preco || product.pv || 0;
+  
+  // Capitaliza apenas a primeira letra
+  const nome = capitalizeFirstLetter(nomeRaw);
+  const descricao = descricaoRaw ? capitalizeFirstLetter(descricaoRaw) : '';
 
   return (
     <View style={styles.container}>
