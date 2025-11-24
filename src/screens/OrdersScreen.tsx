@@ -5,10 +5,8 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  TextInput,
   Alert,
   Dimensions,
-  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,8 +17,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
 import { useTheme } from '../contexts/ThemeContext';
+import { TableMapModal } from '../components/ui/TableMapModal';
+import { Table as TableType } from '../hooks/useTables';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -28,7 +27,7 @@ export default function OrdersScreen() {
   const { cart, updateQuantity, removeFromCart, getTotal, clearCart } = useCart();
   const { selectedTable, setSelectedTable } = useTable();
   const { user } = useAuth();
-  const [tableNumber, setTableNumber] = useState('');
+  const [isTableMapVisible, setIsTableMapVisible] = useState(false);
   const router = useRouter();
   const { colors, isDark } = useTheme();
 
@@ -71,17 +70,8 @@ export default function OrdersScreen() {
           color: colors.textSecondary,
           marginBottom: 12,
         },
-        tableInputRow: {
-          flexDirection: 'row',
-          gap: 12,
+        selectTableButton: {
           marginBottom: 12,
-        },
-        tableInput: {
-          flex: 1,
-          marginBottom: 0,
-        },
-        selectButton: {
-          width: 100,
         },
         infoText: {
           fontSize: 14,
@@ -195,17 +185,14 @@ export default function OrdersScreen() {
     [colors, isDark, listHeight]
   );
 
-  const handleTableSelect = () => {
-    if (!tableNumber.trim()) {
-      Alert.alert('Erro', 'Digite o número da mesa');
-      return;
-    }
-
-    const table: Table = {
-      id: parseInt(tableNumber),
-      numero: tableNumber,
+  const handleTableSelect = async (table: TableType) => {
+    const selectedTableData: Table = {
+      id: table.id,
+      numero: table.mesa_cartao.toString(),
+      nome: table.nome,
+      status: table.status,
     };
-    setSelectedTable(table);
+    await setSelectedTable(selectedTableData);
   };
 
   const handleQuantityChange = (uuid: string, delta: number) => {
@@ -248,21 +235,20 @@ export default function OrdersScreen() {
 
       <View style={styles.content}>
         <Card style={styles.tableCard}>
-          <Text style={styles.sectionLabel}>Número da Mesa/Cartão</Text>
-          <View style={styles.tableInputRow}>
-            <Input
-              placeholder="Digite o número"
-              value={tableNumber}
-              onChangeText={setTableNumber}
-              keyboardType="numeric"
-              containerStyle={styles.tableInput}
-            />
-            <Button
-              title="Selecionar"
-              onPress={handleTableSelect}
-              style={styles.selectButton}
-            />
-          </View>
+          <Text style={styles.sectionLabel}>Mesa/Cartão</Text>
+          <Button
+            title={selectedTable ? `Mesa #${selectedTable.numero}` : 'Selecionar Mesa'}
+            onPress={() => setIsTableMapVisible(true)}
+            variant={selectedTable ? 'outline' : 'primary'}
+            icon={
+              <Ionicons
+                name="restaurant-outline"
+                size={20}
+                color={selectedTable ? colors.text : '#fff'}
+              />
+            }
+            style={styles.selectTableButton}
+          />
           <View style={styles.infoRow}>
             <Text style={styles.infoText}>Garçom: {user?.nome || 'N/A'}</Text>
             {selectedTable && (
@@ -270,6 +256,13 @@ export default function OrdersScreen() {
             )}
           </View>
         </Card>
+
+        <TableMapModal
+          visible={isTableMapVisible}
+          onClose={() => setIsTableMapVisible(false)}
+          onSelectTable={handleTableSelect}
+          selectedTableNumber={selectedTable ? parseInt(selectedTable.numero) : undefined}
+        />
 
         <View style={styles.orderSection}>
           <View style={styles.orderHeader}>
