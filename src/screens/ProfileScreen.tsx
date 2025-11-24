@@ -13,11 +13,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { ColorPicker } from '../components/ui/ColorPicker';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, theme } = useTheme();
 
   const styles = useMemo(
     () =>
@@ -101,6 +103,32 @@ export default function ProfileScreen() {
         logoutButton: {
           marginTop: 24,
         },
+        themeSection: {
+          marginBottom: 24,
+        },
+        themeRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        themeLabel: {
+          fontSize: 14,
+          color: colors.textSecondary,
+          flex: 1,
+        },
+        themeToggleContainer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+        },
+        themeModeText: {
+          fontSize: 14,
+          fontWeight: '500',
+          color: colors.text,
+        },
       }),
     [colors]
   );
@@ -174,6 +202,24 @@ export default function ProfileScreen() {
             <Text style={styles.infoLabel}>Nível de Acesso</Text>
             <Text style={styles.infoValue}>{user?.nivel || 0}</Text>
           </View>
+        </Card>
+
+        <Card style={styles.themeSection}>
+          <Text style={styles.sectionTitle}>Aparência</Text>
+          
+          <View style={styles.themeRow}>
+            <Text style={styles.themeLabel}>Modo</Text>
+            <View style={styles.themeToggleContainer}>
+              <Text style={styles.themeModeText}>
+                {theme === 'system' ? 'Sistema' : theme === 'dark' ? 'Escuro' : 'Claro'}
+              </Text>
+              <ThemeToggle />
+            </View>
+          </View>
+        </Card>
+
+        <Card style={styles.themeSection}>
+          <ColorPicker />
         </Card>
 
         <Button

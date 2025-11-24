@@ -4,10 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 
 export const ThemeToggle: React.FC = () => {
-  const { isDark, setTheme, colors } = useTheme();
+  const { theme, isDark, setTheme, colors } = useTheme();
 
-  const handleToggle = async () => {
-    await setTheme(isDark ? 'light' : 'dark');
+  const handleToggle = () => {
+    // Se o tema atual é 'system', alterna baseado no isDark atual
+    // Caso contrário, alterna entre 'light' e 'dark'
+    if (theme === 'system') {
+      setTheme(isDark ? 'light' : 'dark');
+    } else {
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+    }
   };
 
   return (
