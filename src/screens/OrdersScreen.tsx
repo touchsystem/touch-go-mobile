@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import { formatCurrency } from '../utils/format';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -29,9 +30,197 @@ export default function OrdersScreen() {
   const { user } = useAuth();
   const [tableNumber, setTableNumber] = useState('');
   const router = useRouter();
-  
+  const { colors, isDark } = useTheme();
+
   // Calcula altura disponível para a lista (tela - header - footer - outros elementos)
-  const listHeight = SCREEN_HEIGHT - 300; // Ajuste conforme necessário
+  const listHeight = SCREEN_HEIGHT - 320;
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.background,
+        },
+        header: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 20,
+          paddingTop: 40,
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        headerTitle: {
+          fontSize: 18,
+          fontWeight: '600',
+          color: colors.text,
+        },
+        content: {
+          flex: 1,
+          padding: 16,
+          backgroundColor: colors.background,
+        },
+        tableCard: {
+          marginBottom: 16,
+        },
+        sectionLabel: {
+          fontSize: 14,
+          fontWeight: '500',
+          color: colors.textSecondary,
+          marginBottom: 12,
+        },
+        tableInputRow: {
+          flexDirection: 'row',
+          gap: 12,
+          marginBottom: 12,
+        },
+        tableInput: {
+          flex: 1,
+          marginBottom: 0,
+        },
+        selectButton: {
+          width: 100,
+        },
+        infoText: {
+          fontSize: 14,
+          color: colors.textSecondary,
+        },
+        orderSection: {
+          marginBottom: 16,
+          flex: 1,
+        },
+        orderHeader: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12,
+        },
+        sectionTitle: {
+          fontSize: 16,
+          fontWeight: '600',
+          color: colors.text,
+        },
+        itemsCount: {
+          fontSize: 14,
+          color: colors.textSecondary,
+        },
+        cartItem: {
+          marginBottom: 12,
+        },
+        emptyCart: {
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 40,
+        },
+        emptyCartText: {
+          fontSize: 16,
+          color: colors.textSecondary,
+          marginTop: 12,
+        },
+        listContainer: {
+          flex: 1,
+          maxHeight: listHeight,
+        },
+        cartItemContent: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        },
+        cartItemInfo: {
+          flex: 1,
+        },
+        cartItemControls: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+        },
+        cartItemName: {
+          fontSize: 16,
+          fontWeight: '600',
+          color: colors.text,
+          marginBottom: 4,
+        },
+        cartItemPrice: {
+          fontSize: 14,
+          color: colors.textSecondary,
+        },
+        quantityText: {
+          fontSize: 16,
+          fontWeight: '600',
+          color: colors.text,
+          minWidth: 30,
+          textAlign: 'center',
+        },
+        totalSection: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingTop: 16,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          marginTop: 16,
+        },
+        totalLabel: {
+          fontSize: 18,
+          fontWeight: '600',
+          color: colors.text,
+        },
+        totalValue: {
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: colors.text,
+        },
+        productGroupsSection: {
+          marginBottom: 16,
+        },
+        groupButton: {
+          marginTop: 12,
+        },
+        groupName: {
+          fontSize: 14,
+          fontWeight: '500',
+          color: colors.text,
+        },
+        footer: {
+          padding: 16,
+          backgroundColor: colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        quantityButton: {
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+          backgroundColor: isDark ? '#1F2533' : '#E5E7EB',
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        deleteButton: {
+          padding: 4,
+        },
+        groupPlaceholder: {
+          width: '100%',
+          height: 100,
+          backgroundColor: isDark ? '#1C2230' : '#ECEEF3',
+          borderRadius: 10,
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: 8,
+        },
+        groupPlaceholderText: {
+          fontSize: 12,
+          color: colors.textSecondary,
+        },
+        infoRow: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: 8,
+        },
+      }),
+    [colors, isDark, listHeight]
+  );
 
   const handleTableSelect = () => {
     if (!tableNumber.trim()) {
@@ -76,11 +265,11 @@ export default function OrdersScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Vendas</Text>
         <TouchableOpacity>
-          <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+          <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -117,7 +306,7 @@ export default function OrdersScreen() {
 
           {cart.length === 0 ? (
             <View style={styles.emptyCart}>
-              <Ionicons name="cart-outline" size={48} color="#ccc" />
+              <Ionicons name="cart-outline" size={48} color={colors.textSecondary} />
               <Text style={styles.emptyCartText}>Carrinho vazio</Text>
             </View>
           ) : (
@@ -141,20 +330,20 @@ export default function OrdersScreen() {
                         style={styles.quantityButton}
                         onPress={() => handleQuantityChange(item.uuid, -1)}
                       >
-                        <Ionicons name="remove" size={20} color="#333" />
+                        <Ionicons name="remove" size={20} color={colors.text} />
                       </TouchableOpacity>
                       <Text style={styles.quantityText}>{item.quantidade}</Text>
                       <TouchableOpacity
                         style={styles.quantityButton}
                         onPress={() => handleQuantityChange(item.uuid, 1)}
                       >
-                        <Ionicons name="add" size={20} color="#333" />
+                        <Ionicons name="add" size={20} color={colors.text} />
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.deleteButton}
                         onPress={() => removeFromCart(item.uuid)}
                       >
-                        <Ionicons name="trash-outline" size={20} color="#ff4444" />
+                        <Ionicons name="trash-outline" size={20} color={colors.error} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -198,184 +387,4 @@ export default function OrdersScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    paddingTop: 40,
-    backgroundColor: '#fff',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  tableCard: {
-    marginBottom: 16,
-  },
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 12,
-  },
-  tableInputRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  tableInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  selectButton: {
-    width: 100,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  orderSection: {
-    marginBottom: 16,
-    flex: 1,
-  },
-  listContainer: {
-    flex: 1,
-    minHeight: 200,
-  },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
-  itemsCount: {
-    fontSize: 14,
-    color: '#666',
-  },
-  emptyCart: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 40,
-  },
-  emptyCartText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 12,
-  },
-  cartItem: {
-    marginBottom: 12,
-  },
-  cartItemContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cartItemInfo: {
-    flex: 1,
-  },
-  cartItemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 4,
-  },
-  cartItemPrice: {
-    fontSize: 14,
-    color: '#666',
-  },
-  cartItemControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  quantityText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    minWidth: 30,
-    textAlign: 'center',
-  },
-  deleteButton: {
-    padding: 4,
-  },
-  totalSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    marginTop: 16,
-  },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  totalValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  productGroupsSection: {
-    marginBottom: 16,
-  },
-  groupButton: {
-    marginTop: 12,
-  },
-  groupPlaceholder: {
-    width: '100%',
-    height: 100,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  groupPlaceholderText: {
-    fontSize: 12,
-    color: '#999',
-  },
-  groupName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-  },
-  footer: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-});
 

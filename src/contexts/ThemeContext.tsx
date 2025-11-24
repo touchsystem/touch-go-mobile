@@ -25,26 +25,26 @@ interface ThemeContextType {
 
 const lightColors = {
   background: Colors.light.background,
-  surface: Colors.light.background,
+  surface: '#FFFFFF',
   text: Colors.light.text,
-  textSecondary: Colors.light.icon,
-  border: '#e0e0e0',
+  textSecondary: '#6B7280',
+  border: '#E4E4E7',
   primary: Colors.light.tint,
-  error: '#ff4444',
-  card: Colors.light.background,
+  error: '#DC2626',
+  card: '#FFFFFF',
   tint: Colors.light.tint,
   icon: Colors.light.icon,
 };
 
 const darkColors = {
   background: Colors.dark.background,
-  surface: Colors.dark.background,
+  surface: '#111826',
   text: Colors.dark.text,
-  textSecondary: Colors.dark.icon,
-  border: '#333333',
+  textSecondary: '#A1A7B5',
+  border: '#2A3140',
   primary: Colors.dark.tint,
-  error: '#ff6666',
-  card: Colors.dark.background,
+  error: '#F87171',
+  card: '#111826',
   tint: Colors.dark.tint,
   icon: Colors.dark.icon,
 };

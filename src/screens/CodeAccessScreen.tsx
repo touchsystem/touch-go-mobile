@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -12,12 +12,95 @@ import { useAuth } from '../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { Button } from '../components/ui/Button';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function CodeAccessScreen() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { loginWithCode } = useAuth();
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.background,
+        },
+        header: {
+          padding: 20,
+          paddingTop: 40,
+        },
+        backButton: {
+          width: 40,
+        },
+        content: {
+          flex: 1,
+          alignItems: 'center',
+          paddingHorizontal: 20,
+        },
+        title: {
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: colors.text,
+          marginBottom: 30,
+        },
+        iconContainer: {
+          marginBottom: 30,
+        },
+        lockIcon: {
+          width: 100,
+          height: 100,
+          borderRadius: 50,
+          backgroundColor: isDark ? '#1F2533' : '#1a1a1a',
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        subtitle: {
+          fontSize: 24,
+          fontWeight: 'bold',
+          color: colors.text,
+          marginBottom: 8,
+        },
+        instruction: {
+          fontSize: 14,
+          color: colors.textSecondary,
+          marginBottom: 30,
+        },
+        codeInputContainer: {
+          width: '100%',
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 10,
+          padding: 16,
+          marginBottom: 30,
+          minHeight: 50,
+          justifyContent: 'center',
+          backgroundColor: colors.surface,
+        },
+        codeInput: {
+          fontSize: 18,
+          color: colors.text,
+          textAlign: 'center',
+          letterSpacing: 4,
+        },
+        codeInputPlaceholder: {
+          color: colors.textSecondary,
+          letterSpacing: 0,
+        },
+        accessButton: {
+          width: '100%',
+          marginBottom: 40,
+        },
+        keypadContainer: {
+          width: '100%',
+          marginTop: 'auto',
+          marginBottom: 40,
+        },
+      }),
+    [colors, isDark]
+  );
 
   const handleNumberPress = (number: string) => {
     if (code.length < 6) {
@@ -51,7 +134,7 @@ export default function CodeAccessScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -92,79 +175,3 @@ export default function CodeAccessScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    padding: 20,
-    paddingTop: 40,
-  },
-  backButton: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 30,
-  },
-  iconContainer: {
-    marginBottom: 30,
-  },
-  lockIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#666',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  subtitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
-  },
-  instruction: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 30,
-  },
-  codeInputContainer: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 30,
-    minHeight: 50,
-    justifyContent: 'center',
-  },
-  codeInput: {
-    fontSize: 18,
-    color: '#000',
-    textAlign: 'center',
-    letterSpacing: 4,
-  },
-  codeInputPlaceholder: {
-    color: '#999',
-    letterSpacing: 0,
-  },
-  accessButton: {
-    width: '100%',
-    marginBottom: 40,
-  },
-  keypadContainer: {
-    width: '100%',
-    marginTop: 'auto',
-    marginBottom: 40,
-  },
-});

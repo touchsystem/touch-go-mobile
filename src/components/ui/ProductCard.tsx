@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../../types';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ProductCardProps {
   product: Product;
@@ -9,6 +10,56 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
+  const { colors, isDark } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          backgroundColor: colors.card,
+          borderRadius: 12,
+          marginBottom: 12,
+          padding: 16,
+          borderWidth: isDark ? 1 : 0,
+          borderColor: colors.border,
+        },
+        content: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        },
+        info: {
+          flex: 1,
+          marginRight: 12,
+        },
+        name: {
+          fontSize: 16,
+          fontWeight: '600',
+          color: colors.text,
+          marginBottom: 4,
+        },
+        description: {
+          fontSize: 14,
+          color: colors.textSecondary,
+          marginBottom: 8,
+        },
+        price: {
+          fontSize: 16,
+          fontWeight: '600',
+          color: colors.text,
+        },
+        addButton: {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          backgroundColor: isDark ? '#1F2533' : '#E5E7EB',
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+      }),
+    [colors, isDark]
+  );
+
   const formatPrice = (price: number | undefined) => {
     if (!price) return 'R$ 0,00';
     return `R$ ${price.toFixed(2).replace('.', ',')}`;
@@ -30,52 +81,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
           <Text style={styles.price}>{formatPrice(preco)}</Text>
         </View>
         <TouchableOpacity style={styles.addButton} onPress={onAdd}>
-          <Ionicons name="add" size={24} color="#333" />
+          <Ionicons name="add" size={24} color={isDark ? '#F4F4F5' : '#111827'} />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 12,
-    padding: 16,
-  },
-  content: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  info: {
-    flex: 1,
-    marginRight: 12,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 4,
-  },
-  description: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  price: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
-  addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
-

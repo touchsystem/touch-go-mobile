@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface NumericKeypadProps {
   onNumberPress: (number: string) => void;
@@ -13,6 +14,40 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onDelete,
   onConfirm,
 }) => {
+  const { colors, isDark } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          width: '100%',
+        },
+        row: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginBottom: 15,
+        },
+        numberButton: {
+          flex: 1,
+          aspectRatio: 1,
+          backgroundColor: isDark ? '#1C2230' : '#F2F4F7',
+          borderRadius: 12,
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginHorizontal: 5,
+        },
+        numberText: {
+          fontSize: 24,
+          fontWeight: '600',
+          color: colors.text,
+        },
+        iconColor: {
+          color: isDark ? '#F4F4F5' : '#111827',
+        },
+      }),
+    [colors, isDark]
+  );
+
   const NumberButton = ({ number }: { number: string }) => (
     <TouchableOpacity
       style={styles.numberButton}
@@ -42,39 +77,13 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
       </View>
       <View style={styles.row}>
         <TouchableOpacity style={styles.numberButton} onPress={onDelete}>
-          <Ionicons name="backspace-outline" size={24} color="#333" />
+          <Ionicons name="backspace-outline" size={24} color={styles.iconColor.color} />
         </TouchableOpacity>
         <NumberButton number="0" />
         <TouchableOpacity style={styles.numberButton} onPress={onConfirm}>
-          <Ionicons name="checkmark" size={24} color="#333" />
+          <Ionicons name="checkmark" size={24} color={styles.iconColor.color} />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-  },
-  numberButton: {
-    flex: 1,
-    aspectRatio: 1,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  numberText: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#333',
-  },
-});
-

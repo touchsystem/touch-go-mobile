@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ButtonProps {
   title: string;
@@ -12,17 +13,62 @@ interface ButtonProps {
   textStyle?: TextStyle;
 }
 
-export const Button: React.FC<ButtonProps> = ({
-  title,
-  onPress,
-  variant = 'primary',
-  loading = false,
-  disabled = false,
-  icon,
-  style,
-  textStyle,
-}) => {
+export const Button: React.FC<ButtonProps> = (props) => {
+  const {
+    title,
+    onPress,
+    variant = 'primary',
+    loading = false,
+    disabled = false,
+    icon,
+    style,
+    textStyle,
+  } = props;
+
+  const { colors, isDark } = useTheme();
   const isDisabled = disabled || loading;
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        button: {
+          height: 50,
+          borderRadius: 10,
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'row',
+          gap: 8,
+        },
+        primary: {
+          backgroundColor: colors.primary,
+        },
+        secondary: {
+          backgroundColor: isDark ? '#1F2533' : '#E5E7EB',
+        },
+        outline: {
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        disabled: {
+          opacity: 0.6,
+        },
+        text: {
+          fontSize: 16,
+          fontWeight: '600',
+        },
+        primaryText: {
+          color: '#FFFFFF',
+        },
+        secondaryText: {
+          color: colors.text,
+        },
+        outlineText: {
+          color: colors.text,
+        },
+      }),
+    [colors, isDark]
+  );
 
   return (
     <TouchableOpacity
@@ -37,7 +83,7 @@ export const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : '#333'} />
+        <ActivityIndicator color={variant === 'primary' ? '#fff' : colors.text} />
       ) : (
         <>
           {icon && <>{icon}</>}
@@ -49,42 +95,4 @@ export const Button: React.FC<ButtonProps> = ({
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-  },
-  primary: {
-    backgroundColor: '#1a1a1a',
-  },
-  secondary: {
-    backgroundColor: '#f0f0f0',
-  },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  disabled: {
-    opacity: 0.6,
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  primaryText: {
-    color: '#fff',
-  },
-  secondaryText: {
-    color: '#333',
-  },
-  outlineText: {
-    color: '#333',
-  },
-});
 

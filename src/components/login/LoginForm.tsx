@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input } from '../ui/Input';
@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { Checkbox } from '../ui/Checkbox';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,6 +17,30 @@ export const LoginForm: React.FC = () => {
 
   const { login } = useAuth();
   const router = useRouter();
+  const { colors } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+        },
+        optionsRow: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 30,
+        },
+        forgotPassword: {
+          fontSize: 14,
+          color: colors.textSecondary,
+        },
+        loginButton: {
+          marginBottom: 20,
+        },
+      }),
+    [colors]
+  );
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -44,7 +69,7 @@ export const LoginForm: React.FC = () => {
         keyboardType="email-address"
         autoCapitalize="none"
         rightIcon={
-          <Ionicons name="mail-outline" size={20} color="#999" />
+          <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
         }
       />
 
@@ -58,7 +83,7 @@ export const LoginForm: React.FC = () => {
           <Ionicons
             name={showPassword ? 'eye-off-outline' : 'eye-outline'}
             size={20}
-            color="#999"
+            color={colors.textSecondary}
           />
         }
         onRightIconPress={() => setShowPassword(!showPassword)}
@@ -82,23 +107,4 @@ export const LoginForm: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  optionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  forgotPassword: {
-    fontSize: 14,
-    color: '#666',
-  },
-  loginButton: {
-    marginBottom: 20,
-  },
-});
 

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface CheckboxProps {
   label: string;
@@ -10,6 +11,38 @@ interface CheckboxProps {
 }
 
 export const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onToggle, style }) => {
+  const { colors } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+        checkbox: {
+          width: 20,
+          height: 20,
+          borderWidth: 2,
+          borderColor: colors.border,
+          borderRadius: 6,
+          marginRight: 8,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'transparent',
+        },
+        checkboxChecked: {
+          backgroundColor: colors.primary,
+          borderColor: colors.primary,
+        },
+        label: {
+          fontSize: 14,
+          color: colors.text,
+        },
+      }),
+    [colors]
+  );
+
   return (
     <TouchableOpacity
       style={[styles.container, style]}
@@ -23,29 +56,4 @@ export const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onToggle, st
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    borderRadius: 4,
-    marginRight: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: '#333',
-    borderColor: '#333',
-  },
-  label: {
-    fontSize: 14,
-    color: '#333',
-  },
-});
 

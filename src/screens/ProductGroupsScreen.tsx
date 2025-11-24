@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,70 @@ import { ProductGroupCard } from '../components/ui/ProductGroupCard';
 import { Button } from '../components/ui/Button';
 import { useCart } from '../contexts/CartContext';
 import { formatCurrency } from '../utils/format';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ProductGroupsScreen() {
   const { groups, loading, fetchGroups } = useProducts();
   const { getTotal, getTotalItems, clearCart } = useCart();
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.background,
+        },
+        loadingContainer: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.background,
+        },
+        header: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 20,
+          paddingTop: 40,
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        headerTitle: {
+          fontSize: 18,
+          fontWeight: '600',
+          color: colors.text,
+        },
+        headerRight: {
+          width: 24,
+        },
+        listContent: {
+          padding: 12,
+        },
+        row: {
+          justifyContent: 'space-between',
+        },
+        footer: {
+          padding: 16,
+          backgroundColor: colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        },
+        sendButton: {
+          marginBottom: 12,
+        },
+        footerButtons: {
+          flexDirection: 'row',
+          gap: 12,
+        },
+        footerButton: {
+          flex: 1,
+        },
+      }),
+    [colors]
+  );
 
   useEffect(() => {
     fetchGroups();
@@ -48,7 +107,7 @@ export default function ProductGroupsScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#333" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -57,7 +116,7 @@ export default function ProductGroupsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Grupos de Produtos</Text>
         <View style={styles.headerRight} />
@@ -89,14 +148,14 @@ export default function ProductGroupsScreen() {
             title="Salvar"
             variant="outline"
             onPress={handleSave}
-            icon={<Ionicons name="lock-closed-outline" size={18} color="#333" />}
+            icon={<Ionicons name="lock-closed-outline" size={18} color={colors.text} />}
             style={styles.footerButton}
           />
           <Button
             title="Limpar"
             variant="outline"
             onPress={handleClear}
-            icon={<Ionicons name="trash-outline" size={18} color="#333" />}
+            icon={<Ionicons name="trash-outline" size={18} color={colors.text} />}
             style={styles.footerButton}
           />
         </View>
@@ -104,54 +163,3 @@ export default function ProductGroupsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    paddingTop: 40,
-    backgroundColor: '#fff',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  headerRight: {
-    width: 24,
-  },
-  listContent: {
-    padding: 12,
-  },
-  row: {
-    justifyContent: 'space-between',
-  },
-  footer: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  sendButton: {
-    marginBottom: 12,
-  },
-  footerButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  footerButton: {
-    flex: 1,
-  },
-});
-

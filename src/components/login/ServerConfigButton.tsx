@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Modal } from '../ui/Modal';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { NumericKeypad } from '../ui/NumericKeypad';
+import React, { useMemo, useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useServerConfig } from '../../hooks/useServerConfig';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Modal } from '../ui/Modal';
+import { NumericKeypad } from '../ui/NumericKeypad';
 
 export const ServerConfigButton: React.FC = () => {
   const [showCodeModal, setShowCodeModal] = useState(false);
@@ -13,6 +14,71 @@ export const ServerConfigButton: React.FC = () => {
   const [code, setCode] = useState('');
   const { config, updateConfig } = useServerConfig();
   const [apiUrlLocal, setApiUrlLocal] = useState(config.apiUrlLocal || config.apiUrl || 'http://192.168.0.234:5000');
+  const { colors } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        configButton: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginTop: 10,
+          gap: 5,
+        },
+        configButtonText: {
+          fontSize: 12,
+          color: colors.textSecondary,
+        },
+        modalTitle: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          marginBottom: 20,
+          textAlign: 'center',
+          color: colors.text,
+        },
+        codeInputContainer: {
+          width: '100%',
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 10,
+          padding: 16,
+          marginBottom: 20,
+          minHeight: 50,
+          justifyContent: 'center',
+          backgroundColor: colors.surface,
+        },
+        codeInput: {
+          fontSize: 18,
+          color: colors.text,
+          textAlign: 'center',
+          letterSpacing: 4,
+        },
+        codeInputPlaceholder: {
+          color: colors.textSecondary,
+          letterSpacing: 0,
+        },
+        keypadContainer: {
+          marginBottom: 20,
+        },
+        modalButtons: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          gap: 10,
+          marginTop: 10,
+        },
+        modalButton: {
+          flex: 1,
+        },
+        helpText: {
+          fontSize: 12,
+          color: colors.textSecondary,
+          marginTop: -10,
+          marginBottom: 10,
+        },
+      }),
+    [colors]
+  );
 
   const handleConfigClick = () => {
     setCode('');
@@ -64,7 +130,7 @@ export const ServerConfigButton: React.FC = () => {
         style={styles.configButton}
         onPress={handleConfigClick}
       >
-        <Ionicons name="settings-outline" size={16} color="#666" />
+        <Ionicons name="settings-outline" size={16} color={colors.textSecondary} />
         <Text style={styles.configButtonText}>Configurações do Servidor</Text>
       </TouchableOpacity>
 
@@ -131,62 +197,4 @@ export const ServerConfigButton: React.FC = () => {
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  configButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 10,
-    gap: 5,
-  },
-  configButtonText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  codeInputContainer: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 20,
-    minHeight: 50,
-    justifyContent: 'center',
-  },
-  codeInput: {
-    fontSize: 18,
-    color: '#000',
-    textAlign: 'center',
-    letterSpacing: 4,
-  },
-  codeInputPlaceholder: {
-    color: '#999',
-    letterSpacing: 0,
-  },
-  keypadContainer: {
-    marginBottom: 20,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginTop: 10,
-  },
-  modalButton: {
-    flex: 1,
-  },
-  helpText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: -10,
-    marginBottom: 10,
-  },
-});
 

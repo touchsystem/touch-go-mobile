@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useCart } from '../contexts/CartContext';
 import { useTable } from '../contexts/TableContext';
 import { formatCurrency } from '../utils/format';
 import { Product } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ProductsScreen() {
   const { codGp } = useLocalSearchParams<{ codGp?: string }>();
@@ -24,6 +25,142 @@ export default function ProductsScreen() {
   const { selectedTable } = useTable();
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const { colors, isDark } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.background,
+        },
+        header: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 20,
+          paddingTop: 40,
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        },
+        headerTitle: {
+          fontSize: 18,
+          fontWeight: '600',
+          color: colors.text,
+        },
+        orderSummary: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 12,
+          backgroundColor: isDark ? '#1C2230' : '#EEF2F7',
+          gap: 8,
+        },
+        orderSummaryText: {
+          fontSize: 14,
+          color: colors.textSecondary,
+        },
+        orderSummaryDot: {
+          fontSize: 14,
+          color: colors.textSecondary,
+        },
+        orderSummaryPrice: {
+          fontSize: 14,
+          fontWeight: '600',
+          color: colors.text,
+          marginLeft: 'auto',
+        },
+        searchContainer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface,
+          margin: 16,
+          paddingHorizontal: 12,
+          borderRadius: 10,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        searchIcon: {
+          marginRight: 8,
+        },
+        searchInput: {
+          flex: 1,
+          height: 40,
+          fontSize: 16,
+          color: colors.text,
+        },
+        loadingContainer: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.background,
+        },
+        loadingText: {
+          marginTop: 12,
+          fontSize: 14,
+          color: colors.textSecondary,
+        },
+        errorContainer: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
+          backgroundColor: colors.background,
+        },
+        errorText: {
+          marginTop: 12,
+          fontSize: 16,
+          color: colors.error,
+          textAlign: 'center',
+        },
+        retryButton: {
+          marginTop: 20,
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          backgroundColor: colors.primary,
+          borderRadius: 10,
+        },
+        retryButtonText: {
+          color: '#fff',
+          fontSize: 14,
+          fontWeight: '600',
+        },
+        emptyContainer: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
+        },
+        emptyText: {
+          marginTop: 12,
+          fontSize: 16,
+          color: colors.textSecondary,
+          textAlign: 'center',
+        },
+        clearSearchText: {
+          marginTop: 12,
+          fontSize: 14,
+          color: colors.primary,
+          textDecorationLine: 'underline',
+        },
+        listContent: {
+          padding: 16,
+        },
+        orderButton: {
+          backgroundColor: colors.primary,
+          padding: 16,
+          alignItems: 'center',
+          margin: 16,
+          borderRadius: 10,
+        },
+        orderButtonText: {
+          color: '#fff',
+          fontSize: 16,
+          fontWeight: '600',
+        },
+      }),
+    [colors, isDark]
+  );
 
   useEffect(() => {
     fetchProducts(codGp);
@@ -58,11 +195,11 @@ export default function ProductsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Produtos</Text>
         <TouchableOpacity>
-          <Ionicons name="search-outline" size={24} color="#000" />
+          <Ionicons name="search-outline" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -82,10 +219,11 @@ export default function ProductsScreen() {
       )}
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={20} color="#999" style={styles.searchIcon} />
+        <Ionicons name="search-outline" size={20} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar produtos..."
+          placeholderTextColor={colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -93,12 +231,12 @@ export default function ProductsScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#333" />
+          <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Carregando produtos...</Text>
         </View>
       ) : error ? (
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={48} color="#ff4444" />
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={styles.retryButton}
@@ -109,7 +247,7 @@ export default function ProductsScreen() {
         </View>
       ) : filteredProducts.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="cube-outline" size={48} color="#999" />
+          <Ionicons name="cube-outline" size={48} color={colors.textSecondary} />
           <Text style={styles.emptyText}>
             {searchQuery ? 'Nenhum produto encontrado' : 'Nenhum produto disponível'}
           </Text>
@@ -148,131 +286,4 @@ export default function ProductsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    paddingTop: 40,
-    backgroundColor: '#fff',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  orderSummary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#f0f0f0',
-    gap: 8,
-  },
-  orderSummaryText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  orderSummaryDot: {
-    fontSize: 14,
-    color: '#999',
-  },
-  orderSummaryPrice: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000',
-    marginLeft: 'auto',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 16,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    fontSize: 16,
-    color: '#000',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#666',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  errorText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#ff4444',
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  emptyText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#999',
-    textAlign: 'center',
-  },
-  clearSearchText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#0a7ea4',
-    textDecorationLine: 'underline',
-  },
-  listContent: {
-    padding: 16,
-  },
-  orderButton: {
-    backgroundColor: '#1a1a1a',
-    padding: 16,
-    alignItems: 'center',
-    margin: 16,
-    borderRadius: 8,
-  },
-  orderButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
 
