@@ -224,13 +224,9 @@ export default function OrdersScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
+        <View style={{ width: 24 }} />
         <Text style={styles.headerTitle}>Vendas</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
-        </TouchableOpacity>
+        <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.content}>
