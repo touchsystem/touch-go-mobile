@@ -20,6 +20,7 @@ import { Card } from '../components/ui/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { TableMapModal } from '../components/ui/TableMapModal';
 import { Table as TableType } from '../hooks/useTables';
+import axiosInstance from '../services/api';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -207,7 +208,7 @@ export default function OrdersScreen() {
     }
   };
 
-  const handleSendOrder = () => {
+  const handleSendOrder = async () => {
     if (cart.length === 0) {
       Alert.alert('Erro', 'Adicione itens ao pedido');
       return;
@@ -216,9 +217,44 @@ export default function OrdersScreen() {
       Alert.alert('Erro', 'Selecione uma mesa');
       return;
     }
-    // Implementar envio de pedido
-    Alert.alert('Sucesso', 'Pedido enviado!');
-    clearCart();
+    if (!user?.nick) {
+      Alert.alert('Erro', 'Usuário não encontrado');
+      return;
+    }
+
+    try {
+      const orderData = {
+        cabecalho: {
+          status_tp_venda: 'P',
+          mesa: parseInt(selectedTable.numero),
+          id_cliente: null,
+          nome_cliente: '',
+          cpf_cliente: '',
+          celular: '',
+          nick: user.nick,
+          obs: '',
+        },
+        itens: cart.map((item) => ({
+          codm: (item.codm || item.id.toString()).trim(),
+          qtd: item.quantidade,
+          obs: item.observacao || '',
+          pv: item.pv || item.preco,
+          codm_status: item.codm_status || 'C',
+          codm_relacional: item.codm_relacional || undefined,
+        })),
+      };
+
+      await axiosInstance.post('/vendas', orderData);
+
+      Alert.alert('Sucesso', 'Pedido enviado!');
+      clearCart();
+    } catch (error: any) {
+      console.error('Erro ao enviar pedido:', error);
+      Alert.alert(
+        'Erro',
+        error.response?.data?.erro || error.message || 'Erro ao enviar pedido'
+      );
+    }
   };
 
   return (

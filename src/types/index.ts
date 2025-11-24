@@ -32,6 +32,10 @@ export interface CartItem {
   preco: number;
   quantidade: number;
   observacao?: string;
+  codm?: string;
+  pv?: number;
+  codm_status?: string;
+  codm_relacional?: string;
 }
 
 export interface Table {

@@ -178,6 +178,8 @@ export default function ProductsScreen() {
     const descricaoRaw = product.descricao || product.des1 || '';
     const preco = product.preco || product.pv || 0;
     const id = product.id || parseInt(product.codm || '0') || 0;
+    const codm = product.codm || product.id?.toString() || '';
+    const pv = product.pv || product.preco || 0;
 
     // Capitaliza apenas a primeira letra
     const nome = capitalizeFirstLetter(nomeRaw);
@@ -188,6 +190,10 @@ export default function ProductsScreen() {
       nome,
       descricao,
       preco,
+      codm,
+      pv,
+      codm_status: product.status || 'C',
+      codm_relacional: undefined,
     });
   };
 
