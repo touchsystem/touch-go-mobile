@@ -90,6 +90,7 @@ export default function OrdersScreen() {
         orderSection: {
           marginBottom: 16,
           flex: 1,
+          minHeight: 200,
         },
         orderHeader: {
           flexDirection: 'row',
@@ -118,10 +119,6 @@ export default function OrdersScreen() {
           fontSize: 16,
           color: colors.textSecondary,
           marginTop: 12,
-        },
-        listContainer: {
-          flex: 1,
-          maxHeight: listHeight,
         },
         cartItemContent: {
           flexDirection: 'row',
@@ -172,17 +169,6 @@ export default function OrdersScreen() {
           fontWeight: 'bold',
           color: colors.text,
         },
-        productGroupsSection: {
-          marginBottom: 16,
-        },
-        groupButton: {
-          marginTop: 12,
-        },
-        groupName: {
-          fontSize: 14,
-          fontWeight: '500',
-          color: colors.text,
-        },
         footer: {
           padding: 16,
           backgroundColor: colors.surface,
@@ -199,19 +185,6 @@ export default function OrdersScreen() {
         },
         deleteButton: {
           padding: 4,
-        },
-        groupPlaceholder: {
-          width: '100%',
-          height: 100,
-          backgroundColor: isDark ? '#1C2230' : '#ECEEF3',
-          borderRadius: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: 8,
-        },
-        groupPlaceholderText: {
-          fontSize: 12,
-          color: colors.textSecondary,
         },
         infoRow: {
           flexDirection: 'row',
@@ -310,13 +283,13 @@ export default function OrdersScreen() {
               <Text style={styles.emptyCartText}>Carrinho vazio</Text>
             </View>
           ) : (
-            <View style={[styles.listContainer, { maxHeight: listHeight }]}>
-              <FlatList
-                data={cart}
-                keyExtractor={(item) => item.uuid}
-                contentContainerStyle={{ paddingBottom: 150 }}
-                showsVerticalScrollIndicator={true}
-                renderItem={({ item }) => (
+            <FlatList
+              data={cart}
+              keyExtractor={(item) => item.uuid}
+              contentContainerStyle={{ paddingBottom: 150, flexGrow: 1 }}
+              showsVerticalScrollIndicator={true}
+              style={{ flex: 1 }}
+              renderItem={({ item }) => (
                 <Card style={styles.cartItem}>
                   <View style={styles.cartItemContent}>
                     <View style={styles.cartItemInfo}>
@@ -349,8 +322,7 @@ export default function OrdersScreen() {
                   </View>
                 </Card>
               )}
-              />
-            </View>
+            />
           )}
 
           {cart.length > 0 && (
@@ -359,19 +331,6 @@ export default function OrdersScreen() {
               <Text style={styles.totalValue}>{formatCurrency(getTotal())}</Text>
             </View>
           )}
-        </View>
-
-        <View style={styles.productGroupsSection}>
-          <Text style={styles.sectionTitle}>Grupos de Produtos</Text>
-          <TouchableOpacity
-            style={styles.groupButton}
-            onPress={() => router.push('/product-groups')}
-          >
-            <View style={styles.groupPlaceholder}>
-              <Text style={styles.groupPlaceholderText}>Ver Grupos</Text>
-            </View>
-            <Text style={styles.groupName}>Ver todos os grupos</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
