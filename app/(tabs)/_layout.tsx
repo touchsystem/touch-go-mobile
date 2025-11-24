@@ -1,17 +1,21 @@
 import { useTheme } from '@/src/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 export default function TabLayout() {
   const { colors } = useTheme();
 
+  const screenOptions = useMemo(
+    () => ({
+      tabBarActiveTintColor: colors?.primary || '#2563EB',
+      headerShown: false,
+    }),
+    [colors?.primary]
+  );
+
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        headerShown: false,
-      }}>
+    <Tabs screenOptions={screenOptions}>
       <Tabs.Screen
         name="orders"
         options={{

@@ -30,8 +30,9 @@ export const useTables = () => {
   }, []);
 
   useEffect(() => {
-    fetchTables();
-  }, [fetchTables]);
+    // Só busca mesas se necessário (será chamado manualmente quando o modal abrir)
+    // fetchTables();
+  }, []);
 
   return { tables, loading, error, fetchTables };
 };

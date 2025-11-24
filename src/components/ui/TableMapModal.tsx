@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ interface TableMapModalProps {
   onClose: () => void;
   onSelectTable: (table: Table) => void;
   selectedTableNumber?: number;
+  refreshKey?: number; // Chave para forçar atualização
 }
 
 export const TableMapModal: React.FC<TableMapModalProps> = ({
@@ -25,9 +26,18 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
   onClose,
   onSelectTable,
   selectedTableNumber,
+  refreshKey,
 }) => {
   const { colors, isDark } = useTheme();
-  const { tables, loading, error } = useTables();
+  const { tables, loading, error, fetchTables } = useTables();
+
+  // Recarrega as mesas sempre que o modal for aberto ou quando refreshKey mudar
+  useEffect(() => {
+    if (visible) {
+      fetchTables();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, refreshKey]);
 
   const styles = useMemo(
     () =>
@@ -178,6 +188,10 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
     onSelectTable(table);
     onClose();
   };
+
+  if (!visible) {
+    return null;
+  }
 
   if (loading) {
     return (

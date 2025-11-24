@@ -29,6 +29,7 @@ export default function OrdersScreen() {
   const { selectedTable, setSelectedTable } = useTable();
   const { user } = useAuth();
   const [isTableMapVisible, setIsTableMapVisible] = useState(false);
+  const [tableRefreshKey, setTableRefreshKey] = useState(0);
   const router = useRouter();
   const { colors, isDark } = useTheme();
 
@@ -248,6 +249,9 @@ export default function OrdersScreen() {
 
       Alert.alert('Sucesso', 'Pedido enviado!');
       clearCart();
+      
+      // Força atualização do mapa de mesas para refletir o novo status
+      setTableRefreshKey((prev) => prev + 1);
     } catch (error: any) {
       console.error('Erro ao enviar pedido:', error);
       Alert.alert(
@@ -289,12 +293,15 @@ export default function OrdersScreen() {
           </View>
         </Card>
 
-        <TableMapModal
-          visible={isTableMapVisible}
-          onClose={() => setIsTableMapVisible(false)}
-          onSelectTable={handleTableSelect}
-          selectedTableNumber={selectedTable ? parseInt(selectedTable.numero) : undefined}
-        />
+        {isTableMapVisible && (
+          <TableMapModal
+            visible={isTableMapVisible}
+            onClose={() => setIsTableMapVisible(false)}
+            onSelectTable={handleTableSelect}
+            selectedTableNumber={selectedTable ? parseInt(selectedTable.numero) : undefined}
+            refreshKey={tableRefreshKey}
+          />
+        )}
 
         <View style={styles.orderSection}>
           <View style={styles.orderHeader}>
