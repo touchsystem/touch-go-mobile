@@ -188,7 +188,7 @@ export default function ProductsScreen() {
   };
 
   const handleViewOrder = () => {
-    router.push('/orders');
+    router.push('/(tabs)/orders');
   };
 
   return (

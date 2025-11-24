@@ -74,7 +74,7 @@ export default function MenuScreen() {
 
   const handleGroupPress = (group: ProductGroup) => {
     router.push({
-      pathname: '/products',
+      pathname: '/(tabs)/products',
       params: { codGp: group.cod_gp },
     });
   };

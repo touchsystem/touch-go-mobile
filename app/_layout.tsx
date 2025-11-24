@@ -1,10 +1,10 @@
+import { AuthGuard } from '@/src/components/auth/AuthGuard';
+import { useTheme } from '@/src/contexts/ThemeContext';
+import { AppProviders } from '@/src/providers/AppProviders';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { AppProviders } from '@/src/providers/AppProviders';
-import { AuthGuard } from '@/src/components/auth/AuthGuard';
-import { useTheme } from '@/src/contexts/ThemeContext';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -21,9 +21,6 @@ function ThemedLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="code-access" options={{ headerShown: false }} />
-          <Stack.Screen name="product-groups" options={{ headerShown: false }} />
-          <Stack.Screen name="products" options={{ headerShown: false }} />
-          <Stack.Screen name="orders" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style={isDark ? 'light' : 'dark'} />
       </AuthGuard>

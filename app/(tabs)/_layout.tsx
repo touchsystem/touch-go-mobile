@@ -46,6 +46,18 @@ export default function TabLayout() {
           href: null, // Hide from tabs
         }}
       />
+      <Tabs.Screen
+        name="product-groups"
+        options={{
+          href: null, // Hide from tabs but show bottom navigator
+        }}
+      />
+      <Tabs.Screen
+        name="products"
+        options={{
+          href: null, // Hide from tabs but show bottom navigator
+        }}
+      />
     </Tabs>
   );
 }
