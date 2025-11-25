@@ -51,7 +51,7 @@ export const LoginForm: React.FC = () => {
     setLoading(true);
     try {
       await login({ email, password });
-      router.replace('/(tabs)/orders');
+      router.replace('/(tabs)/menu');
     } catch (error: any) {
       Alert.alert('Erro', error.message || 'Erro ao fazer login');
     } finally {

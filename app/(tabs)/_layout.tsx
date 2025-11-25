@@ -17,17 +17,17 @@ export default function TabLayout() {
   return (
     <Tabs screenOptions={screenOptions}>
       <Tabs.Screen
-        name="orders"
-        options={{
-          title: 'Pedidos',
-          tabBarIcon: ({ color }) => <Ionicons name="receipt-outline" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="menu"
         options={{
           title: 'Cardápio',
           tabBarIcon: ({ color }) => <Ionicons name="restaurant-outline" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: 'Pedidos',
+          tabBarIcon: ({ color }) => <Ionicons name="receipt-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
