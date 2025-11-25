@@ -66,15 +66,6 @@ export default function OrdersScreen() {
         tableCard: {
           marginBottom: 16,
         },
-        sectionLabel: {
-          fontSize: 14,
-          fontWeight: '500',
-          color: colors.textSecondary,
-          marginBottom: 12,
-        },
-        selectTableButton: {
-          marginBottom: 12,
-        },
         infoText: {
           fontSize: 14,
           color: colors.textSecondary,
@@ -195,6 +186,51 @@ export default function OrdersScreen() {
       status: table.status,
     };
     await setSelectedTable(selectedTableData);
+    setIsTableMapVisible(false);
+    
+    // Se tiver itens no carrinho e não tiver mesa selecionada anteriormente, envia automaticamente
+    if (cart.length > 0 && user?.nick) {
+      // Pequeno delay para fechar o modal antes de enviar
+      setTimeout(async () => {
+        try {
+          const orderData = {
+            cabecalho: {
+              status_tp_venda: 'P',
+              mesa: parseInt(selectedTableData.numero),
+              id_cliente: null,
+              nome_cliente: '',
+              cpf_cliente: '',
+              celular: '',
+              nick: user.nick,
+              obs: '',
+            },
+            itens: cart.map((item) => ({
+              codm: (item.codm || item.id.toString()).trim(),
+              qtd: item.quantidade,
+              obs: item.observacao || '',
+              pv: item.pv || item.preco,
+              codm_status: item.codm_status || 'C',
+              codm_relacional: item.codm_relacional || undefined,
+            })),
+          };
+
+          await axiosInstance.post('/vendas', orderData);
+
+          Alert.alert('Sucesso', 'Pedido enviado!');
+          clearCart();
+          setSelectedTable(null);
+          
+          // Força atualização do mapa de mesas para refletir o novo status
+          setTableRefreshKey((prev) => prev + 1);
+        } catch (error: any) {
+          console.error('Erro ao enviar pedido:', error);
+          Alert.alert(
+            'Erro',
+            error.response?.data?.erro || error.message || 'Erro ao enviar pedido'
+          );
+        }
+      }, 300);
+    }
   };
 
   const handleQuantityChange = (uuid: string, delta: number) => {
@@ -214,10 +250,13 @@ export default function OrdersScreen() {
       Alert.alert('Erro', 'Adicione itens ao pedido');
       return;
     }
+    
+    // Se não tiver mesa selecionada, abre o mapa automaticamente
     if (!selectedTable) {
-      Alert.alert('Erro', 'Selecione uma mesa');
+      setIsTableMapVisible(true);
       return;
     }
+    
     if (!user?.nick) {
       Alert.alert('Erro', 'Usuário não encontrado');
       return;
@@ -249,6 +288,7 @@ export default function OrdersScreen() {
 
       Alert.alert('Sucesso', 'Pedido enviado!');
       clearCart();
+      setSelectedTable(null); // Limpa a mesa selecionada após enviar
       
       // Força atualização do mapa de mesas para refletir o novo status
       setTableRefreshKey((prev) => prev + 1);
@@ -270,28 +310,14 @@ export default function OrdersScreen() {
       </View>
 
       <View style={styles.content}>
-        <Card style={styles.tableCard}>
-          <Text style={styles.sectionLabel}>Mesa/Cartão</Text>
-          <Button
-            title={selectedTable ? `Mesa #${selectedTable.numero}` : 'Selecionar Mesa'}
-            onPress={() => setIsTableMapVisible(true)}
-            variant={selectedTable ? 'outline' : 'primary'}
-            icon={
-              <Ionicons
-                name="restaurant-outline"
-                size={20}
-                color={selectedTable ? colors.text : '#fff'}
-              />
-            }
-            style={styles.selectTableButton}
-          />
-          <View style={styles.infoRow}>
-            <Text style={styles.infoText}>Garçom: {user?.nome || 'N/A'}</Text>
-            {selectedTable && (
+        {selectedTable && (
+          <Card style={styles.tableCard}>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoText}>Garçom: {user?.nome || 'N/A'}</Text>
               <Text style={styles.infoText}>Mesa: #{selectedTable.numero}</Text>
-            )}
-          </View>
-        </Card>
+            </View>
+          </Card>
+        )}
 
         {isTableMapVisible && (
           <TableMapModal

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  TextInput,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -30,6 +33,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
 }) => {
   const { colors, isDark } = useTheme();
   const { tables, loading, error, fetchTables } = useTables();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Recarrega as mesas sempre que o modal for aberto ou quando refreshKey mudar
   useEffect(() => {
@@ -52,10 +56,15 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
           backgroundColor: colors.surface,
           borderRadius: 16,
           padding: 20,
-          width: '90%',
-          maxHeight: '80%',
+          width: Math.min(Dimensions.get('window').width * 0.9, 500),
+          maxHeight: Dimensions.get('window').height * 0.85,
+          minHeight: 400,
           borderWidth: 1,
           borderColor: colors.border,
+        },
+        scrollableContent: {
+          maxHeight: 300,
+          minHeight: 200,
         },
         header: {
           flexDirection: 'row',
@@ -146,9 +155,39 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
           color: colors.textSecondary,
           textAlign: 'center',
         },
+        searchContainer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: isDark ? '#1A1F2B' : '#F4F4F5',
+          marginBottom: 16,
+          paddingHorizontal: 12,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        searchIcon: {
+          marginRight: 8,
+        },
+        searchInput: {
+          flex: 1,
+          height: 40,
+          fontSize: 16,
+          color: colors.text,
+        },
       }),
     [colors, isDark]
   );
+
+  const filteredTables = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return tables;
+    }
+    const query = searchQuery.trim();
+    return tables.filter((table) => {
+      const tableNumber = table.mesa_cartao.toString();
+      return tableNumber.includes(query);
+    });
+  }, [tables, searchQuery]);
 
   const getTableColor = (status: string) => {
     switch (status) {
@@ -235,98 +274,102 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
   }
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Selecionar Mesa</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color={colors.text} />
-            </TouchableOpacity>
-          </View>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={onClose}
+        style={styles.modalOverlay}
+      >
+        <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+          <View style={styles.modalContent}>
+              <View style={styles.header}>
+                <Text style={styles.title}>Selecionar Mesa</Text>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <Ionicons name="close" size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
 
-          <View style={styles.legend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: isDark ? '#374151' : '#E5E7EB' }]} />
-              <Text style={styles.legendText}>Livre</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: '#10B981' }]} />
-              <Text style={styles.legendText}>Ocupada</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: '#3B82F6' }]} />
-              <Text style={styles.legendText}>Reservada</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: '#F59E0B' }]} />
-              <Text style={styles.legendText}>Fechada</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: '#EF4444' }]} />
-              <Text style={styles.legendText}>Inativa</Text>
-            </View>
-          </View>
+              <View style={styles.searchContainer}>
+                <Ionicons name="search-outline" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Buscar mesa por número..."
+                  placeholderTextColor={colors.textSecondary}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  keyboardType="number-pad"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                    <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
 
-          {tables.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
-              <Text style={styles.emptyText}>Nenhuma mesa disponível</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={tables}
-              numColumns={4}
-              keyExtractor={(item) => item.id.toString()}
-              contentContainerStyle={styles.grid}
-              columnWrapperStyle={styles.rowWrapper}
-              renderItem={({ item }) => {
-                const isSelected = selectedTableNumber === item.mesa_cartao;
-                const tableColor = getTableColor(item.status);
-                const statusText = getTableStatusText(item.status);
-
-                return (
-                  <View style={styles.tableCard}>
-                    <TouchableOpacity
-                      style={[
-                        styles.tableButton,
-                        {
-                          backgroundColor: tableColor,
-                          borderColor: isSelected ? colors.primary : colors.border,
-                          borderWidth: isSelected ? 3 : 2,
-                        },
-                      ]}
-                      onPress={() => handleTableSelect(item)}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[
-                          styles.tableNumber,
-                          {
-                            color: item.status === 'L' && !isDark ? '#111827' : '#FFFFFF',
-                          },
-                        ]}
-                      >
-                        {item.mesa_cartao}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.tableStatus,
-                          {
-                            color: item.status === 'L' && !isDark ? '#6B7280' : '#FFFFFF',
-                          },
-                        ]}
-                      >
-                        {statusText}
-                      </Text>
-                    </TouchableOpacity>
+              <ScrollView
+                style={styles.scrollableContent}
+                contentContainerStyle={styles.grid}
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled={true}
+              >
+                {filteredTables.length === 0 ? (
+                  <View style={styles.emptyContainer}>
+                    <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
+                    <Text style={styles.emptyText}>
+                      {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
+                    </Text>
                   </View>
-                );
-              }}
-            />
-          )}
-        </View>
-      </View>
+                ) : (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+                    {filteredTables.map((item) => {
+                      const isSelected = selectedTableNumber === item.mesa_cartao;
+                      const tableColor = getTableColor(item.status);
+                      const statusText = getTableStatusText(item.status);
+
+                      return (
+                        <View key={item.id} style={styles.tableCard}>
+                          <TouchableOpacity
+                            style={[
+                              styles.tableButton,
+                              {
+                                backgroundColor: tableColor,
+                                borderColor: isSelected ? colors.primary : colors.border,
+                                borderWidth: isSelected ? 3 : 2,
+                              },
+                            ]}
+                            onPress={() => handleTableSelect(item)}
+                            activeOpacity={0.7}
+                          >
+                            <Text
+                              style={[
+                                styles.tableNumber,
+                                {
+                                  color: item.status === 'L' && !isDark ? '#111827' : '#FFFFFF',
+                                },
+                              ]}
+                            >
+                              {item.mesa_cartao}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.tableStatus,
+                                {
+                                  color: item.status === 'L' && !isDark ? '#6B7280' : '#FFFFFF',
+                                },
+                              ]}
+                            >
+                              {statusText}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };
