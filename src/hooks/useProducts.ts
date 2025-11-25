@@ -13,7 +13,32 @@ export const useProducts = () => {
       setLoading(true);
       setError(null);
       const response = await api.get<ProductGroup[]>('/grupos?status=C');
-      setGroups(response.data || []);
+      const groupsData = response.data || [];
+      
+      // Se não tiver quantidadeItens, busca a contagem de produtos para cada grupo
+      const groupsWithCount = await Promise.all(
+        groupsData.map(async (group) => {
+          if (group.quantidadeItens !== undefined && group.quantidadeItens !== null) {
+            return group;
+          }
+          
+          try {
+            // Busca produtos do grupo para contar
+            const productsResponse = await api.get<Product[]>(`/produtos/grupopd/${group.cod_gp}`);
+            return {
+              ...group,
+              quantidadeItens: productsResponse.data?.length || 0,
+            };
+          } catch {
+            return {
+              ...group,
+              quantidadeItens: 0,
+            };
+          }
+        })
+      );
+      
+      setGroups(groupsWithCount);
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar grupos');
       console.error('Error fetching groups:', err);

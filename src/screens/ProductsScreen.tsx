@@ -208,9 +208,7 @@ export default function ProductsScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Produtos</Text>
-        <TouchableOpacity>
-          <Ionicons name="search-outline" size={24} color={colors.text} />
-        </TouchableOpacity>
+        <View style={{ width: 24 }} />
       </View>
 
       {selectedTable && (

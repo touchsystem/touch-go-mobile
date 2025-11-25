@@ -4,6 +4,7 @@ import { ProductGroup } from '../../types';
 import { Card } from './Card';
 import { useTheme } from '../../contexts/ThemeContext';
 import { capitalizeFirstLetter } from '../../utils/format';
+import { GroupImage } from './GroupImage';
 
 interface ProductGroupCardProps {
   group: ProductGroup;
@@ -18,31 +19,22 @@ export const ProductGroupCard: React.FC<ProductGroupCardProps> = ({ group, onPre
       StyleSheet.create({
         card: {
           flex: 1,
-          margin: 6,
-          minHeight: 150,
+          margin: 4,
+          minHeight: 120,
         },
-        imagePlaceholder: {
+        imageContainer: {
           width: '100%',
-          height: 100,
-          backgroundColor: isDark ? '#1C2230' : '#F4F4F5',
-          borderRadius: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: 12,
-        },
-        imagePlaceholderText: {
-          fontSize: 12,
-          color: colors.textSecondary,
-          textAlign: 'center',
+          height: 70,
+          marginBottom: 8,
         },
         name: {
-          fontSize: 16,
+          fontSize: 14,
           fontWeight: '600',
           color: colors.text,
-          marginBottom: 4,
+          marginBottom: 2,
         },
         count: {
-          fontSize: 14,
+          fontSize: 12,
           color: colors.textSecondary,
         },
       }),
@@ -53,11 +45,18 @@ export const ProductGroupCard: React.FC<ProductGroupCardProps> = ({ group, onPre
 
   return (
     <Card onPress={onPress} style={styles.card}>
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.imagePlaceholderText}>{displayName}</Text>
+      <View style={styles.imageContainer}>
+        <GroupImage 
+          cod_gp={group.cod_gp} 
+          status={group.tipo || 'C'} 
+          groupName={displayName}
+          showNameOnFallback={true}
+        />
       </View>
       <Text style={styles.name}>{displayName}</Text>
-      <Text style={styles.count}>{group.quantidadeItens} itens</Text>
+      <Text style={styles.count}>
+        {group.quantidadeItens !== undefined ? `${group.quantidadeItens} itens` : '0 itens'}
+      </Text>
     </Card>
   );
 };
