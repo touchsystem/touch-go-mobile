@@ -8,16 +8,13 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LoginForm } from '../components/login/LoginForm';
-import { CodeAccessButton } from '../components/login/CodeAccessButton';
 import { ServerConfigButton } from '../components/login/ServerConfigButton';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function LoginScreen() {
-  const router = useRouter();
   const { colors } = useTheme();
 
   const themedStyles = StyleSheet.create({
@@ -51,22 +48,22 @@ export default function LoginScreen() {
       marginBottom: 40,
     },
     iconCircle: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
+      width: 80,
+      height: 80,
+      borderRadius: 40,
       backgroundColor: colors.border,
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 20,
     },
     welcomeText: {
-      fontSize: 24,
+      fontSize: 20,
       fontWeight: 'bold',
       color: colors.text,
       marginBottom: 8,
     },
     subtitle: {
-      fontSize: 14,
+      fontSize: 12,
       color: colors.textSecondary,
     },
     supportSection: {
@@ -74,7 +71,7 @@ export default function LoginScreen() {
       marginBottom: 20,
     },
     supportText: {
-      fontSize: 12,
+      fontSize: 11,
       color: colors.textSecondary,
       textAlign: 'center',
       marginBottom: 15,
@@ -90,7 +87,7 @@ export default function LoginScreen() {
       gap: 5,
     },
     supportButtonText: {
-      fontSize: 14,
+      fontSize: 12,
       color: colors.text,
     },
   });
@@ -105,19 +102,15 @@ export default function LoginScreen() {
       </View>
       <ScrollView contentContainerStyle={themedStyles.scrollContent}>
         <View style={themedStyles.content}>
-          <Text style={themedStyles.title}>Login Garçom</Text>
-
           <View style={themedStyles.iconContainer}>
             <View style={themedStyles.iconCircle}>
               <Ionicons name="restaurant" size={48} color={colors.text} />
             </View>
-            <Text style={themedStyles.welcomeText}>Bem-vindo</Text>
+            <Text style={themedStyles.welcomeText}>EatzGo Mobile</Text>
             <Text style={themedStyles.subtitle}>Faça login para acessar o sistema</Text>
           </View>
 
           <LoginForm />
-
-          <CodeAccessButton />
 
           <View style={themedStyles.supportSection}>
             <Text style={themedStyles.supportText}>
