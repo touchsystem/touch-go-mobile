@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { storage, storageKeys } from '../services/storage';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
-import { User, LoginParams, LoginResponse, Empresa } from '../types';
+import { storage, storageKeys } from '../services/storage';
+import { Empresa, LoginParams, LoginResponse, User } from '../types';
 
 interface AuthContextType {
   user: User | null;
@@ -72,8 +72,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const token = response.data.token;
       const empresas: Empresa[] = response.data.empresas || [];
 
+      console.log('[AuthContext] Saving token and user data');
       await storage.setItem(storageKeys.TOKEN, token);
-      
+
       const decoded = decodeToken(token);
       const userData: User = {
         id: decoded.id || decoded.usuarioId || decoded.userId,
@@ -84,6 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         CDEMP: decoded.CDEMP || decoded.cdEmp || '',
       };
 
+      console.log('[AuthContext] User data:', userData);
       await storage.setItem(storageKeys.USER, userData);
       setUser(userData);
 
@@ -133,7 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const token = response.data.token;
       await storage.setItem(storageKeys.TOKEN, token);
-      
+
       const decoded = decodeToken(token);
       const userData: User = {
         ...storedUser,
@@ -150,18 +152,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      await api.post('/logout').catch(() => {}); // Ignora erro se não conseguir fazer logout no servidor
+      await api.post('/logout').catch(() => { }); // Ignora erro se não conseguir fazer logout no servidor
     } catch (error) {
       console.error('Error logging out:', error);
     } finally {
-      await storage.clear();
+      // Salva a configuração do servidor antes de limpar
+      const serverConfig = await storage.getItem(storageKeys.SERVER_CONFIG);
+
+      // Remove apenas dados de autenticação, mantendo a configuração do servidor
+      await storage.removeItem(storageKeys.TOKEN);
+      await storage.removeItem(storageKeys.USER);
+      await storage.removeItem(storageKeys.EMPRESA);
+      await storage.removeItem(storageKeys.TABLE);
+      await storage.removeItem(storageKeys.CART);
+
+      // Restaura a configuração do servidor se existir
+      if (serverConfig) {
+        await storage.setItem(storageKeys.SERVER_CONFIG, serverConfig);
+      }
+
       setUser(null);
+      console.log('[AuthContext] Logout completed, server config preserved');
     }
   };
 
   const setServerConfig = async (config: { apiUrl: string; apiUrlLocal?: string; appName?: string }): Promise<void> => {
-    await storage.setItem(storageKeys.SERVER_CONFIG, config);
-    api.defaults.baseURL = config.apiUrl;
+    try {
+      console.log('[AuthContext] Saving server config:', config);
+      await storage.setItem(storageKeys.SERVER_CONFIG, config);
+      api.defaults.baseURL = config.apiUrl;
+      console.log('[AuthContext] Server config saved successfully');
+    } catch (error) {
+      console.error('[AuthContext] Error saving server config:', error);
+      throw error;
+    }
   };
 
   const getServerConfig = async (): Promise<{ apiUrl: string; apiUrlLocal?: string; appName?: string } | null> => {
