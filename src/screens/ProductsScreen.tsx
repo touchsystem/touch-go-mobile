@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   TextInput,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useProducts } from '../hooks/useProducts';
@@ -17,6 +18,8 @@ import { useTable } from '../contexts/TableContext';
 import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Product } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useRelationalGroups } from '../hooks/useRelationalGroups';
+import { ProductOptionsModal } from '../components/ui/ProductOptionsModal';
 
 export default function ProductsScreen() {
   const { codGp } = useLocalSearchParams<{ codGp?: string }>();
@@ -26,6 +29,11 @@ export default function ProductsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { fetchRelationalGroups } = useRelationalGroups();
+  const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
+  const [modalProduto, setModalProduto] = useState<any>(null);
+  const [modalGrupos, setModalGrupos] = useState<any[]>([]);
 
   const styles = useMemo(
     () =>
@@ -39,7 +47,7 @@ export default function ProductsScreen() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: 20,
-          paddingTop: 40,
+          paddingTop: Math.max(insets.top, 10),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
@@ -159,7 +167,7 @@ export default function ProductsScreen() {
           fontWeight: '600',
         },
       }),
-    [colors, isDark]
+    [colors, isDark, insets]
   );
 
   useEffect(() => {
@@ -173,28 +181,84 @@ export default function ProductsScreen() {
     return nome.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const handleAddProduct = (product: Product) => {
-    const nomeRaw = product.nome || product.des2 || product.des1 || 'Produto';
-    const descricaoRaw = product.descricao || product.des1 || '';
-    const preco = product.preco || product.pv || 0;
-    const id = product.id || parseInt(product.codm || '0') || 0;
-    const codm = product.codm || product.id?.toString() || '';
-    const pv = product.pv || product.preco || 0;
+  const handleAddProduct = async (product: Product) => {
+    try {
+      const codm = product.codm || product.id?.toString() || '';
+      if (!codm) {
+        // Se não tiver codm, adiciona direto
+        const nomeRaw = product.nome || product.des2 || product.des1 || 'Produto';
+        const descricaoRaw = product.descricao || product.des1 || '';
+        const preco = product.preco || product.pv || 0;
+        const id = product.id || parseInt(product.codm || '0') || 0;
+        const pv = product.pv || product.preco || 0;
+        const nome = capitalizeFirstLetter(nomeRaw);
+        const descricao = descricaoRaw ? capitalizeFirstLetter(descricaoRaw) : '';
 
-    // Capitaliza apenas a primeira letra
-    const nome = capitalizeFirstLetter(nomeRaw);
-    const descricao = descricaoRaw ? capitalizeFirstLetter(descricaoRaw) : '';
+        addToCart({
+          id,
+          nome,
+          descricao,
+          preco,
+          codm,
+          pv,
+          codm_status: product.status || 'C',
+          codm_relacional: undefined,
+        });
+        return;
+      }
 
-    addToCart({
-      id,
-      nome,
-      descricao,
-      preco,
-      codm,
-      pv,
-      codm_status: product.status || 'C',
-      codm_relacional: undefined,
-    });
+      // Busca grupos relacionais
+      const grupos = await fetchRelationalGroups(codm);
+      
+      if (grupos.length > 0) {
+        // Abre modal de opções
+        setModalProduto(product);
+        setModalGrupos(grupos);
+        setIsOptionsModalOpen(true);
+      } else {
+        // Adiciona direto ao carrinho
+        const nomeRaw = product.nome || product.des2 || product.des1 || 'Produto';
+        const descricaoRaw = product.descricao || product.des1 || '';
+        const preco = product.preco || product.pv || 0;
+        const id = product.id || parseInt(product.codm || '0') || 0;
+        const pv = product.pv || product.preco || 0;
+        const nome = capitalizeFirstLetter(nomeRaw);
+        const descricao = descricaoRaw ? capitalizeFirstLetter(descricaoRaw) : '';
+
+        addToCart({
+          id,
+          nome,
+          descricao,
+          preco,
+          codm,
+          pv,
+          codm_status: product.status || 'C',
+          codm_relacional: undefined,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar produto:', error);
+      // Em caso de erro, adiciona direto
+      const nomeRaw = product.nome || product.des2 || product.des1 || 'Produto';
+      const descricaoRaw = product.descricao || product.des1 || '';
+      const preco = product.preco || product.pv || 0;
+      const id = product.id || parseInt(product.codm || '0') || 0;
+      const codm = product.codm || product.id?.toString() || '';
+      const pv = product.pv || product.preco || 0;
+      const nome = capitalizeFirstLetter(nomeRaw);
+      const descricao = descricaoRaw ? capitalizeFirstLetter(descricaoRaw) : '';
+
+      addToCart({
+        id,
+        nome,
+        descricao,
+        preco,
+        codm,
+        pv,
+        codm_status: product.status || 'C',
+        codm_relacional: undefined,
+      });
+    }
   };
 
   const handleViewOrder = () => {
@@ -290,6 +354,46 @@ export default function ProductsScreen() {
             Ver Pedido ({getTotalItems()} itens - {formatCurrency(getTotal())})
           </Text>
         </TouchableOpacity>
+      )}
+
+      {isOptionsModalOpen && modalProduto && (
+        <ProductOptionsModal
+          visible={isOptionsModalOpen}
+          produto={modalProduto}
+          grupos={modalGrupos}
+          onClose={() => {
+            setIsOptionsModalOpen(false);
+            setModalProduto(null);
+            setModalGrupos([]);
+          }}
+          onConfirm={(produtoComOpcoes: any) => {
+            const nomeRaw = produtoComOpcoes.nome || produtoComOpcoes.des2 || produtoComOpcoes.des1 || 'Produto';
+            const descricaoRaw = produtoComOpcoes.descricao || produtoComOpcoes.des1 || '';
+            const preco = produtoComOpcoes.preco || produtoComOpcoes.pv || 0;
+            const id = produtoComOpcoes.id || parseInt(produtoComOpcoes.codm || '0') || 0;
+            const codm = produtoComOpcoes.codm || produtoComOpcoes.id?.toString() || '';
+            const pv = produtoComOpcoes.pv || produtoComOpcoes.preco || 0;
+            const nome = capitalizeFirstLetter(nomeRaw);
+            const descricao = descricaoRaw ? capitalizeFirstLetter(descricaoRaw) : '';
+
+            addToCart({
+              id,
+              nome,
+              descricao,
+              preco,
+              codm,
+              pv,
+              codm_status: produtoComOpcoes.status || 'R',
+              codm_relacional: undefined,
+              relacionais: produtoComOpcoes.relacionais || [],
+              uuid: produtoComOpcoes.uuid,
+            } as any);
+
+            setIsOptionsModalOpen(false);
+            setModalProduto(null);
+            setModalGrupos([]);
+          }}
+        />
       )}
     </View>
   );

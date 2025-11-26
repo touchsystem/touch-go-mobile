@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Modal as RNModal } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Modal as RNModal, Pressable } from 'react-native';
 
 interface ModalProps {
   visible: boolean;
@@ -15,15 +15,23 @@ export const Modal: React.FC<ModalProps> = ({ visible, onClose, children }) => {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <TouchableOpacity
+      <Pressable
         style={styles.overlay}
-        activeOpacity={1}
         onPress={onClose}
       >
-        <View style={styles.content} onStartShouldSetResponder={() => true}>
-          {children}
-        </View>
-      </TouchableOpacity>
+        <Pressable
+          style={styles.contentWrapper}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <View 
+            style={styles.content}
+            onStartShouldSetResponder={() => false}
+            onMoveShouldSetResponder={() => false}
+          >
+            {children}
+          </View>
+        </Pressable>
+      </Pressable>
     </RNModal>
   );
 };
@@ -35,12 +43,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  content: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
+  contentWrapper: {
     width: '90%',
-    maxWidth: 400,
+    maxWidth: 500,
+    maxHeight: '90%',
+  },
+  content: {
+    width: '100%',
   },
 });
 

@@ -36,6 +36,11 @@ export interface CartItem {
   pv?: number;
   codm_status?: string;
   codm_relacional?: string;
+  uuid_principal?: string;
+  relacionais?: CartItem[];
+  fractionQty?: number;
+  fractionLabel?: string;
+  quantity?: number;
 }
 
 export interface Table {

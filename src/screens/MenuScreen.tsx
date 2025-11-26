@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useProducts } from '../hooks/useProducts';
@@ -17,6 +18,7 @@ export default function MenuScreen() {
   const { groups, loading, fetchGroups } = useProducts();
   const router = useRouter();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const styles = useMemo(
     () =>
@@ -36,7 +38,7 @@ export default function MenuScreen() {
           alignItems: 'center',
           justifyContent: 'center',
           padding: 20,
-          paddingTop: 40,
+          paddingTop: Math.max(insets.top, 10),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
@@ -65,7 +67,7 @@ export default function MenuScreen() {
           marginTop: 12,
         },
       }),
-    [colors]
+    [colors, insets]
   );
 
   useEffect(() => {

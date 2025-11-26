@@ -7,6 +7,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
 
 export const unstable_settings = {
@@ -14,7 +15,7 @@ export const unstable_settings = {
 };
 
 function ThemedLayout() {
-  const { isDark } = useTheme();
+  const { isDark, colors } = useTheme();
 
   useEffect(() => {
     // Ocultar barra de navegação do Android (modo imersivo)
@@ -23,22 +24,36 @@ function ThemedLayout() {
       NavigationBar.setVisibilityAsync('hidden').catch((error) => {
         console.log('Error hiding navigation bar:', error);
       });
+      // Configurar cor da barra de navegação para corresponder ao tema
+      NavigationBar.setBackgroundColorAsync(
+        isDark ? '#000000' : '#FFFFFF'
+      ).catch((error) => {
+        console.log('Error setting navigation bar color:', error);
+      });
     }
-  }, []);
+  }, [isDark]);
 
   return (
-    <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-      <AuthGuard>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style={isDark ? 'light' : 'dark'} />
-      </AuthGuard>
-    </NavigationThemeProvider>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+        <AuthGuard>
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
+        </AuthGuard>
+      </NavigationThemeProvider>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
 export default function RootLayout() {
   return (

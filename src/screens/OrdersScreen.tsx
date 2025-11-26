@@ -8,6 +8,7 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../contexts/CartContext';
@@ -40,6 +41,7 @@ export default function OrdersScreen() {
   } | null>(null);
   const router = useRouter();
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
 
   // Calcula altura disponível para a lista (tela - header - footer - outros elementos)
   const listHeight = SCREEN_HEIGHT - 320;
@@ -195,7 +197,7 @@ export default function OrdersScreen() {
           marginTop: 8,
         },
       }),
-    [colors, isDark, listHeight]
+    [colors, isDark, listHeight, insets]
   );
 
   const handleTableSelect = async (table: TableType) => {
@@ -208,11 +210,77 @@ export default function OrdersScreen() {
     await setSelectedTable(selectedTableData);
     setIsTableMapVisible(false);
     
-    // Se tiver itens no carrinho e não tiver mesa selecionada anteriormente, envia automaticamente
+      // Se tiver itens no carrinho e não tiver mesa selecionada anteriormente, envia automaticamente
     if (cart.length > 0 && user?.nick) {
       // Pequeno delay para fechar o modal antes de enviar
       setTimeout(async () => {
         try {
+          // Agrupa principais e relacionais
+          const principais = cart.filter(
+            (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
+          );
+
+          // Numerador por ocorrência de cada codm principal
+          const ocorrenciaPorCodm = new Map<string, number>();
+          const itens = principais.flatMap((principal) => {
+            const atual = (ocorrenciaPorCodm.get(principal.codm || '') || 0) + 1;
+            ocorrenciaPorCodm.set(principal.codm || '', atual);
+            const chaveRelacional = `${String(atual).padStart(2, '0')}-${principal.codm || ''}`;
+            
+            const relacionais = cart.filter(
+              (item) =>
+                item.uuid_principal === principal.uuid &&
+                item.codm_status === 'M'
+            );
+
+            // Agrupar adicionais fracionados por codm e somar fractionQty
+            const fracionadosMap = new Map();
+            relacionais.forEach((rel: any) => {
+              if (rel.fractionQty !== undefined) {
+                if (!fracionadosMap.has(rel.codm)) {
+                  fracionadosMap.set(rel.codm, { ...rel });
+                } else {
+                  const existing = fracionadosMap.get(rel.codm);
+                  existing.fractionQty = (existing.fractionQty ?? 0) + (rel.fractionQty ?? 0);
+                }
+              }
+            });
+            const fracionados = Array.from(fracionadosMap.values());
+            const naoFracionados = relacionais.filter((rel: any) => rel.fractionQty === undefined);
+
+            // Item principal
+            const temAdicionais = relacionais.length > 0;
+            const principalItem = {
+              codm: principal.codm || principal.id.toString(),
+              qtd: principal.quantidade,
+              obs: principal.observacao || '',
+              pv: principal.pv ?? 0,
+              ...(temAdicionais ? { codm_status: 'R' } : {}),
+            };
+
+            // Adicionais/relacionais
+            const adicionais = [
+              ...fracionados.map((ad: any) => ({
+                codm: ad.codm || ad.id.toString(),
+                qtd: ad.fractionQty,
+                obs: ad.observacao || '',
+                pv: ad.pv || ad.preco || 0,
+                codm_relacional: chaveRelacional,
+                codm_status: ad.codm_status || 'M',
+              })),
+              ...naoFracionados.map((ad: any) => ({
+                codm: ad.codm || ad.id.toString(),
+                qtd: ad.quantity || ad.quantidade || 1,
+                obs: ad.observacao || '',
+                pv: (ad.pv || ad.preco || 0) * (ad.quantity || ad.quantidade || 1),
+                codm_relacional: chaveRelacional,
+                codm_status: ad.codm_status || 'M',
+              })),
+            ];
+
+            return [principalItem, ...adicionais];
+          });
+
           const orderData = {
             cabecalho: {
               status_tp_venda: 'P',
@@ -224,14 +292,7 @@ export default function OrdersScreen() {
               nick: user.nick,
               obs: '',
             },
-            itens: cart.map((item) => ({
-              codm: (item.codm || item.id.toString()).trim(),
-              qtd: item.quantidade,
-              obs: item.observacao || '',
-              pv: item.pv || item.preco,
-              codm_status: item.codm_status || 'C',
-              codm_relacional: item.codm_relacional || undefined,
-            })),
+            itens,
           };
 
           await axiosInstance.post('/vendas', orderData);
@@ -301,6 +362,72 @@ export default function OrdersScreen() {
     }
 
     try {
+      // Agrupa principais e relacionais
+      const principais = cart.filter(
+        (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
+      );
+
+      // Numerador por ocorrência de cada codm principal
+      const ocorrenciaPorCodm = new Map<string, number>();
+      const itens = principais.flatMap((principal) => {
+        const atual = (ocorrenciaPorCodm.get(principal.codm || '') || 0) + 1;
+        ocorrenciaPorCodm.set(principal.codm || '', atual);
+        const chaveRelacional = `${String(atual).padStart(2, '0')}-${principal.codm || ''}`;
+        
+        const relacionais = cart.filter(
+          (item) =>
+            item.uuid_principal === principal.uuid &&
+            item.codm_status === 'M'
+        );
+
+        // Agrupar adicionais fracionados por codm e somar fractionQty
+        const fracionadosMap = new Map();
+        relacionais.forEach((rel: any) => {
+          if (rel.fractionQty !== undefined) {
+            if (!fracionadosMap.has(rel.codm)) {
+              fracionadosMap.set(rel.codm, { ...rel });
+            } else {
+              const existing = fracionadosMap.get(rel.codm);
+              existing.fractionQty = (existing.fractionQty ?? 0) + (rel.fractionQty ?? 0);
+            }
+          }
+        });
+        const fracionados = Array.from(fracionadosMap.values());
+        const naoFracionados = relacionais.filter((rel: any) => rel.fractionQty === undefined);
+
+        // Item principal
+        const temAdicionais = relacionais.length > 0;
+        const principalItem = {
+          codm: principal.codm || principal.id.toString(),
+          qtd: principal.quantidade,
+          obs: principal.observacao || '',
+          pv: principal.pv ?? 0,
+          ...(temAdicionais ? { codm_status: 'R' } : {}),
+        };
+
+        // Adicionais/relacionais
+        const adicionais = [
+          ...fracionados.map((ad: any) => ({
+            codm: ad.codm || ad.id.toString(),
+            qtd: ad.fractionQty,
+            obs: ad.observacao || '',
+            pv: ad.pv || ad.preco || 0,
+            codm_relacional: chaveRelacional,
+            codm_status: ad.codm_status || 'M',
+          })),
+          ...naoFracionados.map((ad: any) => ({
+            codm: ad.codm || ad.id.toString(),
+            qtd: ad.quantity || ad.quantidade || 1,
+            obs: ad.observacao || '',
+            pv: (ad.pv || ad.preco || 0) * (ad.quantity || ad.quantidade || 1),
+            codm_relacional: chaveRelacional,
+            codm_status: ad.codm_status || 'M',
+          })),
+        ];
+
+        return [principalItem, ...adicionais];
+      });
+
       const orderData = {
         cabecalho: {
           status_tp_venda: 'P',
@@ -312,14 +439,7 @@ export default function OrdersScreen() {
           nick: user.nick,
           obs: '',
         },
-        itens: cart.map((item) => ({
-          codm: (item.codm || item.id.toString()).trim(),
-          qtd: item.quantidade,
-          obs: item.observacao || '',
-          pv: item.pv || item.preco,
-          codm_status: item.codm_status || 'C',
-          codm_relacional: item.codm_relacional || undefined,
-        })),
+        itens,
       };
 
       await axiosInstance.post('/vendas', orderData);
@@ -384,7 +504,12 @@ export default function OrdersScreen() {
         <View style={styles.orderSection}>
           <View style={styles.orderHeader}>
             <Text style={styles.sectionTitle}>Pedido Atual</Text>
-            <Text style={styles.itemsCount}>{cart.length} itens</Text>
+            <Text style={styles.itemsCount}>
+              {cart.filter(
+                (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
+              ).length}{' '}
+              itens
+            </Text>
           </View>
 
           {cart.length === 0 ? (
@@ -394,63 +519,85 @@ export default function OrdersScreen() {
             </View>
           ) : (
             <FlatList
-              data={cart}
+              data={cart.filter(
+                (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
+              )}
               keyExtractor={(item) => item.uuid}
-              contentContainerStyle={{ paddingBottom: 150, flexGrow: 1 }}
+              contentContainerStyle={{ paddingBottom: 150 + Math.max(insets.bottom, 0), flexGrow: 1 }}
               showsVerticalScrollIndicator={true}
               style={{ flex: 1 }}
-              renderItem={({ item }) => (
-                <Card style={styles.cartItem}>
-                  <View style={styles.cartItemContent}>
-                    <TouchableOpacity
-                      style={styles.observationButton}
-                      onPress={() =>
-                        openObservationModal(
-                          item.uuid,
-                          item.nome,
-                          item.quantidade,
-                          item.observacao || ''
-                        )
-                      }
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons name="ellipsis-vertical" size={20} color={colors.textSecondary} />
-                    </TouchableOpacity>
-                    <View style={styles.cartItemInfo}>
-                      <Text style={styles.cartItemName}>{capitalizeFirstLetter(item.nome)}</Text>
-                      <Text style={styles.cartItemPrice}>
-                        {formatCurrency(item.preco)} x {item.quantidade}
-                      </Text>
-                      {item.observacao && (
-                        <Text style={styles.cartItemObservation}>
-                          Obs: {item.observacao}
+              renderItem={({ item: principal }) => {
+                const relacionais = cart.filter(
+                  (rel) => rel.uuid_principal === principal.uuid && rel.codm_status === 'M'
+                );
+                return (
+                  <Card style={styles.cartItem}>
+                    <View style={styles.cartItemContent}>
+                      <TouchableOpacity
+                        style={styles.observationButton}
+                        onPress={() =>
+                          openObservationModal(
+                            principal.uuid,
+                            principal.nome,
+                            principal.quantidade,
+                            principal.observacao || ''
+                          )
+                        }
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="ellipsis-vertical" size={20} color={colors.textSecondary} />
+                      </TouchableOpacity>
+                      <View style={styles.cartItemInfo}>
+                        <Text style={styles.cartItemName}>
+                          {capitalizeFirstLetter(principal.nome)}
                         </Text>
-                      )}
+                        <Text style={styles.cartItemPrice}>
+                          {formatCurrency(principal.preco)} x {principal.quantidade}
+                        </Text>
+                        {relacionais.length > 0 && (
+                          <View style={{ marginTop: 8 }}>
+                            {relacionais.map((rel, idx) => (
+                              <Text
+                                key={rel.uuid || idx}
+                                style={[styles.cartItemObservation, { marginLeft: 8 }]}
+                              >
+                                + {rel.fractionLabel || `${rel.quantity || rel.quantidade}x`}{' '}
+                                {capitalizeFirstLetter(rel.nome)}
+                              </Text>
+                            ))}
+                          </View>
+                        )}
+                        {principal.observacao && (
+                          <Text style={styles.cartItemObservation}>
+                            Obs: {principal.observacao}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={styles.cartItemControls}>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() => handleQuantityChange(principal.uuid, -1)}
+                        >
+                          <Ionicons name="remove" size={20} color={colors.text} />
+                        </TouchableOpacity>
+                        <Text style={styles.quantityText}>{principal.quantidade}</Text>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() => handleQuantityChange(principal.uuid, 1)}
+                        >
+                          <Ionicons name="add" size={20} color={colors.text} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={() => removeFromCart(principal.uuid)}
+                        >
+                          <Ionicons name="trash-outline" size={20} color={colors.error} />
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                    <View style={styles.cartItemControls}>
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => handleQuantityChange(item.uuid, -1)}
-                      >
-                        <Ionicons name="remove" size={20} color={colors.text} />
-                      </TouchableOpacity>
-                      <Text style={styles.quantityText}>{item.quantidade}</Text>
-                      <TouchableOpacity
-                        style={styles.quantityButton}
-                        onPress={() => handleQuantityChange(item.uuid, 1)}
-                      >
-                        <Ionicons name="add" size={20} color={colors.text} />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={() => removeFromCart(item.uuid)}
-                      >
-                        <Ionicons name="trash-outline" size={20} color={colors.error} />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Card>
-              )}
+                  </Card>
+                );
+              }}
             />
           )}
 
@@ -464,7 +611,7 @@ export default function OrdersScreen() {
       </View>
 
       {cart.length > 0 && (
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <Button
             title={`Enviar Pedido - ${formatCurrency(getTotal())}`}
             onPress={handleSendOrder}

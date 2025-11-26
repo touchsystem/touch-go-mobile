@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LoginForm } from '../components/login/LoginForm';
 import { ServerConfigButton } from '../components/login/ServerConfigButton';
@@ -15,7 +16,7 @@ import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function LoginScreen() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   const themedStyles = StyleSheet.create({
     container: {
@@ -32,7 +33,7 @@ export default function LoginScreen() {
     header: {
       flexDirection: 'row',
       justifyContent: 'flex-end',
-      paddingTop: 40,
+      paddingTop: 10,
       paddingHorizontal: 20,
     },
     title: {
@@ -93,44 +94,57 @@ export default function LoginScreen() {
   });
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={themedStyles.container}
-    >
-      <View style={themedStyles.header}>
-        <ThemeToggle />
-      </View>
-      <ScrollView contentContainerStyle={themedStyles.scrollContent}>
-        <View style={themedStyles.content}>
-          <View style={themedStyles.iconContainer}>
-            <View style={themedStyles.iconCircle}>
-              <Ionicons name="restaurant" size={48} color={colors.text} />
-            </View>
-            <Text style={themedStyles.welcomeText}>EatzGo Mobile</Text>
-            <Text style={themedStyles.subtitle}>Faça login para acessar o sistema</Text>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeAreaView 
+        style={[themedStyles.container, { backgroundColor: colors.background }]} 
+        edges={['top', 'bottom']}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1, backgroundColor: colors.background }}
+        >
+          <View style={themedStyles.header}>
+            <ThemeToggle />
           </View>
+          <ScrollView 
+            contentContainerStyle={themedStyles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            style={{ backgroundColor: colors.background }}
+          >
+            <View style={themedStyles.content}>
+            <View style={themedStyles.iconContainer}>
+              <View style={themedStyles.iconCircle}>
+                <Ionicons name="restaurant" size={48} color={colors.text} />
+              </View>
+              <Text style={themedStyles.welcomeText}>EatzGo Mobile</Text>
+              <Text style={themedStyles.subtitle}>Faça login para acessar o sistema</Text>
+            </View>
 
-          <LoginForm />
+            <LoginForm />
 
-          <View style={themedStyles.supportSection}>
-            <Text style={themedStyles.supportText}>
-              Problemas para acessar? Entre em contato com o administrador
-            </Text>
-            <View style={themedStyles.supportButtons}>
-              <TouchableOpacity style={themedStyles.supportButton}>
-                <Ionicons name="call-outline" size={18} color={colors.icon} />
-                <Text style={themedStyles.supportButtonText}>Suporte</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={themedStyles.supportButton}>
-                <Ionicons name="help-circle-outline" size={18} color={colors.icon} />
-                <Text style={themedStyles.supportButtonText}>Ajuda</Text>
-              </TouchableOpacity>
+            <View style={themedStyles.supportSection}>
+              <Text style={themedStyles.supportText}>
+                Problemas para acessar? Entre em contato com o administrador
+              </Text>
+              <View style={themedStyles.supportButtons}>
+                <TouchableOpacity style={themedStyles.supportButton}>
+                  <Ionicons name="call-outline" size={18} color={colors.icon} />
+                  <Text style={themedStyles.supportButtonText}>Suporte</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={themedStyles.supportButton}>
+                  <Ionicons name="help-circle-outline" size={18} color={colors.icon} />
+                  <Text style={themedStyles.supportButtonText}>Ajuda</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={{ marginBottom: 20 }}>
+              <ServerConfigButton />
             </View>
           </View>
-
-          <ServerConfigButton />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }

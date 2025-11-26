@@ -47,7 +47,42 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToCart = (item: Omit<CartItem, 'uuid' | 'quantidade'>) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
+      // Se o item tem relacionais, adiciona o principal e os relacionais
+      if ((item as any).relacionais && Array.isArray((item as any).relacionais)) {
+        const uuidPrincipal = (item as any).uuid || `${item.id}-${Date.now()}`;
+        const principal: CartItem = {
+          ...item,
+          uuid: uuidPrincipal,
+          quantidade: 1,
+          codm_status: (item as any).codm_status || 'R',
+        };
+        
+        const relacionais: CartItem[] = ((item as any).relacionais || []).map((rel: any) => ({
+          uuid: rel.uuid || `${rel.id || rel.codm}-${Date.now()}`,
+          id: rel.id || parseInt(rel.codm || '0') || 0,
+          nome: rel.nomeProduto || rel.nome || rel.des2 || 'Produto Relacional',
+          descricao: rel.descricao || '',
+          preco: rel.pv || rel.precoVenda || 0,
+          quantidade: rel.quantity || rel.fractionQty || 1,
+          codm: rel.codm || '',
+          pv: rel.pv || rel.precoVenda || 0,
+          codm_status: rel.codm_status || 'M',
+          codm_relacional: rel.codm_relacional || principal.codm,
+          uuid_principal: uuidPrincipal,
+          fractionQty: rel.fractionQty,
+          fractionLabel: rel.fractionLabel,
+          quantity: rel.quantity,
+        }));
+
+        return [...prevCart, principal, ...relacionais];
+      }
+
+      // Item normal sem relacionais
+      const existingItem = prevCart.find((cartItem) => 
+        cartItem.id === item.id && 
+        !cartItem.uuid_principal && 
+        !cartItem.codm_relacional
+      );
       if (existingItem) {
         return prevCart.map((cartItem) =>
           cartItem.uuid === existingItem.uuid
@@ -91,7 +126,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const removeFromCart = (uuid: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.uuid !== uuid));
+    setCart((prevCart) => {
+      // Remove o item principal e todos os seus relacionais
+      return prevCart.filter(
+        (item) => item.uuid !== uuid && item.uuid_principal !== uuid
+      );
+    });
   };
 
   const clearCart = () => {
@@ -99,9 +139,65 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getTotal = (): number => {
-    return cart.reduce((total, item) => {
-      const price = item.pv || item.preco;
-      return total + price * item.quantidade;
+    // Agrupa principais e relacionais
+    const principais = cart.filter(
+      (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
+    );
+
+    return principais.reduce((total, principal) => {
+      const relacionais = cart.filter(
+        (item) => item.uuid_principal === principal.uuid && item.codm_status === 'M'
+      );
+
+      let valorPrincipal = (principal.pv || principal.preco || 0) * principal.quantidade;
+
+      // Calcula valor dos relacionais
+      if (relacionais.length > 0) {
+        const hasFractionals = relacionais.some(
+          (rel) => typeof rel.fractionQty === 'number' || rel.fractionLabel
+        );
+
+        if (hasFractionals) {
+          // Verifica se está no modo SOMA ou MAIOR PREÇO
+          const positives = relacionais.filter((rel) => {
+            const price = rel.pv || rel.preco || 0;
+            return (typeof rel.fractionQty === 'number' || rel.fractionLabel) && price > 0;
+          }).length;
+
+          if (positives > 1) {
+            // Modo SOMA: soma todas as frações
+            const fractionalTotal = relacionais.reduce((sum: number, rel: any) => {
+              if (typeof rel.fractionQty === 'number' || rel.fractionLabel) {
+                if (rel.pv && rel.pv > 0) {
+                  return sum + rel.pv;
+                }
+                const priceUnit = rel.pv || rel.preco || 0;
+                const fraction = rel.fractionQty ?? 1;
+                return sum + priceUnit * fraction;
+              }
+              return sum;
+            }, 0);
+            valorPrincipal += fractionalTotal * principal.quantidade;
+          } else {
+            // Modo MAIOR PREÇO: usa apenas o maior preço
+            const unitMaxPrice = relacionais.reduce((m: number, rel: any) => {
+              const price = rel.pv || rel.preco || 0;
+              return price > m ? price : m;
+            }, 0);
+            valorPrincipal += unitMaxPrice * principal.quantidade;
+          }
+        } else {
+          // Relacionais normais (não fracionados)
+          const relacionaisTotal = relacionais.reduce((sum, rel) => {
+            const price = rel.pv || rel.preco || 0;
+            const qty = rel.quantity || rel.quantidade || 1;
+            return sum + price * qty;
+          }, 0);
+          valorPrincipal += relacionaisTotal * principal.quantidade;
+        }
+      }
+
+      return total + valorPrincipal;
     }, 0);
   };
 
