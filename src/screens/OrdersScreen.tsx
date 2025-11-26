@@ -19,17 +19,25 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { TableMapModal } from '../components/ui/TableMapModal';
+import { OrderItemModal } from '../components/ui/OrderItemModal';
 import { Table as TableType } from '../hooks/useTables';
 import axiosInstance from '../services/api';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function OrdersScreen() {
-  const { cart, updateQuantity, removeFromCart, getTotal, clearCart } = useCart();
+  const { cart, updateQuantity, updateCartItem, removeFromCart, getTotal, clearCart } = useCart();
   const { selectedTable, setSelectedTable } = useTable();
   const { user } = useAuth();
   const [isTableMapVisible, setIsTableMapVisible] = useState(false);
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
+  const [isOrderItemModalVisible, setIsOrderItemModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{
+    uuid: string;
+    name: string;
+    quantity: number;
+    observation: string;
+  } | null>(null);
   const router = useRouter();
   const { colors, isDark } = useTheme();
 
@@ -105,16 +113,22 @@ export default function OrdersScreen() {
         },
         cartItemContent: {
           flexDirection: 'row',
-          justifyContent: 'space-between',
           alignItems: 'center',
+          gap: 12,
+        },
+        observationButton: {
+          padding: 4,
         },
         cartItemInfo: {
           flex: 1,
+          flexShrink: 1,
         },
         cartItemControls: {
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 12,
+          justifyContent: 'center',
+          gap: 6,
+          flexShrink: 0,
         },
         cartItemName: {
           fontSize: 16,
@@ -125,6 +139,12 @@ export default function OrdersScreen() {
         cartItemPrice: {
           fontSize: 14,
           color: colors.textSecondary,
+        },
+        cartItemObservation: {
+          fontSize: 12,
+          color: colors.textSecondary,
+          fontStyle: 'italic',
+          marginTop: 4,
         },
         quantityText: {
           fontSize: 16,
@@ -245,6 +265,24 @@ export default function OrdersScreen() {
     }
   };
 
+  const openObservationModal = (
+    uuid: string,
+    itemName: string,
+    quantity: number,
+    observation: string
+  ) => {
+    setSelectedItem({ uuid, name: itemName, quantity, observation });
+    setIsOrderItemModalVisible(true);
+  };
+
+  const saveObservation = (newQuantity: number, newObservation: string) => {
+    if (selectedItem) {
+      updateCartItem(selectedItem.uuid, newQuantity, newObservation);
+    }
+    setSelectedItem(null);
+    setIsOrderItemModalVisible(false);
+  };
+
   const handleSendOrder = async () => {
     if (cart.length === 0) {
       Alert.alert('Erro', 'Adicione itens ao pedido');
@@ -329,6 +367,20 @@ export default function OrdersScreen() {
           />
         )}
 
+        {isOrderItemModalVisible && selectedItem && (
+          <OrderItemModal
+            visible={isOrderItemModalVisible}
+            itemName={selectedItem.name}
+            currentObservation={selectedItem.observation}
+            currentQuantity={selectedItem.quantity}
+            onClose={() => {
+              setIsOrderItemModalVisible(false);
+              setSelectedItem(null);
+            }}
+            onSave={saveObservation}
+          />
+        )}
+
         <View style={styles.orderSection}>
           <View style={styles.orderHeader}>
             <Text style={styles.sectionTitle}>Pedido Atual</Text>
@@ -350,11 +402,30 @@ export default function OrdersScreen() {
               renderItem={({ item }) => (
                 <Card style={styles.cartItem}>
                   <View style={styles.cartItemContent}>
+                    <TouchableOpacity
+                      style={styles.observationButton}
+                      onPress={() =>
+                        openObservationModal(
+                          item.uuid,
+                          item.nome,
+                          item.quantidade,
+                          item.observacao || ''
+                        )
+                      }
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="ellipsis-vertical" size={20} color={colors.textSecondary} />
+                    </TouchableOpacity>
                     <View style={styles.cartItemInfo}>
                       <Text style={styles.cartItemName}>{capitalizeFirstLetter(item.nome)}</Text>
                       <Text style={styles.cartItemPrice}>
-                        {formatCurrency(item.preco)}
+                        {formatCurrency(item.preco)} x {item.quantidade}
                       </Text>
+                      {item.observacao && (
+                        <Text style={styles.cartItemObservation}>
+                          Obs: {item.observacao}
+                        </Text>
+                      )}
                     </View>
                     <View style={styles.cartItemControls}>
                       <TouchableOpacity

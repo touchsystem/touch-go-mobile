@@ -6,6 +6,7 @@ interface CartContextType {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, 'uuid' | 'quantidade'>) => void;
   updateQuantity: (uuid: string, quantity: number) => void;
+  updateCartItem: (uuid: string, quantity: number, observation?: string) => void;
   removeFromCart: (uuid: string) => void;
   clearCart: () => void;
   getTotal: () => number;
@@ -75,6 +76,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const updateCartItem = (uuid: string, quantity: number, observation?: string) => {
+    if (quantity <= 0) {
+      removeFromCart(uuid);
+      return;
+    }
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.uuid === uuid
+          ? { ...item, quantidade: quantity, observacao: observation || item.observacao }
+          : item
+      )
+    );
+  };
+
   const removeFromCart = (uuid: string) => {
     setCart((prevCart) => prevCart.filter((item) => item.uuid !== uuid));
   };
@@ -84,7 +99,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getTotal = (): number => {
-    return cart.reduce((total, item) => total + item.preco * item.quantidade, 0);
+    return cart.reduce((total, item) => {
+      const price = item.pv || item.preco;
+      return total + price * item.quantidade;
+    }, 0);
   };
 
   const getTotalItems = (): number => {
@@ -97,6 +115,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         cart,
         addToCart,
         updateQuantity,
+        updateCartItem,
         removeFromCart,
         clearCart,
         getTotal,
