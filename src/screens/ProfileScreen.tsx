@@ -163,6 +163,17 @@ export default function ProfileScreen() {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const getLevelName = (level: number): string => {
+    const levelNames: Record<number, string> = {
+      1: 'Garçom',
+      2: 'Caixa',
+      3: 'Supervisor',
+      4: 'Gerente',
+      5: 'Administrador',
+    };
+    return levelNames[level] || `Nível ${level}`;
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -200,7 +211,7 @@ export default function ProfileScreen() {
 
           <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
             <Text style={styles.infoLabel}>Nível de Acesso</Text>
-            <Text style={styles.infoValue}>{user?.nivel || 0}</Text>
+            <Text style={styles.infoValue}>{getLevelName(user?.nivel || 0)}</Text>
           </View>
         </Card>
 
