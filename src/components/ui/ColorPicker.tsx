@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
   colorsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: 12,
     marginBottom: 8,
   },
