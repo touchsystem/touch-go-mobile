@@ -1,46 +1,49 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { Modal } from './Modal';
-import { Button } from './Button';
-import { useTheme } from '../../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import { formatCurrency, capitalizeFirstLetter } from '../../utils/format';
-import { RelationalGroup } from '../../hooks/useRelationalGroups';
-import api from '../../services/api';
-
-interface ProductOptionsModalProps {
-  visible: boolean;
-  produto: any;
-  grupos: RelationalGroup[];
-  onClose: () => void;
-  onConfirm: (produtoComOpcoes: any) => void;
-}
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  SafeAreaView,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useTheme } from '../../src/contexts/ThemeContext';
+import { RelationalGroup } from '../../src/hooks/useRelationalGroups';
+import api from '../../src/services/api';
+import { capitalizeFirstLetter, formatCurrency } from '../../src/utils/format';
+import { Button } from '../../src/components/ui/Button';
+import { useCart } from '../../src/contexts/CartContext';
 
 function generateUUID() {
   return Math.random().toString(36).substring(2, 15) + Date.now();
 }
 
-export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
-  visible,
-  produto,
-  grupos,
-  onClose,
-  onConfirm,
-}) => {
+export default function ProductOptionsScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ produto?: string; grupos?: string }>();
   const { colors, isDark } = useTheme();
+  const { addToCart } = useCart();
+  const insets = useSafeAreaInsets();
+  
   const [selected, setSelected] = useState<{ [groupId: number]: any[] | any }>({});
   const [parameters, setParameters] = useState<any[]>([]);
   const [loadingParams, setLoadingParams] = useState(false);
 
+  const produto = useMemo(() => {
+    return params.produto ? JSON.parse(params.produto) : null;
+  }, [params.produto]);
+
+  const grupos: RelationalGroup[] = useMemo(() => {
+    return params.grupos ? JSON.parse(params.grupos) : [];
+  }, [params.grupos]);
+
   useEffect(() => {
+    if (!params.produto) return;
+    
     const fetchParameters = async () => {
       try {
         setLoadingParams(true);
@@ -52,17 +55,19 @@ export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
         setLoadingParams(false);
       }
     };
-    if (visible) {
-      fetchParameters();
-      setSelected({});
-    }
-  }, [visible]);
+    
+    fetchParameters();
+    setSelected({});
+  }, [params.produto]);
 
   const total = useMemo(() => {
     const fractionalPriceParam = parameters.find((p: any) => p.id === 44);
     const useFractionalMaxPrice = fractionalPriceParam?.status === 'S';
 
     let sum = produto?.pv ?? 0;
+    if (isNaN(sum) || sum === null || sum === undefined) {
+      sum = 0;
+    }
 
     grupos.forEach((grupo: RelationalGroup) => {
       const sel = selected[grupo.grupo.id];
@@ -72,7 +77,6 @@ export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
         grupo.grupo.max > 1 &&
         Array.isArray(sel)
       ) {
-        // Pizza fracionada
         const selectedItems = sel.filter((i: any) => (i._qty ?? 0) > 0);
         if (useFractionalMaxPrice) {
           const maxPrice = selectedItems.reduce(
@@ -127,7 +131,7 @@ export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
       }
     });
 
-    return sum;
+    return isNaN(sum) || sum === null || sum === undefined ? 0 : Number(sum);
   }, [selected, grupos, produto, parameters]);
 
   const handleSelect = (grupo: RelationalGroup, item: any, op: 'inc' | 'dec' = 'inc') => {
@@ -276,29 +280,42 @@ export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
       }
     });
 
-    onConfirm({
+    const produtoCompleto = {
       ...produto,
       opcoesSelecionadas,
       relacionais,
       uuid: uuidPrincipal,
-    });
+    };
+
+    addToCart(produtoCompleto);
+    router.replace('/(tabs)/orders');
   };
 
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        modalContent: {
-          backgroundColor: colors.surface,
-          borderRadius: 16,
-          padding: 20,
-          width: '100%',
-          maxHeight: '100%',
+        container: {
+          flex: 1,
+          backgroundColor: colors.background,
         },
         header: {
-          marginBottom: 20,
-          paddingBottom: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 20,
+          paddingTop: Math.max(insets.top, 10),
+          backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
+        },
+        headerTitle: {
+          fontSize: 18,
+          fontWeight: '600',
+          color: colors.text,
+        },
+        content: {
+          flex: 1,
+          padding: 20,
         },
         title: {
           fontSize: 20,
@@ -310,6 +327,7 @@ export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
           fontSize: 16,
           fontWeight: '600',
           color: colors.textSecondary,
+          marginBottom: 20,
         },
         groupContainer: {
           marginBottom: 24,
@@ -345,6 +363,16 @@ export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
           borderRadius: 4,
         },
         itemContainer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingVertical: 12,
+          paddingHorizontal: 4,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          minHeight: 56,
+        },
+        itemContainerTouchable: {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -438,33 +466,21 @@ export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
           flexDirection: 'row',
           justifyContent: 'space-between',
           gap: 12,
-          marginTop: 16,
-          paddingTop: 16,
+          padding: 20,
+          paddingBottom: Math.max(insets.bottom, 20),
           borderTopWidth: 1,
           borderTopColor: colors.border,
-        },
-        totalText: {
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: colors.text,
+          backgroundColor: colors.surface,
         },
         loadingContainer: {
           padding: 20,
           alignItems: 'center',
         },
-        scrollView: {
-          flexGrow: 0,
-          maxHeight: 450,
-        },
         scrollContent: {
-          paddingBottom: 10,
-          flexGrow: 0,
-        },
-        groupContainer: {
-          marginBottom: 24,
+          paddingBottom: 20,
         },
       }),
-    [colors]
+    [colors, insets]
   );
 
   const selectedRelacionais = useMemo(() => {
@@ -502,259 +518,276 @@ export const ProductOptionsModal: React.FC<ProductOptionsModalProps> = ({
     return relacionaisSelecionados;
   }, [selected, grupos]);
 
-  return (
-    <Modal visible={visible} onClose={onClose}>
-      <View style={styles.modalContent}>
+  if (!produto || grupos.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Selecionar Opções</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text style={{ color: colors.text }}>Carregando...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Selecionar Opções</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
+      >
+        <View style={styles.content}>
           <Text style={styles.title}>Selecionar Opções</Text>
           <Text style={styles.productName}>
             {capitalizeFirstLetter(produto?.des2 || produto?.nome || 'Produto')}
           </Text>
-        </View>
 
-        {loadingParams ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color={colors.primary} />
-          </View>
-        ) : (
-          <ScrollView 
-            style={styles.scrollView} 
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={true}
-            nestedScrollEnabled={false}
-            bounces={true}
-            keyboardShouldPersistTaps="handled"
-            scrollEventThrottle={16}
-            scrollEnabled={true}
-            removeClippedSubviews={false}
-            decelerationRate="normal"
-            overScrollMode="auto"
-          >
-            {grupos.map((grupo: RelationalGroup) => {
-              const sel = selected[grupo.grupo.id];
-              const isFracionado =
-                grupo.grupo.min === grupo.grupo.max &&
-                grupo.grupo.max !== undefined &&
-                grupo.grupo.max > 1;
+          {loadingParams ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          ) : (
+            <>
+              {grupos.map((grupo: RelationalGroup) => {
+                const sel = selected[grupo.grupo.id];
+                const isFracionado =
+                  grupo.grupo.min === grupo.grupo.max &&
+                  grupo.grupo.max !== undefined &&
+                  grupo.grupo.max > 1;
 
-              return (
-                <View key={grupo.grupo.id} style={styles.groupContainer}>
-                  <View style={styles.groupHeader}>
-                    <Text style={styles.groupTitle}>
-                      {capitalizeFirstLetter(grupo.grupo.nome)}
-                    </Text>
-                    {grupo.grupo.min && (
-                      <Text style={styles.groupBadge}>(mínimo {grupo.grupo.min})</Text>
-                    )}
-                    {grupo.grupo.max && (
-                      <Text style={styles.groupInfo}>
-                        {grupo.grupo.max === 1
-                          ? 'Escolha 1'
-                          : `Escolha até ${grupo.grupo.max}`}
+                return (
+                  <View
+                    key={grupo.grupo.id}
+                    style={styles.groupContainer}
+                  >
+                    <View style={styles.groupHeader}>
+                      <Text style={styles.groupTitle}>
+                        {capitalizeFirstLetter(grupo.grupo.nome)}
                       </Text>
-                    )}
-                    {grupo.grupo.obrigatorio && (
-                      <View style={styles.requiredBadge}>
-                        <Text style={{ color: colors.error, fontSize: 10 }}>OBRIGATÓRIO</Text>
-                      </View>
+                      {grupo.grupo.min && (
+                        <Text style={styles.groupBadge}>(mínimo {grupo.grupo.min})</Text>
+                      )}
+                      {grupo.grupo.max && (
+                        <Text style={styles.groupInfo}>
+                          {grupo.grupo.max === 1
+                            ? 'Escolha 1'
+                            : `Escolha até ${grupo.grupo.max}`}
+                        </Text>
+                      )}
+                      {grupo.grupo.obrigatorio && (
+                        <View style={styles.requiredBadge}>
+                          <Text style={{ color: colors.error, fontSize: 10 }}>OBRIGATÓRIO</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {grupo.grupo.tipo === '2' ? (
+                      grupo.itens.map((item: any) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          style={styles.itemContainerTouchable}
+                          onPress={() => handleSelect(grupo, item)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.itemInfo}>
+                            <Text style={styles.itemName}>
+                              {capitalizeFirstLetter(item.nomeProduto)}
+                            </Text>
+                            {item.descricao && (
+                              <Text style={styles.itemDescription}>{item.descricao}</Text>
+                            )}
+                            <Text style={styles.itemPrice}>
+                              {formatCurrency(item.precoVenda ?? 0)}
+                            </Text>
+                          </View>
+                          <View style={styles.radioButton}>
+                            {sel?.id === item.id && (
+                              <View style={styles.radioButtonSelected} />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      ))
+                    ) : isFracionado ? (
+                      grupo.itens.map((item: any) => {
+                        const current = Array.isArray(sel) ? sel : [];
+                        const found = current.find((i: any) => i.id === item.id);
+                        const qty = found?._qty ?? 0;
+                        const totalQty = current.reduce(
+                          (acc: number, i: any) => acc + (i._qty ?? 0),
+                          0
+                        );
+
+                        return (
+                          <View
+                            key={item.id}
+                            style={styles.itemContainer}
+                          >
+                            <View style={styles.itemInfo}>
+                              <Text style={styles.itemName}>
+                                {capitalizeFirstLetter(item.nomeProduto)}
+                              </Text>
+                              <Text style={styles.itemPrice}>
+                                {formatCurrency(item.precoVenda ?? 0)}
+                              </Text>
+                            </View>
+                            <View style={styles.quantityControls}>
+                              <TouchableOpacity
+                                style={[styles.quantityButton, qty <= 0 && styles.quantityButtonDisabled]}
+                                onPress={() => handleSelect(grupo, item, 'dec')}
+                                disabled={qty <= 0}
+                                activeOpacity={0.7}
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                              >
+                                <Ionicons
+                                  name="remove"
+                                  size={16}
+                                  color={qty <= 0 ? colors.textSecondary : colors.primary}
+                                />
+                              </TouchableOpacity>
+                              <Text style={styles.quantityText}>
+                                {qty > 0 ? `${qty}/${grupo.grupo.max}` : '0'}
+                              </Text>
+                              <TouchableOpacity
+                                style={[
+                                  styles.quantityButton,
+                                  grupo.grupo.max !== undefined && totalQty >= grupo.grupo.max && styles.quantityButtonDisabled
+                                ]}
+                                onPress={() => handleSelect(grupo, item, 'inc')}
+                                disabled={
+                                  grupo.grupo.max !== undefined &&
+                                  totalQty >= grupo.grupo.max
+                                }
+                                activeOpacity={0.7}
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                              >
+                                <Ionicons
+                                  name="add"
+                                  size={16}
+                                  color={
+                                    grupo.grupo.max !== undefined && totalQty >= grupo.grupo.max
+                                      ? colors.textSecondary
+                                      : colors.primary
+                                  }
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        );
+                      })
+                    ) : (
+                      grupo.itens.map((item: any) => {
+                        const current = Array.isArray(sel) ? sel : [];
+                        const found = current.find((i: any) => i.id === item.id);
+                        const qty = found?._qty ?? 0;
+                        const totalQty = current.reduce(
+                          (acc: number, i: any) => acc + (i._qty ?? 0),
+                          0
+                        );
+
+                        return (
+                          <View key={item.id} style={styles.itemContainer}>
+                            <View style={styles.itemInfo}>
+                              <Text style={styles.itemName}>
+                                {capitalizeFirstLetter(item.nomeProduto)}
+                              </Text>
+                              <Text style={styles.itemPrice}>
+                                {formatCurrency(item.precoVenda ?? 0)}
+                              </Text>
+                            </View>
+                            <View style={styles.quantityControls}>
+                              <TouchableOpacity
+                                style={[styles.quantityButton, qty <= 0 && styles.quantityButtonDisabled]}
+                                onPress={() => handleSelect(grupo, item, 'dec')}
+                                disabled={qty <= 0}
+                                activeOpacity={0.7}
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                              >
+                                <Ionicons
+                                  name="remove"
+                                  size={16}
+                                  color={qty <= 0 ? colors.textSecondary : colors.primary}
+                                />
+                              </TouchableOpacity>
+                              <Text style={styles.quantityText}>{qty}</Text>
+                              <TouchableOpacity
+                                style={[
+                                  styles.quantityButton,
+                                  grupo.grupo.max !== undefined && totalQty >= grupo.grupo.max && styles.quantityButtonDisabled
+                                ]}
+                                onPress={() => handleSelect(grupo, item, 'inc')}
+                                disabled={
+                                  grupo.grupo.max !== undefined &&
+                                  totalQty >= grupo.grupo.max
+                                }
+                                activeOpacity={0.7}
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                              >
+                                <Ionicons
+                                  name="add"
+                                  size={16}
+                                  color={
+                                    grupo.grupo.max !== undefined && totalQty >= grupo.grupo.max
+                                      ? colors.textSecondary
+                                      : colors.primary
+                                  }
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        );
+                      })
                     )}
                   </View>
+                );
+              })}
 
-                  {grupo.grupo.tipo === '2' ? (
-                    // Radio button (escolha única)
-                    grupo.itens.map((item: any) => (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={styles.itemContainer}
-                        onPress={() => handleSelect(grupo, item)}
-                        activeOpacity={0.7}
-                        delayPressIn={100}
-                      >
-                        <View style={styles.itemInfo}>
-                          <Text style={styles.itemName}>
-                            {capitalizeFirstLetter(item.nomeProduto)}
-                          </Text>
-                          {item.descricao && (
-                            <Text style={styles.itemDescription}>{item.descricao}</Text>
-                          )}
-                          <Text style={styles.itemPrice}>
-                            {formatCurrency(item.precoVenda ?? 0)}
-                          </Text>
-                        </View>
-                        <View style={styles.radioButton}>
-                          {sel?.id === item.id && (
-                            <View style={styles.radioButtonSelected} />
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                    ))
-                  ) : isFracionado ? (
-                    // Quantidade fracionada
-                    grupo.itens.map((item: any) => {
-                      const current = Array.isArray(sel) ? sel : [];
-                      const found = current.find((i: any) => i.id === item.id);
-                      const qty = found?._qty ?? 0;
-                      const totalQty = current.reduce(
-                        (acc: number, i: any) => acc + (i._qty ?? 0),
-                        0
-                      );
-
-                      return (
-                        <View key={item.id} style={styles.itemContainer}>
-                          <View style={styles.itemInfo}>
-                            <Text style={styles.itemName}>
-                              {capitalizeFirstLetter(item.nomeProduto)}
-                            </Text>
-                            <Text style={styles.itemPrice}>
-                              {formatCurrency(item.precoVenda ?? 0)}
-                            </Text>
-                          </View>
-                          <View style={styles.quantityControls}>
-                            <TouchableOpacity
-                              style={[styles.quantityButton, qty <= 0 && styles.quantityButtonDisabled]}
-                              onPress={() => handleSelect(grupo, item, 'dec')}
-                              disabled={qty <= 0}
-                              activeOpacity={0.7}
-                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                              delayPressIn={50}
-                            >
-                              <Ionicons
-                                name="remove"
-                                size={16}
-                                color={qty <= 0 ? colors.textSecondary : colors.primary}
-                              />
-                            </TouchableOpacity>
-                            <Text style={styles.quantityText}>
-                              {qty > 0 ? `${qty}/${grupo.grupo.max}` : '0'}
-                            </Text>
-                            <TouchableOpacity
-                              style={[
-                                styles.quantityButton,
-                                grupo.grupo.max !== undefined && totalQty >= grupo.grupo.max && styles.quantityButtonDisabled
-                              ]}
-                              onPress={() => handleSelect(grupo, item, 'inc')}
-                              disabled={
-                                grupo.grupo.max !== undefined &&
-                                totalQty >= grupo.grupo.max
-                              }
-                              activeOpacity={0.7}
-                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                              delayPressIn={50}
-                            >
-                              <Ionicons
-                                name="add"
-                                size={16}
-                                color={
-                                  grupo.grupo.max !== undefined && totalQty >= grupo.grupo.max
-                                    ? colors.textSecondary
-                                    : colors.primary
-                                }
-                              />
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      );
-                    })
-                  ) : (
-                    // Quantidade normal
-                    grupo.itens.map((item: any) => {
-                      const current = Array.isArray(sel) ? sel : [];
-                      const found = current.find((i: any) => i.id === item.id);
-                      const qty = found?._qty ?? 0;
-                      const totalQty = current.reduce(
-                        (acc: number, i: any) => acc + (i._qty ?? 0),
-                        0
-                      );
-
-                      return (
-                        <View key={item.id} style={styles.itemContainer}>
-                          <View style={styles.itemInfo}>
-                            <Text style={styles.itemName}>
-                              {capitalizeFirstLetter(item.nomeProduto)}
-                            </Text>
-                            <Text style={styles.itemPrice}>
-                              {formatCurrency(item.precoVenda ?? 0)}
-                            </Text>
-                          </View>
-                          <View style={styles.quantityControls}>
-                            <TouchableOpacity
-                              style={[styles.quantityButton, qty <= 0 && styles.quantityButtonDisabled]}
-                              onPress={() => handleSelect(grupo, item, 'dec')}
-                              disabled={qty <= 0}
-                              activeOpacity={0.7}
-                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                              delayPressIn={50}
-                            >
-                              <Ionicons
-                                name="remove"
-                                size={16}
-                                color={qty <= 0 ? colors.textSecondary : colors.primary}
-                              />
-                            </TouchableOpacity>
-                            <Text style={styles.quantityText}>{qty}</Text>
-                            <TouchableOpacity
-                              style={[
-                                styles.quantityButton,
-                                grupo.grupo.max !== undefined && totalQty >= grupo.grupo.max && styles.quantityButtonDisabled
-                              ]}
-                              onPress={() => handleSelect(grupo, item, 'inc')}
-                              disabled={
-                                grupo.grupo.max !== undefined &&
-                                totalQty >= grupo.grupo.max
-                              }
-                              activeOpacity={0.7}
-                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                              delayPressIn={50}
-                            >
-                              <Ionicons
-                                name="add"
-                                size={16}
-                                color={
-                                  grupo.grupo.max !== undefined && totalQty >= grupo.grupo.max
-                                    ? colors.textSecondary
-                                    : colors.primary
-                                }
-                              />
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      );
-                    })
-                  )}
-                </View>
-              );
-            })}
-
-            {selectedRelacionais.length > 0 && (
-              <View style={styles.summaryContainer}>
-                <Text style={styles.summaryTitle}>Adicionais selecionados:</Text>
-                {selectedRelacionais.map((ad, idx) => (
-                  <Text key={idx} style={styles.summaryItem}>
-                    {ad.fractionLabel
-                      ? `${ad.fractionLabel}x ${capitalizeFirstLetter(
+              {selectedRelacionais.length > 0 && (
+                <View style={styles.summaryContainer}>
+                  <Text style={styles.summaryTitle}>Adicionais selecionados:</Text>
+                  {selectedRelacionais.map((ad, idx) => (
+                    <Text key={idx} style={styles.summaryItem}>
+                      {ad.fractionLabel
+                        ? `${ad.fractionLabel}x ${capitalizeFirstLetter(
                           ad.nomeProduto || ad.des2 || ad.codm
                         )}`
-                      : `${ad.quantity}x ${capitalizeFirstLetter(
+                        : `${ad.quantity}x ${capitalizeFirstLetter(
                           ad.nomeProduto || ad.des2 || ad.codm
                         )}`}
-                  </Text>
-                ))}
-              </View>
-            )}
-          </ScrollView>
-        )}
-
-        <View style={styles.footer}>
-          <Button title="Cancelar" variant="outline" onPress={onClose} style={{ flex: 1 }} />
-          <Button
-            title={`Adicionar ${total > 0 ? formatCurrency(total) : ''}`}
-            onPress={handleConfirm}
-            disabled={!isValid || loadingParams}
-            style={{ flex: 1 }}
-          />
+                    </Text>
+                  ))}
+                </View>
+              )}
+            </>
+          )}
         </View>
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <Button title="Cancelar" variant="outline" onPress={() => router.back()} style={{ flex: 1 }} />
+        <Button
+          title={`Adicionar ${total > 0 ? formatCurrency(total) : ''}`}
+          onPress={handleConfirm}
+          disabled={!isValid || loadingParams}
+          style={{ flex: 1 }}
+        />
       </View>
-    </Modal>
+    </SafeAreaView>
   );
-};
+}
 

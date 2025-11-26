@@ -1,4 +1,7 @@
-export const formatCurrency = (value: number): string => {
+export const formatCurrency = (value: number | undefined | null): string => {
+  if (value === undefined || value === null || isNaN(value)) {
+    return 'R$ 0,00';
+  }
   return `R$ ${value.toFixed(2).replace('.', ',')}`;
 };
 

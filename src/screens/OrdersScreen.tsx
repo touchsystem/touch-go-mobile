@@ -46,6 +46,13 @@ export default function OrdersScreen() {
   // Calcula altura disponível para a lista (tela - header - footer - outros elementos)
   const listHeight = SCREEN_HEIGHT - 320;
 
+  // Memoiza os itens principais do carrinho
+  const principalItems = useMemo(() => {
+    return cart.filter(
+      (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
+    );
+  }, [cart]);
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -519,10 +526,8 @@ export default function OrdersScreen() {
             </View>
           ) : (
             <FlatList
-              data={cart.filter(
-                (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
-              )}
-              keyExtractor={(item) => item.uuid}
+              data={principalItems}
+              keyExtractor={(item, index) => item.uuid || `item-${index}`}
               contentContainerStyle={{ paddingBottom: 150 + Math.max(insets.bottom, 0), flexGrow: 1 }}
               showsVerticalScrollIndicator={true}
               style={{ flex: 1 }}

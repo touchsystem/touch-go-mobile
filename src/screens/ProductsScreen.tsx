@@ -19,7 +19,6 @@ import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Product } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useRelationalGroups } from '../hooks/useRelationalGroups';
-import { ProductOptionsModal } from '../components/ui/ProductOptionsModal';
 
 export default function ProductsScreen() {
   const { codGp } = useLocalSearchParams<{ codGp?: string }>();
@@ -31,9 +30,6 @@ export default function ProductsScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { fetchRelationalGroups } = useRelationalGroups();
-  const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
-  const [modalProduto, setModalProduto] = useState<any>(null);
-  const [modalGrupos, setModalGrupos] = useState<any[]>([]);
 
   const styles = useMemo(
     () =>
@@ -211,10 +207,15 @@ export default function ProductsScreen() {
       const grupos = await fetchRelationalGroups(codm);
       
       if (grupos.length > 0) {
-        // Abre modal de opções
-        setModalProduto(product);
-        setModalGrupos(grupos);
-        setIsOptionsModalOpen(true);
+        // Navega para tela de opções
+        router.push({
+          pathname: '/(tabs)/product-options',
+          params: {
+            produto: JSON.stringify(product),
+            grupos: JSON.stringify(grupos),
+          },
+        });
+        return;
       } else {
         // Adiciona direto ao carrinho
         const nomeRaw = product.nome || product.des2 || product.des1 || 'Produto';
@@ -356,45 +357,6 @@ export default function ProductsScreen() {
         </TouchableOpacity>
       )}
 
-      {isOptionsModalOpen && modalProduto && (
-        <ProductOptionsModal
-          visible={isOptionsModalOpen}
-          produto={modalProduto}
-          grupos={modalGrupos}
-          onClose={() => {
-            setIsOptionsModalOpen(false);
-            setModalProduto(null);
-            setModalGrupos([]);
-          }}
-          onConfirm={(produtoComOpcoes: any) => {
-            const nomeRaw = produtoComOpcoes.nome || produtoComOpcoes.des2 || produtoComOpcoes.des1 || 'Produto';
-            const descricaoRaw = produtoComOpcoes.descricao || produtoComOpcoes.des1 || '';
-            const preco = produtoComOpcoes.preco || produtoComOpcoes.pv || 0;
-            const id = produtoComOpcoes.id || parseInt(produtoComOpcoes.codm || '0') || 0;
-            const codm = produtoComOpcoes.codm || produtoComOpcoes.id?.toString() || '';
-            const pv = produtoComOpcoes.pv || produtoComOpcoes.preco || 0;
-            const nome = capitalizeFirstLetter(nomeRaw);
-            const descricao = descricaoRaw ? capitalizeFirstLetter(descricaoRaw) : '';
-
-            addToCart({
-              id,
-              nome,
-              descricao,
-              preco,
-              codm,
-              pv,
-              codm_status: produtoComOpcoes.status || 'R',
-              codm_relacional: undefined,
-              relacionais: produtoComOpcoes.relacionais || [],
-              uuid: produtoComOpcoes.uuid,
-            } as any);
-
-            setIsOptionsModalOpen(false);
-            setModalProduto(null);
-            setModalGrupos([]);
-          }}
-        />
-      )}
     </View>
   );
 }

@@ -11,7 +11,7 @@ export default function TabLayout() {
       tabBarActiveTintColor: colors?.primary || '#2563EB',
       headerShown: false,
     }),
-    [colors?.primary]
+    [colors]
   );
 
   return (
@@ -59,6 +59,12 @@ export default function TabLayout() {
         name="products"
         options={{
           href: null, // Hide from tabs but show bottom navigator
+        }}
+      />
+      <Tabs.Screen
+        name="product-options"
+        options={{
+          href: null, // Hide from tabs
         }}
       />
     </Tabs>
