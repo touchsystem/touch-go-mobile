@@ -139,7 +139,7 @@ export const ServerConfigButton: React.FC = () => {
         <Text style={styles.modalTitle}>Digite o código de acesso</Text>
         <View style={styles.codeInputContainer}>
           <Text style={[styles.codeInput, !code && styles.codeInputPlaceholder]}>
-            {code || 'Digite o código'}
+            {code ? '*'.repeat(code.length) : 'Digite o código'}
           </Text>
         </View>
         <View style={styles.keypadContainer}>

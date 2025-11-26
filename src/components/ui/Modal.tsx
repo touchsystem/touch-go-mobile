@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet, Modal as RNModal, Pressable } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ModalProps {
   visible: boolean;
@@ -8,6 +9,32 @@ interface ModalProps {
 }
 
 export const Modal: React.FC<ModalProps> = ({ visible, onClose, children }) => {
+  const { colors } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        overlay: {
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        contentWrapper: {
+          width: '90%',
+          maxWidth: 500,
+          maxHeight: '90%',
+        },
+        content: {
+          width: '100%',
+          backgroundColor: colors.surface,
+          borderRadius: 16,
+          padding: 20,
+        },
+      }),
+    [colors]
+  );
+
   return (
     <RNModal
       visible={visible}
@@ -35,23 +62,6 @@ export const Modal: React.FC<ModalProps> = ({ visible, onClose, children }) => {
     </RNModal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  contentWrapper: {
-    width: '90%',
-    maxWidth: 500,
-    maxHeight: '90%',
-  },
-  content: {
-    width: '100%',
-  },
-});
 
 
 
