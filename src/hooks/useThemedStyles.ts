@@ -10,3 +10,5 @@ export const useThemedStyles = <T extends NamedStyles<T>>(
   return StyleSheet.create(createStyles(colors));
 };
 
+
+
