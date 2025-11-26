@@ -112,36 +112,36 @@ export default function LoginScreen() {
             style={{ backgroundColor: colors.background }}
           >
             <View style={themedStyles.content}>
-            <View style={themedStyles.iconContainer}>
-              <View style={themedStyles.iconCircle}>
-                <Ionicons name="restaurant" size={48} color={colors.text} />
+              <View style={themedStyles.iconContainer}>
+                <View style={themedStyles.iconCircle}>
+                  <Ionicons name="restaurant" size={48} color={colors.text} />
+                </View>
+                <Text style={themedStyles.welcomeText}>EatzGo Mobile</Text>
+                <Text style={themedStyles.subtitle}>Faça login para acessar o sistema</Text>
               </View>
-              <Text style={themedStyles.welcomeText}>EatzGo Mobile</Text>
-              <Text style={themedStyles.subtitle}>Faça login para acessar o sistema</Text>
-            </View>
 
-            <LoginForm />
+              <LoginForm />
 
-            <View style={themedStyles.supportSection}>
-              <Text style={themedStyles.supportText}>
-                Problemas para acessar? Entre em contato com o administrador
-              </Text>
-              <View style={themedStyles.supportButtons}>
-                <TouchableOpacity style={themedStyles.supportButton}>
-                  <Ionicons name="call-outline" size={18} color={colors.icon} />
-                  <Text style={themedStyles.supportButtonText}>Suporte</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={themedStyles.supportButton}>
-                  <Ionicons name="help-circle-outline" size={18} color={colors.icon} />
-                  <Text style={themedStyles.supportButtonText}>Ajuda</Text>
-                </TouchableOpacity>
+              <View style={themedStyles.supportSection}>
+                <Text style={themedStyles.supportText}>
+                  Problemas para acessar? Entre em contato com o administrador
+                </Text>
+                <View style={themedStyles.supportButtons}>
+                  <TouchableOpacity style={themedStyles.supportButton}>
+                    <Ionicons name="call-outline" size={18} color={colors.icon} />
+                    <Text style={themedStyles.supportButtonText}>Suporte</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={themedStyles.supportButton}>
+                    <Ionicons name="help-circle-outline" size={18} color={colors.icon} />
+                    <Text style={themedStyles.supportButtonText}>Ajuda</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={{ marginBottom: 20 }}>
+                <ServerConfigButton />
               </View>
             </View>
-
-            <View style={{ marginBottom: 20 }}>
-              <ServerConfigButton />
-            </View>
-          </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

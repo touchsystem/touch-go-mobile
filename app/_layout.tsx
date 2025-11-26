@@ -24,14 +24,8 @@ function ThemedLayout() {
       NavigationBar.setVisibilityAsync('hidden').catch((error) => {
         console.log('Error hiding navigation bar:', error);
       });
-      // Configurar cor da barra de navegação para corresponder ao tema
-      NavigationBar.setBackgroundColorAsync(
-        isDark ? '#000000' : '#FFFFFF'
-      ).catch((error) => {
-        console.log('Error setting navigation bar color:', error);
-      });
     }
-  }, [isDark]);
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
