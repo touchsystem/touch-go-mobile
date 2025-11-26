@@ -217,78 +217,107 @@ export default function OrdersScreen() {
     await setSelectedTable(selectedTableData);
     setIsTableMapVisible(false);
     
-      // Se tiver itens no carrinho e não tiver mesa selecionada anteriormente, envia automaticamente
+    // Se tiver itens no carrinho, mostra confirmação antes de enviar
     if (cart.length > 0 && user?.nick) {
-      // Pequeno delay para fechar o modal antes de enviar
-      setTimeout(async () => {
-        try {
-          // Agrupa principais e relacionais
-          const principais = cart.filter(
+      // Pequeno delay para fechar o modal antes de mostrar o alert
+      setTimeout(() => {
+        Alert.alert(
+          'Confirmar Pedido',
+          `Deseja enviar o pedido para a Mesa ${selectedTableData.numero}?`,
+          [
+            {
+              text: 'Cancelar',
+              style: 'cancel',
+              onPress: () => {
+                setSelectedTable(null);
+              },
+            },
+            {
+              text: 'Confirmar',
+              onPress: async () => {
+                sendOrderToTable(selectedTableData);
+              },
+            },
+          ]
+        );
+      }, 300);
+    }
+  };
+
+  const sendOrderToTable = async (selectedTableData: Table) => {
+    if (!user?.nick) {
+      Alert.alert('Erro', 'Usuário não encontrado');
+      return;
+    }
+
+    try {
+      // Agrupa principais e relacionais
+      const principais = cart.filter(
             (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
           );
 
-          // Numerador por ocorrência de cada codm principal
-          const ocorrenciaPorCodm = new Map<string, number>();
-          const itens = principais.flatMap((principal) => {
-            const atual = (ocorrenciaPorCodm.get(principal.codm || '') || 0) + 1;
-            ocorrenciaPorCodm.set(principal.codm || '', atual);
-            const chaveRelacional = `${String(atual).padStart(2, '0')}-${principal.codm || ''}`;
-            
-            const relacionais = cart.filter(
-              (item) =>
-                item.uuid_principal === principal.uuid &&
-                item.codm_status === 'M'
-            );
+      // Numerador por ocorrência de cada codm principal
+      const ocorrenciaPorCodm = new Map<string, number>();
+      const itens = principais.flatMap((principal) => {
+        const atual = (ocorrenciaPorCodm.get(principal.codm || '') || 0) + 1;
+        ocorrenciaPorCodm.set(principal.codm || '', atual);
+        const chaveRelacional = `${String(atual).padStart(2, '0')}-${principal.codm || ''}`;
+        
+        const relacionais = cart.filter(
+          (item) =>
+            item.uuid_principal === principal.uuid &&
+            item.codm_status === 'M'
+        );
 
-            // Agrupar adicionais fracionados por codm e somar fractionQty
-            const fracionadosMap = new Map();
-            relacionais.forEach((rel: any) => {
-              if (rel.fractionQty !== undefined) {
-                if (!fracionadosMap.has(rel.codm)) {
-                  fracionadosMap.set(rel.codm, { ...rel });
-                } else {
-                  const existing = fracionadosMap.get(rel.codm);
-                  existing.fractionQty = (existing.fractionQty ?? 0) + (rel.fractionQty ?? 0);
-                }
-              }
-            });
-            const fracionados = Array.from(fracionadosMap.values());
-            const naoFracionados = relacionais.filter((rel: any) => rel.fractionQty === undefined);
+        // Agrupar adicionais fracionados por codm e somar fractionQty
+        const fracionadosMap = new Map();
+        relacionais.forEach((rel: any) => {
+          if (rel.fractionQty !== undefined) {
+            if (!fracionadosMap.has(rel.codm)) {
+              fracionadosMap.set(rel.codm, { ...rel });
+            } else {
+              const existing = fracionadosMap.get(rel.codm);
+              existing.fractionQty = (existing.fractionQty ?? 0) + (rel.fractionQty ?? 0);
+            }
+          }
+        });
+        const fracionados = Array.from(fracionadosMap.values());
+        const naoFracionados = relacionais.filter((rel: any) => rel.fractionQty === undefined);
 
-            // Item principal
-            const temAdicionais = relacionais.length > 0;
-            const principalItem = {
-              codm: principal.codm || principal.id.toString(),
-              qtd: principal.quantidade,
-              obs: principal.observacao || '',
-              pv: principal.pv ?? 0,
-              ...(temAdicionais ? { codm_status: 'R' } : {}),
-            };
+        // Item principal
+        const temAdicionais = relacionais.length > 0;
+        const principalItem = {
+          codm: principal.codm || principal.id.toString(),
+          qtd: principal.quantidade,
+          obs: principal.observacao || '',
+          pv: principal.pv ?? 0,
+          ...(temAdicionais ? { codm_status: 'R' } : {}),
+        };
 
-            // Adicionais/relacionais
-            const adicionais = [
-              ...fracionados.map((ad: any) => ({
-                codm: ad.codm || ad.id.toString(),
-                qtd: ad.fractionQty,
-                obs: ad.observacao || '',
-                pv: ad.pv || ad.preco || 0,
-                codm_relacional: chaveRelacional,
-                codm_status: ad.codm_status || 'M',
-              })),
-              ...naoFracionados.map((ad: any) => ({
-                codm: ad.codm || ad.id.toString(),
-                qtd: ad.quantity || ad.quantidade || 1,
-                obs: ad.observacao || '',
-                pv: (ad.pv || ad.preco || 0) * (ad.quantity || ad.quantidade || 1),
-                codm_relacional: chaveRelacional,
-                codm_status: ad.codm_status || 'M',
-              })),
-            ];
+        // Adicionais/relacionais
+        const adicionais = [
+          ...fracionados.map((ad: any) => ({
+            codm: ad.codm || ad.id.toString(),
+            qtd: ad.fractionQty,
+            obs: ad.observacao || '',
+            pv: ad.pv || ad.preco || 0,
+            codm_relacional: chaveRelacional,
+            codm_status: ad.codm_status || 'M',
+          })),
+          ...naoFracionados.map((ad: any) => ({
+            codm: ad.codm || ad.id.toString(),
+            qtd: ad.quantity || ad.quantidade || 1,
+            obs: ad.observacao || '',
+            pv: (ad.pv || ad.preco || 0) * (ad.quantity || ad.quantidade || 1),
+            codm_relacional: chaveRelacional,
+            codm_status: ad.codm_status || 'M',
+          })),
+        ];
 
-            return [principalItem, ...adicionais];
-          });
+        return [principalItem, ...adicionais];
+      });
 
-          const orderData = {
+      const orderData = {
             cabecalho: {
               status_tp_venda: 'P',
               mesa: parseInt(selectedTableData.numero),
@@ -302,22 +331,20 @@ export default function OrdersScreen() {
             itens,
           };
 
-          await axiosInstance.post('/vendas', orderData);
+      await axiosInstance.post('/vendas', orderData);
 
-          Alert.alert('Sucesso', 'Pedido enviado!');
-          clearCart();
-          setSelectedTable(null);
-          
-          // Força atualização do mapa de mesas para refletir o novo status
-          setTableRefreshKey((prev) => prev + 1);
-        } catch (error: any) {
-          console.error('Erro ao enviar pedido:', error);
-          Alert.alert(
-            'Erro',
-            error.response?.data?.erro || error.message || 'Erro ao enviar pedido'
-          );
-        }
-      }, 300);
+      Alert.alert('Sucesso', 'Pedido enviado!');
+      clearCart();
+      setSelectedTable(null);
+      
+      // Força atualização do mapa de mesas para refletir o novo status
+      setTableRefreshKey((prev) => prev + 1);
+    } catch (error: any) {
+      console.error('Erro ao enviar pedido:', error);
+      Alert.alert(
+        'Erro',
+        error.response?.data?.erro || error.message || 'Erro ao enviar pedido'
+      );
     }
   };
 
