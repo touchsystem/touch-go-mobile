@@ -40,6 +40,10 @@ export const useRelationalGroups = () => {
       const gruposArr = Array.isArray(response.data?.grupos) ? response.data.grupos : [];
       return gruposArr;
     } catch (err: any) {
+      // Ignora erros de token inválido (será redirecionado automaticamente)
+      if (err.message === 'TOKEN_EXPIRED_SILENT' || (err as any).isTokenError) {
+        return [];
+      }
       const errorMessage = err.response?.data?.erro || err.message || 'Erro ao carregar grupos relacionais';
       setError(errorMessage);
       console.error('Error fetching relational groups:', err);

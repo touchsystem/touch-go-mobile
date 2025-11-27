@@ -40,6 +40,10 @@ export const useProducts = () => {
       
       setGroups(groupsWithCount);
     } catch (err: any) {
+      // Ignora erros de token inválido (será redirecionado automaticamente)
+      if (err.message === 'TOKEN_EXPIRED_SILENT' || (err as any).isTokenError) {
+        return;
+      }
       setError(err.message || 'Erro ao carregar grupos');
       console.error('Error fetching groups:', err);
     } finally {
@@ -59,6 +63,10 @@ export const useProducts = () => {
       console.log('Products received:', response.data?.length || 0);
       setProducts(response.data || []);
     } catch (err: any) {
+      // Ignora erros de token inválido (será redirecionado automaticamente)
+      if (err.message === 'TOKEN_EXPIRED_SILENT' || (err as any).isTokenError) {
+        return;
+      }
       const errorMessage = err.response?.data?.erro || err.message || 'Erro ao carregar produtos';
       setError(errorMessage);
       console.error('Error fetching products:', err);

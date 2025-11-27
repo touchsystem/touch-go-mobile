@@ -28,7 +28,18 @@ axiosInstance.interceptors.request.use(
 
     const token = await storage.getItem<string>(storageKeys.TOKEN);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Valida se o token tem formato válido (JWT tem 3 partes separadas por ponto)
+      const tokenParts = token.split('.');
+      if (tokenParts.length === 3) {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        // Token inválido, remove e redireciona
+        await handleTokenExpiration();
+        // Retorna um erro especial que pode ser ignorado pelos componentes
+        const silentError = new Error('TOKEN_EXPIRED_SILENT');
+        (silentError as any).isTokenError = true;
+        return Promise.reject(silentError);
+      }
     }
 
     const user = await storage.getItem<{ id: number }>(storageKeys.USER);
@@ -62,11 +73,35 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError<{ erro?: string }>) => {
     if (error.response?.status === 401) {
       const msg = error.response.data?.erro?.toLowerCase() || '';
-      if (msg.includes('token is expired') || msg.includes('token inválido') || msg.includes('token expirado')) {
+      const errorMessage = error.message?.toLowerCase() || '';
+      
+      // Verifica se é erro relacionado a token inválido/expirado
+      const isTokenError = 
+        msg.includes('token is expired') || 
+        msg.includes('token inválido') || 
+        msg.includes('token expirado') ||
+        msg.includes('invalid token') ||
+        errorMessage.includes('token') && (errorMessage.includes('invalid') || errorMessage.includes('expired') || errorMessage.includes('segments'));
+      
+      if (isTokenError) {
         // Chama a função de logout que atualiza o estado e redireciona
         await handleTokenExpiration();
+        // Retorna um erro especial que pode ser ignorado pelos componentes
+        const silentError = new Error('TOKEN_EXPIRED_SILENT');
+        (silentError as any).isTokenError = true;
+        return Promise.reject(silentError);
       }
       return Promise.reject(new Error(msg || 'Não autorizado'));
+    }
+
+    // Verifica se o erro é relacionado a token inválido mesmo sem ser 401
+    const errorMessage = error.message?.toLowerCase() || '';
+    if (errorMessage.includes('token') && (errorMessage.includes('invalid') || errorMessage.includes('segments'))) {
+      await handleTokenExpiration();
+      // Retorna um erro especial que pode ser ignorado pelos componentes
+      const silentError = new Error('TOKEN_EXPIRED_SILENT');
+      (silentError as any).isTokenError = true;
+      return Promise.reject(silentError);
     }
 
     if (error.response?.data) {
