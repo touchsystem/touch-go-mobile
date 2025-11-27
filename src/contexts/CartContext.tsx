@@ -71,7 +71,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           uuid_principal: uuidPrincipal,
           fractionQty: rel.fractionQty,
           fractionLabel: rel.fractionLabel,
+          fractionValue: rel.fractionValue, // Incluir fractionValue
           quantity: rel.quantity,
+          precoVenda: rel.precoVenda, // Manter precoVenda original
         }));
 
         return [...prevCart, principal, ...relacionais];
@@ -160,7 +162,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         if (hasFractionals) {
           // Verifica se está no modo SOMA ou MAIOR PREÇO
           const positives = relacionais.filter((rel) => {
-            const price = rel.pv || rel.preco || 0;
+            const price = (rel as any).fractionValue ?? rel.pv ?? rel.preco ?? 0;
             return (typeof rel.fractionQty === 'number' || rel.fractionLabel) && price > 0;
           }).length;
 
@@ -168,20 +170,27 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             // Modo SOMA: soma todas as frações
             const fractionalTotal = relacionais.reduce((sum: number, rel: any) => {
               if (typeof rel.fractionQty === 'number' || rel.fractionLabel) {
+                // Prioriza fractionValue se disponível (já calculado corretamente)
+                if (rel.fractionValue !== undefined && rel.fractionValue !== null) {
+                  return sum + rel.fractionValue;
+                }
+                // Se o item já tem pv calculado corretamente, usa ele
                 if (rel.pv && rel.pv > 0) {
                   return sum + rel.pv;
                 }
-                const priceUnit = rel.pv || rel.preco || 0;
+                // Senão, calcula baseado na fração
+                const priceUnit = rel.pv ?? rel.preco ?? rel.precoVenda ?? 0;
                 const fraction = rel.fractionQty ?? 1;
-                return sum + priceUnit * fraction;
+                return sum + (priceUnit * fraction);
               }
               return sum;
             }, 0);
             valorPrincipal += fractionalTotal * principal.quantidade;
           } else {
-            // Modo MAIOR PREÇO: usa apenas o maior preço
+            // Modo MAIOR PREÇO: usa apenas o maior preço entre os sabores
             const unitMaxPrice = relacionais.reduce((m: number, rel: any) => {
-              const price = rel.pv || rel.preco || 0;
+              // Usa fractionValue se disponível, senão usa pv, senão usa preco
+              const price = rel.fractionValue ?? rel.pv ?? rel.preco ?? 0;
               return price > m ? price : m;
             }, 0);
             valorPrincipal += unitMaxPrice * principal.quantidade;

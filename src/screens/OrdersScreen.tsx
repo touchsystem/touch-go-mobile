@@ -53,6 +53,70 @@ export default function OrdersScreen() {
     );
   }, [cart]);
 
+  // Função para calcular o preço unitário de um item principal incluindo relacionais
+  const getItemUnitPrice = (principal: any): number => {
+    const relacionais = cart.filter(
+      (rel) => rel.uuid_principal === principal.uuid && rel.codm_status === 'M'
+    );
+
+    let valorPrincipal = (principal.pv || principal.preco || 0);
+
+    // Calcula valor dos relacionais
+    if (relacionais.length > 0) {
+      const hasFractionals = relacionais.some(
+        (rel) => typeof rel.fractionQty === 'number' || rel.fractionLabel
+      );
+
+      if (hasFractionals) {
+        // Verifica se está no modo SOMA ou MAIOR PREÇO
+        const positives = relacionais.filter((rel) => {
+          const price = (rel as any).fractionValue ?? rel.pv ?? rel.preco ?? 0;
+          return (typeof rel.fractionQty === 'number' || rel.fractionLabel) && price > 0;
+        }).length;
+
+        if (positives > 1) {
+          // Modo SOMA: soma todas as frações
+          const fractionalTotal = relacionais.reduce((sum: number, rel: any) => {
+            if (typeof rel.fractionQty === 'number' || rel.fractionLabel) {
+              // Prioriza fractionValue se disponível (já calculado corretamente)
+              if (rel.fractionValue !== undefined && rel.fractionValue !== null) {
+                return sum + rel.fractionValue;
+              }
+              // Se o item já tem pv calculado corretamente, usa ele
+              if (rel.pv && rel.pv > 0) {
+                return sum + rel.pv;
+              }
+              // Senão, calcula baseado na fração
+              const priceUnit = rel.pv ?? rel.preco ?? rel.precoVenda ?? 0;
+              const fraction = rel.fractionQty ?? 1;
+              return sum + (priceUnit * fraction);
+            }
+            return sum;
+          }, 0);
+          valorPrincipal += fractionalTotal;
+        } else {
+          // Modo MAIOR PREÇO: usa apenas o maior preço entre os sabores
+          const unitMaxPrice = relacionais.reduce((m: number, rel: any) => {
+            // Usa fractionValue se disponível, senão usa pv, senão usa preco
+            const price = rel.fractionValue ?? rel.pv ?? rel.preco ?? 0;
+            return price > m ? price : m;
+          }, 0);
+          valorPrincipal += unitMaxPrice;
+        }
+      } else {
+        // Relacionais normais (não fracionados)
+        const relacionaisTotal = relacionais.reduce((sum, rel) => {
+          const price = rel.pv || rel.preco || 0;
+          const qty = rel.quantity || rel.quantidade || 1;
+          return sum + price * qty;
+        }, 0);
+        valorPrincipal += relacionaisTotal;
+      }
+    }
+
+    return valorPrincipal;
+  };
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -584,7 +648,7 @@ export default function OrdersScreen() {
                           {capitalizeFirstLetter(principal.nome)}
                         </Text>
                         <Text style={styles.cartItemPrice}>
-                          {formatCurrency(principal.preco)} x {principal.quantidade}
+                          {formatCurrency(getItemUnitPrice(principal))} x {principal.quantidade}
                         </Text>
                         {relacionais.length > 0 && (
                           <View style={{ marginTop: 8 }}>

@@ -40,7 +40,9 @@ export interface CartItem {
   relacionais?: CartItem[];
   fractionQty?: number;
   fractionLabel?: string;
+  fractionValue?: number;
   quantity?: number;
+  precoVenda?: number;
 }
 
 export interface Table {

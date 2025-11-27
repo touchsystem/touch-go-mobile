@@ -1,23 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  SafeAreaView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Button } from '../../src/components/ui/Button';
+import { Card } from '../../src/components/ui/Card';
+import { useCart } from '../../src/contexts/CartContext';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { RelationalGroup } from '../../src/hooks/useRelationalGroups';
 import api from '../../src/services/api';
 import { capitalizeFirstLetter, formatCurrency } from '../../src/utils/format';
-import { Button } from '../../src/components/ui/Button';
-import { Card } from '../../src/components/ui/Card';
-import { useCart } from '../../src/contexts/CartContext';
 
 function generateUUID() {
   return Math.random().toString(36).substring(2, 15) + Date.now();
@@ -29,7 +29,7 @@ export default function ProductOptionsScreen() {
   const { colors, isDark } = useTheme();
   const { addToCart } = useCart();
   const insets = useSafeAreaInsets();
-  
+
   const [selected, setSelected] = useState<{ [groupId: number]: any[] | any }>({});
   const [parameters, setParameters] = useState<any[]>([]);
   const [loadingParams, setLoadingParams] = useState(false);
@@ -44,7 +44,7 @@ export default function ProductOptionsScreen() {
 
   useEffect(() => {
     if (!params.produto) return;
-    
+
     const fetchParameters = async () => {
       try {
         setLoadingParams(true);
@@ -56,7 +56,7 @@ export default function ProductOptionsScreen() {
         setLoadingParams(false);
       }
     };
-    
+
     fetchParameters();
     setSelected({});
   }, [params.produto]);
@@ -250,6 +250,8 @@ export default function ProductOptionsScreen() {
                 pv: fractionValue,
                 fractionLabel,
                 fractionQty,
+                fractionValue, // Incluir fractionValue para uso no cálculo do carrinho
+                precoVenda: item.precoVenda ?? 0, // Manter precoVenda original
               });
             }
           });
@@ -712,8 +714,8 @@ export default function ProductOptionsScreen() {
                         );
 
                         return (
-                          <View 
-                            key={item.id} 
+                          <View
+                            key={item.id}
                             style={[
                               styles.itemContainer,
                               index === grupo.itens.length - 1 && styles.lastItem
