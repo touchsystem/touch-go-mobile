@@ -259,9 +259,6 @@ export default function OrdersScreen() {
           justifyContent: 'center',
           alignItems: 'center',
         },
-        deleteButton: {
-          padding: 4,
-        },
         infoRow: {
           flexDirection: 'row',
           justifyContent: 'space-between',
@@ -412,6 +409,18 @@ export default function OrdersScreen() {
     }
   };
 
+  // Função para remover principal e relacionais (igual ao web)
+  const handleRemovePrincipalAndRelacionais = (principal: any) => {
+    removeFromCart(principal.uuid); // Remove o principal
+    cart
+      .filter(
+        (item) =>
+          item.uuid_principal === principal.uuid &&
+          item.codm_status === 'M'
+      )
+      .forEach((rel) => removeFromCart(rel.uuid));
+  };
+
   const handleQuantityChange = (uuid: string, delta: number) => {
     const item = cart.find((i) => i.uuid === uuid);
     if (item) {
@@ -419,7 +428,12 @@ export default function OrdersScreen() {
       if (newQuantity > 0) {
         updateQuantity(uuid, newQuantity);
       } else {
-        removeFromCart(uuid);
+        // Se for item principal, remove ele e todos os relacionais
+        if (!item.codm_relacional && (item.codm_status === 'R' || !item.codm_status)) {
+          handleRemovePrincipalAndRelacionais(item);
+        } else {
+          removeFromCart(uuid);
+        }
       }
     }
   };
@@ -670,24 +684,27 @@ export default function OrdersScreen() {
                         )}
                       </View>
                       <View style={styles.cartItemControls}>
-                        <TouchableOpacity
-                          style={styles.quantityButton}
-                          onPress={() => handleQuantityChange(principal.uuid, -1)}
-                        >
-                          <Ionicons name="remove" size={20} color={colors.text} />
-                        </TouchableOpacity>
+                        {principal.quantidade > 1 ? (
+                          <TouchableOpacity
+                            style={styles.quantityButton}
+                            onPress={() => handleQuantityChange(principal.uuid, -1)}
+                          >
+                            <Ionicons name="remove" size={20} color={colors.text} />
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity
+                            style={[styles.quantityButton, { backgroundColor: colors.error + '20' }]}
+                            onPress={() => handleRemovePrincipalAndRelacionais(principal)}
+                          >
+                            <Ionicons name="trash-outline" size={20} color={colors.error} />
+                          </TouchableOpacity>
+                        )}
                         <Text style={styles.quantityText}>{principal.quantidade}</Text>
                         <TouchableOpacity
                           style={styles.quantityButton}
                           onPress={() => handleQuantityChange(principal.uuid, 1)}
                         >
                           <Ionicons name="add" size={20} color={colors.text} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.deleteButton}
-                          onPress={() => removeFromCart(principal.uuid)}
-                        >
-                          <Ionicons name="trash-outline" size={20} color={colors.error} />
                         </TouchableOpacity>
                       </View>
                     </View>
