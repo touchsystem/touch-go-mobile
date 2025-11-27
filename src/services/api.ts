@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { storage, storageKeys } from './storage';
+import { handleTokenExpiration } from './auth-manager';
 
 const getBaseURL = async (): Promise<string> => {
   const config = await storage.getItem<{ apiUrl: string; apiUrlLocal?: string }>(storageKeys.SERVER_CONFIG);
@@ -61,10 +62,9 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError<{ erro?: string }>) => {
     if (error.response?.status === 401) {
       const msg = error.response.data?.erro?.toLowerCase() || '';
-      if (msg.includes('token is expired') || msg.includes('token inválido')) {
-        await storage.removeItem(storageKeys.TOKEN);
-        await storage.removeItem(storageKeys.USER);
-        // Redirecionar para login será feito no contexto
+      if (msg.includes('token is expired') || msg.includes('token inválido') || msg.includes('token expirado')) {
+        // Chama a função de logout que atualiza o estado e redireciona
+        await handleTokenExpiration();
       }
       return Promise.reject(new Error(msg || 'Não autorizado'));
     }

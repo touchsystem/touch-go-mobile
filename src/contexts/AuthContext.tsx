@@ -1,6 +1,7 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useState, useCallback } from 'react';
 import api from '../services/api';
 import { storage, storageKeys } from '../services/storage';
+import { setLogoutHandler } from '../services/auth-manager';
 import { Empresa, LoginParams, LoginResponse, User } from '../types';
 
 interface AuthContextType {
@@ -150,7 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const logout = useCallback(async (): Promise<void> => {
     try {
       await api.post('/logout').catch(() => { }); // Ignora erro se não conseguir fazer logout no servidor
     } catch (error) {
@@ -174,7 +175,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       console.log('[AuthContext] Logout completed, server config preserved');
     }
-  };
+  }, []);
+
+  // Atualiza a referência global do logout
+  useEffect(() => {
+    setLogoutHandler(logout);
+    return () => {
+      setLogoutHandler(null);
+    };
+  }, [logout]);
 
   const setServerConfig = async (config: { apiUrl: string; apiUrlLocal?: string; appName?: string }): Promise<void> => {
     try {
