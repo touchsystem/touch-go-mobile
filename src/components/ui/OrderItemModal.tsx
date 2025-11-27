@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -54,8 +55,7 @@ export const OrderItemModal: React.FC<OrderItemModalProps> = ({
           backgroundColor: colors.surface,
           borderRadius: 16,
           padding: 20,
-          width: '90%',
-          maxWidth: 500,
+          width: Math.min(Dimensions.get('window').width * 0.9, 500),
           borderWidth: 1,
           borderColor: colors.border,
         },
