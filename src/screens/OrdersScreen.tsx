@@ -1,28 +1,28 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
   Alert,
   Dimensions,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useCart } from '../contexts/CartContext';
-import { useTable } from '../contexts/TableContext';
-import { Table } from '../types';
-import { useAuth } from '../contexts/AuthContext';
-import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { useTheme } from '../contexts/ThemeContext';
-import { TableMapModal } from '../components/ui/TableMapModal';
 import { OrderItemModal } from '../components/ui/OrderItemModal';
+import { TableMapModal } from '../components/ui/TableMapModal';
+import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import { useTable } from '../contexts/TableContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { Table as TableType } from '../hooks/useTables';
 import axiosInstance from '../services/api';
+import { Table } from '../types';
+import { capitalizeFirstLetter, formatCurrency } from '../utils/format';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -227,13 +227,13 @@ export default function OrdersScreen() {
           textAlign: 'center',
         },
         totalSection: {
+          marginTop: 16,
+        },
+        totalCard: {
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingTop: 16,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-          marginTop: 16,
+          padding: 8,
         },
         totalLabel: {
           fontSize: 18,
@@ -277,7 +277,7 @@ export default function OrdersScreen() {
     };
     await setSelectedTable(selectedTableData);
     setIsTableMapVisible(false);
-    
+
     // Se tiver itens no carrinho, mostra confirmação antes de enviar
     if (cart.length > 0 && user?.nick) {
       // Pequeno delay para fechar o modal antes de mostrar o alert
@@ -314,8 +314,8 @@ export default function OrdersScreen() {
     try {
       // Agrupa principais e relacionais
       const principais = cart.filter(
-            (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
-          );
+        (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
+      );
 
       // Numerador por ocorrência de cada codm principal
       const ocorrenciaPorCodm = new Map<string, number>();
@@ -323,7 +323,7 @@ export default function OrdersScreen() {
         const atual = (ocorrenciaPorCodm.get(principal.codm || '') || 0) + 1;
         ocorrenciaPorCodm.set(principal.codm || '', atual);
         const chaveRelacional = `${String(atual).padStart(2, '0')}-${principal.codm || ''}`;
-        
+
         const relacionais = cart.filter(
           (item) =>
             item.uuid_principal === principal.uuid &&
@@ -379,25 +379,25 @@ export default function OrdersScreen() {
       });
 
       const orderData = {
-            cabecalho: {
-              status_tp_venda: 'P',
-              mesa: parseInt(selectedTableData.numero),
-              id_cliente: null,
-              nome_cliente: '',
-              cpf_cliente: '',
-              celular: '',
-              nick: user.nick,
-              obs: '',
-            },
-            itens,
-          };
+        cabecalho: {
+          status_tp_venda: 'P',
+          mesa: parseInt(selectedTableData.numero),
+          id_cliente: null,
+          nome_cliente: '',
+          cpf_cliente: '',
+          celular: '',
+          nick: user.nick,
+          obs: '',
+        },
+        itens,
+      };
 
       await axiosInstance.post('/vendas', orderData);
 
       Alert.alert('Sucesso', 'Pedido enviado!');
       clearCart();
       setSelectedTable(null);
-      
+
       // Força atualização do mapa de mesas para refletir o novo status
       setTableRefreshKey((prev) => prev + 1);
     } catch (error: any) {
@@ -461,13 +461,13 @@ export default function OrdersScreen() {
       Alert.alert('Erro', 'Adicione itens ao pedido');
       return;
     }
-    
+
     // Se não tiver mesa selecionada, abre o mapa automaticamente
     if (!selectedTable) {
       setIsTableMapVisible(true);
       return;
     }
-    
+
     if (!user?.nick) {
       Alert.alert('Erro', 'Usuário não encontrado');
       return;
@@ -485,7 +485,7 @@ export default function OrdersScreen() {
         const atual = (ocorrenciaPorCodm.get(principal.codm || '') || 0) + 1;
         ocorrenciaPorCodm.set(principal.codm || '', atual);
         const chaveRelacional = `${String(atual).padStart(2, '0')}-${principal.codm || ''}`;
-        
+
         const relacionais = cart.filter(
           (item) =>
             item.uuid_principal === principal.uuid &&
@@ -559,7 +559,7 @@ export default function OrdersScreen() {
       Alert.alert('Sucesso', 'Pedido enviado!');
       clearCart();
       setSelectedTable(null); // Limpa a mesa selecionada após enviar
-      
+
       // Força atualização do mapa de mesas para refletir o novo status
       setTableRefreshKey((prev) => prev + 1);
     } catch (error: any) {
@@ -716,8 +716,12 @@ export default function OrdersScreen() {
 
           {cart.length > 0 && (
             <View style={styles.totalSection}>
-              <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalValue}>{formatCurrency(getTotal())}</Text>
+              <Card>
+                <View style={styles.totalCard}>
+                  <Text style={styles.totalLabel}>Total:</Text>
+                  <Text style={styles.totalValue}>{formatCurrency(getTotal())}</Text>
+                </View>
+              </Card>
             </View>
           )}
         </View>
