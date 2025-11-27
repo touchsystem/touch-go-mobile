@@ -16,6 +16,7 @@ import { RelationalGroup } from '../../src/hooks/useRelationalGroups';
 import api from '../../src/services/api';
 import { capitalizeFirstLetter, formatCurrency } from '../../src/utils/format';
 import { Button } from '../../src/components/ui/Button';
+import { Card } from '../../src/components/ui/Card';
 import { useCart } from '../../src/contexts/CartContext';
 
 function generateUUID() {
@@ -315,7 +316,10 @@ export default function ProductOptionsScreen() {
         },
         content: {
           flex: 1,
-          padding: 20,
+          padding: 16,
+        },
+        cardContainer: {
+          marginBottom: 16,
         },
         title: {
           fontSize: 20,
@@ -330,7 +334,7 @@ export default function ProductOptionsScreen() {
           marginBottom: 20,
         },
         groupContainer: {
-          marginBottom: 24,
+          marginBottom: 16,
         },
         groupHeader: {
           flexDirection: 'row',
@@ -381,6 +385,9 @@ export default function ProductOptionsScreen() {
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
           minHeight: 56,
+        },
+        lastItem: {
+          borderBottomWidth: 0,
         },
         itemInfo: {
           flex: 1,
@@ -445,10 +452,7 @@ export default function ProductOptionsScreen() {
           backgroundColor: colors.primary,
         },
         summaryContainer: {
-          marginTop: 16,
-          paddingTop: 16,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
+          marginTop: 8,
         },
         summaryTitle: {
           fontSize: 12,
@@ -553,15 +557,19 @@ export default function ProductOptionsScreen() {
         nestedScrollEnabled={true}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Selecionar Opções</Text>
-          <Text style={styles.productName}>
-            {capitalizeFirstLetter(produto?.des2 || produto?.nome || 'Produto')}
-          </Text>
+          <Card style={styles.cardContainer}>
+            <Text style={styles.title}>Selecionar Opções</Text>
+            <Text style={styles.productName}>
+              {capitalizeFirstLetter(produto?.des2 || produto?.nome || 'Produto')}
+            </Text>
+          </Card>
 
           {loadingParams ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color={colors.primary} />
-            </View>
+            <Card style={styles.cardContainer}>
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={colors.primary} />
+              </View>
+            </Card>
           ) : (
             <>
               {grupos.map((grupo: RelationalGroup) => {
@@ -572,10 +580,7 @@ export default function ProductOptionsScreen() {
                   grupo.grupo.max > 1;
 
                 return (
-                  <View
-                    key={grupo.grupo.id}
-                    style={styles.groupContainer}
-                  >
+                  <Card key={grupo.grupo.id} style={styles.groupContainer}>
                     <View style={styles.groupHeader}>
                       <Text style={styles.groupTitle}>
                         {capitalizeFirstLetter(grupo.grupo.nome)}
@@ -598,10 +603,13 @@ export default function ProductOptionsScreen() {
                     </View>
 
                     {grupo.grupo.tipo === '2' ? (
-                      grupo.itens.map((item: any) => (
+                      grupo.itens.map((item: any, index: number) => (
                         <TouchableOpacity
                           key={item.id}
-                          style={styles.itemContainerTouchable}
+                          style={[
+                            styles.itemContainerTouchable,
+                            index === grupo.itens.length - 1 && styles.lastItem
+                          ]}
                           onPress={() => handleSelect(grupo, item)}
                           activeOpacity={0.7}
                         >
@@ -624,7 +632,7 @@ export default function ProductOptionsScreen() {
                         </TouchableOpacity>
                       ))
                     ) : isFracionado ? (
-                      grupo.itens.map((item: any) => {
+                      grupo.itens.map((item: any, index: number) => {
                         const current = Array.isArray(sel) ? sel : [];
                         const found = current.find((i: any) => i.id === item.id);
                         const qty = found?._qty ?? 0;
@@ -636,7 +644,10 @@ export default function ProductOptionsScreen() {
                         return (
                           <View
                             key={item.id}
-                            style={styles.itemContainer}
+                            style={[
+                              styles.itemContainer,
+                              index === grupo.itens.length - 1 && styles.lastItem
+                            ]}
                           >
                             <View style={styles.itemInfo}>
                               <Text style={styles.itemName}>
@@ -691,7 +702,7 @@ export default function ProductOptionsScreen() {
                         );
                       })
                     ) : (
-                      grupo.itens.map((item: any) => {
+                      grupo.itens.map((item: any, index: number) => {
                         const current = Array.isArray(sel) ? sel : [];
                         const found = current.find((i: any) => i.id === item.id);
                         const qty = found?._qty ?? 0;
@@ -701,7 +712,13 @@ export default function ProductOptionsScreen() {
                         );
 
                         return (
-                          <View key={item.id} style={styles.itemContainer}>
+                          <View 
+                            key={item.id} 
+                            style={[
+                              styles.itemContainer,
+                              index === grupo.itens.length - 1 && styles.lastItem
+                            ]}
+                          >
                             <View style={styles.itemInfo}>
                               <Text style={styles.itemName}>
                                 {capitalizeFirstLetter(item.nomeProduto)}
@@ -753,12 +770,12 @@ export default function ProductOptionsScreen() {
                         );
                       })
                     )}
-                  </View>
+                  </Card>
                 );
               })}
 
               {selectedRelacionais.length > 0 && (
-                <View style={styles.summaryContainer}>
+                <Card style={styles.summaryContainer}>
                   <Text style={styles.summaryTitle}>Adicionais selecionados:</Text>
                   {selectedRelacionais.map((ad, idx) => (
                     <Text key={idx} style={styles.summaryItem}>
@@ -771,7 +788,7 @@ export default function ProductOptionsScreen() {
                         )}`}
                     </Text>
                   ))}
-                </View>
+                </Card>
               )}
             </>
           )}
