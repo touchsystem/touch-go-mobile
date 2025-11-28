@@ -31,6 +31,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="bills"
+        options={{
+          title: 'Contas',
+          tabBarIcon: ({ color }) => <Ionicons name="document-text-outline" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
