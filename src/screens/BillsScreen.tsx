@@ -3,10 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -26,6 +27,7 @@ export default function BillsScreen() {
   const { user } = useAuth();
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [isViewBillModalVisible, setIsViewBillModalVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchTables();
@@ -57,12 +59,33 @@ export default function BillsScreen() {
           flex: 1,
           padding: 16,
         },
+        searchContainer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: isDark ? '#1A1F2B' : '#F4F4F5',
+          marginBottom: 16,
+          paddingHorizontal: 12,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: colors.border,
+        },
+        searchIcon: {
+          marginRight: 8,
+        },
+        searchInput: {
+          flex: 1,
+          height: 40,
+          fontSize: 16,
+          color: colors.text,
+        },
         grid: {
-          gap: 12,
+          gap: 8,
+          justifyContent: 'center',
+          paddingBottom: 16,
         },
         tableCard: {
           width: '23%',
-          minHeight: 80,
+          minHeight: 60,
         },
         tableButton: {
           width: '100%',
@@ -163,6 +186,17 @@ export default function BillsScreen() {
     setSelectedTable(null);
   };
 
+  const filteredTables = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return tables;
+    }
+    const query = searchQuery.trim();
+    return tables.filter((table) => {
+      const tableNumber = table.mesa_cartao.toString();
+      return tableNumber.includes(query);
+    });
+  }, [tables, searchQuery]);
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -203,69 +237,93 @@ export default function BillsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} pointerEvents={isViewBillModalVisible ? 'none' : 'auto'}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Contas</Text>
       </View>
 
       <View style={styles.content}>
-        {tables.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
-            <Text style={styles.emptyText}>Nenhuma mesa disponível</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={tables}
-            numColumns={4}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.grid}
-            renderItem={({ item }) => {
-              const tableColor = getTableColor(item.status);
-              const statusText = getTableStatusText(item.status);
-              const canViewBill = item.status === 'O' || item.status === 'F';
-
-              return (
-                <View style={styles.tableCard}>
-                  <TouchableOpacity
-                    style={[
-                      styles.tableButton,
-                      {
-                        backgroundColor: tableColor,
-                        borderColor: canViewBill ? colors.primary : colors.border,
-                        opacity: canViewBill ? 1 : 0.6,
-                      },
-                    ]}
-                    onPress={() => handleTableSelect(item)}
-                    activeOpacity={0.7}
-                    disabled={!canViewBill}
-                  >
-                    <Text
-                      style={[
-                        styles.tableNumber,
-                        {
-                          color: item.status === 'L' && !isDark ? '#111827' : '#FFFFFF',
-                        },
-                      ]}
-                    >
-                      {item.mesa_cartao}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.tableStatus,
-                        {
-                          color: item.status === 'L' && !isDark ? '#6B7280' : '#FFFFFF',
-                        },
-                      ]}
-                    >
-                      {statusText}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            }}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search-outline" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar mesa por número..."
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            keyboardType="number-pad"
           />
-        )}
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.grid}
+          scrollEnabled={!isViewBillModalVisible}
+          nestedScrollEnabled={false}
+          pointerEvents={isViewBillModalVisible ? 'none' : 'auto'}
+          keyboardShouldPersistTaps="handled"
+        >
+          {filteredTables.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
+              <Text style={styles.emptyText}>
+                {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
+              </Text>
+            </View>
+          ) : (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+              {filteredTables.map((item) => {
+                const tableColor = getTableColor(item.status);
+                const statusText = getTableStatusText(item.status);
+                const canViewBill = item.status === 'O' || item.status === 'F';
+
+                return (
+                  <View key={item.id} style={styles.tableCard}>
+                    <TouchableOpacity
+                      style={[
+                        styles.tableButton,
+                        {
+                          backgroundColor: tableColor,
+                          borderColor: colors.border,
+                          borderWidth: 2,
+                        },
+                      ]}
+                      onPress={() => handleTableSelect(item)}
+                      activeOpacity={0.7}
+                      disabled={!canViewBill}
+                    >
+                      <Text
+                        style={[
+                          styles.tableNumber,
+                          {
+                            color: item.status === 'L' && !isDark ? '#111827' : '#FFFFFF',
+                          },
+                        ]}
+                      >
+                        {item.mesa_cartao}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.tableStatus,
+                          {
+                            color: item.status === 'L' && !isDark ? '#6B7280' : '#FFFFFF',
+                          },
+                        ]}
+                      >
+                        {statusText}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </ScrollView>
       </View>
 
       {selectedTable && (
