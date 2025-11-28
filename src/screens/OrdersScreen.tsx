@@ -21,6 +21,7 @@ import { useTable } from '../contexts/TableContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Table as TableType } from '../hooks/useTables';
 import axiosInstance from '../services/api';
+import { storage, storageKeys } from '../services/storage';
 import { Table } from '../types';
 import { capitalizeFirstLetter, formatCurrency } from '../utils/format';
 
@@ -279,7 +280,7 @@ export default function OrdersScreen() {
     setIsTableMapVisible(false);
 
     // Se tiver itens no carrinho, mostra confirmação antes de enviar
-    if (cart.length > 0 && user?.nick) {
+    if (cart.length > 0) {
       // Pequeno delay para fechar o modal antes de mostrar o alert
       setTimeout(() => {
         Alert.alert(
@@ -306,12 +307,17 @@ export default function OrdersScreen() {
   };
 
   const sendOrderToTable = async (selectedTableData: Table) => {
-    if (!user?.nick) {
-      Alert.alert('Erro', 'Usuário não encontrado');
-      return;
-    }
-
     try {
+      // Busca o nick salvo no storage ou usa o nick do usuário logado
+      let nickToUse = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
+      if (!nickToUse) {
+        nickToUse = user?.nick || '';
+      }
+
+      if (!nickToUse) {
+        Alert.alert('Erro', 'Nick do garçom não encontrado. Configure o garçom no perfil.');
+        return;
+      }
       // Agrupa principais e relacionais
       const principais = cart.filter(
         (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
@@ -386,7 +392,7 @@ export default function OrdersScreen() {
           nome_cliente: '',
           cpf_cliente: '',
           celular: '',
-          nick: user.nick,
+          nick: nickToUse,
           obs: '',
         },
         itens,
@@ -468,12 +474,18 @@ export default function OrdersScreen() {
       return;
     }
 
-    if (!user?.nick) {
-      Alert.alert('Erro', 'Usuário não encontrado');
-      return;
-    }
-
     try {
+      // Busca o nick salvo no storage ou usa o nick do usuário logado
+      let nickToUse = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
+      if (!nickToUse) {
+        nickToUse = user?.nick || '';
+      }
+
+      if (!nickToUse) {
+        Alert.alert('Erro', 'Nick do garçom não encontrado. Configure o garçom no perfil.');
+        return;
+      }
+
       // Agrupa principais e relacionais
       const principais = cart.filter(
         (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
@@ -548,7 +560,7 @@ export default function OrdersScreen() {
           nome_cliente: '',
           cpf_cliente: '',
           celular: '',
-          nick: user.nick,
+          nick: nickToUse,
           obs: '',
         },
         itens,

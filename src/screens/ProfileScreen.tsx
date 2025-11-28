@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -15,11 +15,13 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { ChangeWaiterModal } from '../components/ui/ChangeWaiterModal';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { colors, theme } = useTheme();
+  const [isChangeWaiterModalVisible, setIsChangeWaiterModalVisible] = useState(false);
 
   const styles = useMemo(
     () =>
@@ -101,7 +103,11 @@ export default function ProfileScreen() {
           color: colors.text,
         },
         logoutButton: {
-          marginTop: 24,
+          marginTop: 12,
+        },
+        logoutButtonDanger: {
+          marginTop: 12,
+          borderColor: colors.error,
         },
         themeSection: {
           marginBottom: 24,
@@ -133,9 +139,18 @@ export default function ProfileScreen() {
     [colors]
   );
 
+  const handleChangeWaiter = () => {
+    setIsChangeWaiterModalVisible(true);
+  };
+
+  const handleConfirmChangeWaiter = (newNick: string) => {
+    // O nick já foi salvo no storage pelo modal
+    Alert.alert('Sucesso', `Garçom alterado para: ${newNick}`);
+  };
+
   const handleLogout = () => {
     Alert.alert(
-      'Confirmar Logout',
+      'Sair do Sistema',
       'Deseja realmente sair? Você precisará fazer login novamente.',
       [
         {
@@ -236,11 +251,27 @@ export default function ProfileScreen() {
         <Button
           title="Trocar Garçom"
           variant="outline"
-          onPress={handleLogout}
-          icon={<Ionicons name="log-out-outline" size={20} color={colors.text} />}
+          onPress={handleChangeWaiter}
+          icon={<Ionicons name="person-outline" size={20} color={colors.text} />}
           style={styles.logoutButton}
         />
+
+        <Button
+          title="Sair do Sistema"
+          variant="outline"
+          onPress={handleLogout}
+          icon={<Ionicons name="log-out-outline" size={20} color={colors.error} />}
+          style={[styles.logoutButton, styles.logoutButtonDanger]}
+          textStyle={{ color: colors.error }}
+        />
       </ScrollView>
+
+      <ChangeWaiterModal
+        visible={isChangeWaiterModalVisible}
+        currentNick={user?.nick || ''}
+        onClose={() => setIsChangeWaiterModalVisible(false)}
+        onConfirm={handleConfirmChangeWaiter}
+      />
     </View>
   );
 }
