@@ -35,18 +35,31 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<SelectedTable | null>(null);
+  const isLoadingRef = React.useRef(false);
 
   const fetchTables = useCallback(async () => {
+    // Evita múltiplas requisições simultâneas usando ref
+    if (isLoadingRef.current) {
+      return;
+    }
+    
     try {
+      isLoadingRef.current = true;
       setLoading(true);
       setError(null);
-      const response = await axiosInstance.get('/mesas');
+      
+      // Usa timeout menor para requisição mais rápida
+      const response = await axiosInstance.get('/mesas', {
+        timeout: 5000, // 5 segundos de timeout
+      });
+      
       setTables(response.data || []);
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar mesas');
-      setTables([]);
+      // Não limpa as mesas em caso de erro para manter os dados anteriores
     } finally {
       setLoading(false);
+      isLoadingRef.current = false;
     }
   }, []);
 

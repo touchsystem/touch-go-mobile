@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,11 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
+  AppState,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTableContext, Table } from '../contexts/TableContext';
@@ -29,8 +31,61 @@ export default function BillsScreen() {
   const [isViewBillModalVisible, setIsViewBillModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const appState = useRef(AppState.currentState);
+  const lastFetchTime = useRef<number>(0);
+  const FETCH_COOLDOWN = 2000; // 2 segundos entre atualizações
+  const hasInitialLoad = useRef(false);
+  const fetchTablesRef = useRef(fetchTables);
+
+  // Atualiza a ref sempre que fetchTables mudar
   useEffect(() => {
-    fetchTables();
+    fetchTablesRef.current = fetchTables;
+  }, [fetchTables]);
+
+  // Carrega apenas uma vez no mount
+  useEffect(() => {
+    if (!hasInitialLoad.current) {
+      fetchTables();
+      lastFetchTime.current = Date.now();
+      hasInitialLoad.current = true;
+    }
+  }, []); // Array vazio - executa apenas uma vez
+
+  // Atualiza as mesas quando a tela recebe foco (quando o usuário troca de aba)
+  useFocusEffect(
+    useCallback(() => {
+      // Evita múltiplas requisições em pouco tempo
+      const now = Date.now();
+      const timeSinceLastFetch = now - lastFetchTime.current;
+      
+      // Só atualiza se passou o cooldown
+      if (timeSinceLastFetch >= FETCH_COOLDOWN) {
+        fetchTablesRef.current();
+        lastFetchTime.current = now;
+      }
+    }, []) // Array vazio - usa ref para evitar loops
+  );
+
+  // Atualiza quando o app volta do background
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        // App voltou do background, atualiza as mesas (com cooldown)
+        const now = Date.now();
+        if (now - lastFetchTime.current >= FETCH_COOLDOWN) {
+          fetchTables();
+          lastFetchTime.current = now;
+        }
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, [fetchTables]);
 
   const styles = useMemo(
