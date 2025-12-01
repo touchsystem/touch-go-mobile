@@ -13,14 +13,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import { useTables, Table } from '../hooks/useTables';
+import { useTableContext, Table } from '../contexts/TableContext';
 import { Card } from '../components/ui/Card';
 import { ViewBillModal } from '../components/ui/ViewBillModal';
 import { useAuth } from '../contexts/AuthContext';
 import { storage, storageKeys } from '../services/storage';
 
 export default function BillsScreen() {
-  const { tables, loading, error, fetchTables } = useTables();
+  const { tables, loading, error, fetchTables } = useTableContext();
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -31,7 +31,7 @@ export default function BillsScreen() {
 
   useEffect(() => {
     fetchTables();
-  }, []);
+  }, [fetchTables]);
 
   const styles = useMemo(
     () =>
@@ -187,11 +187,25 @@ export default function BillsScreen() {
   };
 
   const filteredTables = useMemo(() => {
+    // Remove duplicatas baseado em mesa_cartao (mantém apenas a ÚLTIMA ocorrência para preservar atualizações)
+    const uniqueTables = tables.filter((table, index, self) => {
+      // Encontra o último índice da mesa com o mesmo mesa_cartao
+      let lastIndex = -1;
+      for (let i = self.length - 1; i >= 0; i--) {
+        if (self[i].mesa_cartao === table.mesa_cartao) {
+          lastIndex = i;
+          break;
+        }
+      }
+      // Mantém apenas a última ocorrência (a mais atualizada)
+      return index === lastIndex;
+    });
+
     if (!searchQuery.trim()) {
-      return tables;
+      return uniqueTables;
     }
     const query = searchQuery.trim();
-    return tables.filter((table) => {
+    return uniqueTables.filter((table) => {
       const tableNumber = table.mesa_cartao.toString();
       return tableNumber.includes(query);
     });
@@ -283,7 +297,7 @@ export default function BillsScreen() {
                 const canViewBill = item.status === 'O' || item.status === 'F';
 
                 return (
-                  <View key={item.id} style={styles.tableCard}>
+                  <View key={`table-${item.mesa_cartao}`} style={styles.tableCard}>
                     <TouchableOpacity
                       style={[
                         styles.tableButton,

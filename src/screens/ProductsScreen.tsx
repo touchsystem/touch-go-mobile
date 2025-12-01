@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useProducts } from '../hooks/useProducts';
 import { ProductCard } from '../components/ui/ProductCard';
 import { useCart } from '../contexts/CartContext';
-import { useTable } from '../contexts/TableContext';
+import { useTableContext } from '../contexts/TableContext';
 import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Product } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
@@ -24,7 +24,7 @@ export default function ProductsScreen() {
   const { codGp } = useLocalSearchParams<{ codGp?: string }>();
   const { products, loading, error, fetchProducts } = useProducts();
   const { addToCart, getTotal, getTotalItems } = useCart();
-  const { selectedTable } = useTable();
+  const { selectedTable } = useTableContext();
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
   const { colors, isDark } = useTheme();

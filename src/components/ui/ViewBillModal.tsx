@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useTableContext } from '../../contexts/TableContext';
 import api from '../../services/api';
 import { storage, storageKeys } from '../../services/storage';
 import { formatCurrency } from '../../utils/format';
@@ -60,6 +61,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
 }) => {
     const { colors, isDark } = useTheme();
     const { user } = useAuth();
+    const { refreshTable } = useTableContext();
     const [data, setData] = useState<BillData | null>(null);
     const [loading, setLoading] = useState(true);
     const [printing, setPrinting] = useState(false);
@@ -106,10 +108,27 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 `/caixa/imprimir-conta?mesa=${mesaCartao}&nick=${nickToUse}`
             );
 
+            // Atualiza apenas a mesa específica após imprimir (sem reload completo)
+            await refreshTable(mesaCartao);
+            
             if (response.data?.mensagem) {
-                Alert.alert('Sucesso', response.data.mensagem);
+                Alert.alert('Sucesso', response.data.mensagem, [
+                    {
+                        text: 'OK',
+                        onPress: () => {
+                            onClose();
+                        },
+                    },
+                ]);
             } else {
-                Alert.alert('Sucesso', 'Conta enviada para impressão!');
+                Alert.alert('Sucesso', 'Conta enviada para impressão!', [
+                    {
+                        text: 'OK',
+                        onPress: () => {
+                            onClose();
+                        },
+                    },
+                ]);
             }
         } catch (error: any) {
             console.error('Error printing bill:', error);
@@ -117,7 +136,6 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 'Erro',
                 error.response?.data?.erro || error.message || 'Erro ao imprimir conta'
             );
-        } finally {
             setPrinting(false);
         }
     };

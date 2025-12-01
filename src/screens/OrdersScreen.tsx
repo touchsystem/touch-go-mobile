@@ -17,7 +17,7 @@ import { OrderItemModal } from '../components/ui/OrderItemModal';
 import { TableMapModal } from '../components/ui/TableMapModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { useTable } from '../contexts/TableContext';
+import { useTableContext } from '../contexts/TableContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Table as TableType } from '../hooks/useTables';
 import axiosInstance from '../services/api';
@@ -29,7 +29,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function OrdersScreen() {
   const { cart, updateQuantity, updateCartItem, removeFromCart, getTotal, clearCart } = useCart();
-  const { selectedTable, setSelectedTable } = useTable();
+  const { selectedTable, setSelectedTable } = useTableContext();
   const { user } = useAuth();
   const [isTableMapVisible, setIsTableMapVisible] = useState(false);
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
