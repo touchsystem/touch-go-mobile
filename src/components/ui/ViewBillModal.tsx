@@ -99,7 +99,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             }
 
             if (!nickToUse) {
-                Alert.alert('Erro', 'Nick do garçom não encontrado. Configure o garçom no perfil.');
+                Alert.alert('Erro', 'Usuário não encontrado. Configure o usuário no perfil.');
                 setPrinting(false);
                 return;
             }

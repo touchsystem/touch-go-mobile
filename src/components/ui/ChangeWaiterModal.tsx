@@ -111,7 +111,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
 
   const handleConfirm = async () => {
     if (!nick.trim()) {
-      Alert.alert('Erro', 'O nick do garçom é obrigatório!');
+      Alert.alert('Erro', 'O usuário é obrigatório!');
       return;
     }
 
@@ -136,19 +136,19 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
         <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
           <View style={styles.modalContent}>
             <View style={styles.header}>
-              <Text style={styles.title}>Trocar Garçom</Text>
+              <Text style={styles.title}>Trocar Usuário</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Nick do Garçom</Text>
+              <Text style={styles.label}>Usuário</Text>
               <TextInput
                 style={styles.input}
                 value={nick}
                 onChangeText={setNick}
-                placeholder="Digite o nick do garçom"
+                placeholder="Digite o usuário"
                 placeholderTextColor={colors.textSecondary}
                 autoCapitalize="none"
                 autoCorrect={false}

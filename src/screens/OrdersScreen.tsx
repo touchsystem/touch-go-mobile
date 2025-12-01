@@ -315,7 +315,7 @@ export default function OrdersScreen() {
       }
 
       if (!nickToUse) {
-        Alert.alert('Erro', 'Nick do garçom não encontrado. Configure o garçom no perfil.');
+        Alert.alert('Erro', 'Usuário não encontrado. Configure o usuário no perfil.');
         return;
       }
       // Agrupa principais e relacionais
@@ -482,7 +482,7 @@ export default function OrdersScreen() {
       }
 
       if (!nickToUse) {
-        Alert.alert('Erro', 'Nick do garçom não encontrado. Configure o garçom no perfil.');
+        Alert.alert('Erro', 'Usuário não encontrado. Configure o usuário no perfil.');
         return;
       }
 
@@ -595,7 +595,7 @@ export default function OrdersScreen() {
         {selectedTable && (
           <Card style={styles.tableCard}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoText}>Garçom: {user?.nome || 'N/A'}</Text>
+              <Text style={styles.infoText}>Usuário: {user?.nome || 'N/A'}</Text>
               <Text style={styles.infoText}>Mesa: #{selectedTable.numero}</Text>
             </View>
           </Card>

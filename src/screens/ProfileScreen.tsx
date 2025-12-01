@@ -1,21 +1,20 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { ChangeWaiterModal } from '../components/ui/ChangeWaiterModal';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
-import { ChangeWaiterModal } from '../components/ui/ChangeWaiterModal';
+import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
@@ -145,7 +144,7 @@ export default function ProfileScreen() {
 
   const handleConfirmChangeWaiter = (newNick: string) => {
     // O nick já foi salvo no storage pelo modal
-    Alert.alert('Sucesso', `Garçom alterado para: ${newNick}`);
+    Alert.alert('Sucesso', `Usuário alterado para: ${newNick}`);
   };
 
   const handleLogout = () => {
@@ -180,7 +179,7 @@ export default function ProfileScreen() {
 
   const getLevelName = (level: number): string => {
     const levelNames: Record<number, string> = {
-      1: 'Garçom',
+      1: 'Usuário',
       2: 'Caixa',
       3: 'Supervisor',
       4: 'Gerente',
@@ -208,7 +207,7 @@ export default function ProfileScreen() {
 
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>Informações Pessoais</Text>
-          
+
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Nome</Text>
             <Text style={styles.infoValue}>{user?.nome || 'N/A'}</Text>
@@ -232,7 +231,7 @@ export default function ProfileScreen() {
 
         <Card style={styles.themeSection}>
           <Text style={styles.sectionTitle}>Aparência</Text>
-          
+
           <View style={styles.themeRow}>
             <Text style={styles.themeLabel}>Modo</Text>
             <View style={styles.themeToggleContainer}>
@@ -249,7 +248,7 @@ export default function ProfileScreen() {
         </Card>
 
         <Button
-          title="Trocar Garçom"
+          title="Trocar Usuário"
           variant="outline"
           onPress={handleChangeWaiter}
           icon={<Ionicons name="person-outline" size={20} color={colors.text} />}
