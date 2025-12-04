@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Switch } from '../components/ui/Switch';
@@ -46,6 +46,13 @@ export default function SettingsScreen() {
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
+          position: 'relative',
+        },
+        backButton: {
+          position: 'absolute',
+          left: scale(20),
+          top: Math.max(insets.top, scale(10)),
+          padding: scale(8),
         },
         headerTitle: {
           fontSize: scaleFont(18),
@@ -205,8 +212,14 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>CONFIGURAÇÕES</Text>
       </View>
 
@@ -423,7 +436,7 @@ export default function SettingsScreen() {
           />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -12,10 +12,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useProducts } from '../hooks/useProducts';
 import { ProductGroupCard } from '../components/ui/ProductGroupCard';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ProductGroup } from '../types';
 import { scale, scaleFont } from '../utils/responsive';
 
 export default function MenuScreen() {
+  const { user } = useAuth();
   const { groups, loading, fetchGroups } = useProducts();
   const router = useRouter();
   const { colors } = useTheme();
@@ -72,8 +74,11 @@ export default function MenuScreen() {
   );
 
   useEffect(() => {
-    fetchGroups();
-  }, []);
+    // Só busca grupos se o usuário estiver autenticado
+    if (user) {
+      fetchGroups();
+    }
+  }, [user, fetchGroups]);
 
   const handleGroupPress = (group: ProductGroup) => {
     router.push({

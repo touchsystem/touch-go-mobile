@@ -1,17 +1,22 @@
 import { useTheme } from '@/src/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, useSegments } from 'expo-router';
 import React, { useMemo } from 'react';
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  const segments = useSegments();
+
+  // Verifica se está na tela de settings ou payment-methods
+  const isSettingsScreen = segments.includes('settings') || segments.includes('payment-methods');
 
   const screenOptions = useMemo(
     () => ({
       tabBarActiveTintColor: colors?.primary || '#2563EB',
       headerShown: false,
+      tabBarStyle: isSettingsScreen ? { display: 'none' } : undefined,
     }),
-    [colors]
+    [colors, isSettingsScreen]
   );
 
   return (
@@ -47,14 +52,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Configurações',
-          tabBarIcon: ({ color }) => <Ionicons name="settings-outline" size={24} color={color} />,
+          href: null, // Hide from tabs
+          tabBarStyle: { display: 'none' }, // Hide bottom navigation
         }}
       />
       <Tabs.Screen
         name="payment-methods"
         options={{
           href: null, // Hide from tabs
+          tabBarStyle: { display: 'none' }, // Hide bottom navigation
         }}
       />
       <Tabs.Screen

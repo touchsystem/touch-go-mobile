@@ -28,12 +28,16 @@ axiosInstance.interceptors.request.use(
 
     const token = await storage.getItem<string>(storageKeys.TOKEN);
     if (token) {
+      // Remove espaços e quebras de linha do token
+      const cleanToken = token.trim();
+      
       // Valida se o token tem formato válido (JWT tem 3 partes separadas por ponto)
-      const tokenParts = token.split('.');
-      if (tokenParts.length === 3) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const tokenParts = cleanToken.split('.');
+      if (tokenParts.length === 3 && cleanToken.length > 0) {
+        config.headers.Authorization = `Bearer ${cleanToken}`;
       } else {
         // Token inválido, remove e redireciona
+        console.log('[API] Token inválido detectado, removendo...');
         await handleTokenExpiration();
         // Retorna um erro especial que pode ser ignorado pelos componentes
         const silentError = new Error('TOKEN_EXPIRED_SILENT');

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { scale } from '../../utils/responsive';
 
 interface NumericKeypadProps {
   onNumberPress: (number: string) => void;

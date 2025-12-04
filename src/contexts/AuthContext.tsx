@@ -30,6 +30,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedUser = await storage.getItem<User>(storageKeys.USER);
 
       if (token && storedUser) {
+        // Verificar se token tem formato válido (JWT tem 3 partes)
+        const tokenParts = token.trim().split('.');
+        if (tokenParts.length !== 3) {
+          // Token inválido, limpa tudo
+          console.log('[AuthContext] Token inválido (formato incorreto), fazendo logout');
+          await logout();
+          return;
+        }
+
         // Verificar se token ainda é válido
         try {
           const decoded = decodeToken(token);
@@ -41,14 +50,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               api.defaults.baseURL = config.apiUrl;
             }
           } else {
+            console.log('[AuthContext] Token expirado, fazendo logout');
             await logout();
           }
         } catch (error) {
+          console.log('[AuthContext] Erro ao decodificar token, fazendo logout');
           await logout();
         }
+      } else {
+        // Sem token ou usuário, garante que está limpo
+        if (token && !storedUser) {
+          // Token existe mas não tem usuário, limpa token
+          await storage.removeItem(storageKeys.TOKEN);
+        }
+        setUser(null);
       }
     } catch (error) {
       console.error('Error checking auth:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }

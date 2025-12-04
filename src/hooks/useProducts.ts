@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { Product, ProductGroup } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 export const useProducts = () => {
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [groups, setGroups] = useState<ProductGroup[]>([]);
   const [loading, setLoading] = useState(false);
@@ -77,8 +79,15 @@ export const useProducts = () => {
   }, []);
 
   useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+    // Só busca grupos se o usuário estiver autenticado
+    if (user) {
+      fetchGroups();
+    } else {
+      // Limpa os dados se não estiver autenticado
+      setGroups([]);
+      setProducts([]);
+    }
+  }, [fetchGroups, user]);
 
   return {
     products,

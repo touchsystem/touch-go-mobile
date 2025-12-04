@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '../components/ui/Card';
 import { Switch } from '../components/ui/Switch';
 import { useTheme } from '../contexts/ThemeContext';
@@ -14,6 +16,7 @@ import { usePaymentMethods } from '../hooks/usePaymentMethods';
 import { scale, scaleFont } from '../utils/responsive';
 
 export default function PaymentMethodsScreen() {
+  const router = useRouter();
   const { colors } = useTheme();
   const { paymentMethods, updatePaymentMethod, loading } = usePaymentMethods();
   const insets = useSafeAreaInsets();
@@ -34,6 +37,13 @@ export default function PaymentMethodsScreen() {
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
+          position: 'relative',
+        },
+        backButton: {
+          position: 'absolute',
+          left: scale(20),
+          top: Math.max(insets.top, scale(10)),
+          padding: scale(8),
         },
         headerTitle: {
           fontSize: scaleFont(18),
@@ -62,8 +72,14 @@ export default function PaymentMethodsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Métodos de pagamentos</Text>
       </View>
 
@@ -87,7 +103,7 @@ export default function PaymentMethodsScreen() {
           ))}
         </Card>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

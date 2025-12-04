@@ -8,6 +8,7 @@ import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
 import { NumericKeypad } from '../ui/NumericKeypad';
 import { scale, scaleFont } from '../../utils/responsive';
+import { useRouter } from 'expo-router';
 
 // Senhas de acesso
 const DEFAULT_PASSWORD = '123456'; // Senha padrão - permite modificar apenas IP
@@ -16,6 +17,7 @@ const MASTER_PASSWORD = '282010'; // Senha master - permite modificar IP, porta 
 type AccessLevel = 'none' | 'default' | 'master';
 
 export const ConfigButton: React.FC = () => {
+  const router = useRouter();
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [code, setCode] = useState('');
@@ -192,15 +194,18 @@ export const ConfigButton: React.FC = () => {
     setShowCodeModal(false);
     setCode('');
     
-    // Define o nível de acesso
-    setAccessLevel(level);
+    // Se for senha master, navega para a tela de configurações completa
+    if (level === 'master') {
+      router.push('/(tabs)/settings');
+      return;
+    }
     
-    // Atualiza os valores dos campos quando abre o modal
+    // Se for senha padrão, abre o modal simples para modificar apenas IP
+    setAccessLevel(level);
     const { ip, port } = parseUrl(currentUrl);
     setServerIp(ip);
     setServerPort(port);
     
-    // Abre o modal de configuração após um pequeno delay para garantir que o estado foi atualizado
     setTimeout(() => {
       setShowConfigModal(true);
     }, 100);

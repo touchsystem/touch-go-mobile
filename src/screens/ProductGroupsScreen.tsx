@@ -15,9 +15,11 @@ import { Button } from '../components/ui/Button';
 import { useCart } from '../contexts/CartContext';
 import { formatCurrency } from '../utils/format';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import { scale, scaleFont } from '../utils/responsive';
 
 export default function ProductGroupsScreen() {
+  const { user } = useAuth();
   const { groups, loading, fetchGroups } = useProducts();
   const { getTotal, getTotalItems, clearCart } = useCart();
   const router = useRouter();
@@ -81,8 +83,11 @@ export default function ProductGroupsScreen() {
   );
 
   useEffect(() => {
-    fetchGroups();
-  }, []);
+    // Só busca grupos se o usuário estiver autenticado
+    if (user) {
+      fetchGroups();
+    }
+  }, [user, fetchGroups]);
 
   const handleGroupPress = (group: ProductGroup) => {
     router.push({
