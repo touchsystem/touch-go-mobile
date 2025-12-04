@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { scale } from '../../utils/responsive';
 
 interface CardProps {
   children: React.ReactNode;
@@ -16,14 +17,14 @@ export const Card: React.FC<CardProps> = ({ children, onPress, style }) => {
       StyleSheet.create({
         card: {
           backgroundColor: colors.card,
-          borderRadius: 12,
-          padding: 16,
+          borderRadius: scale(12),
+          padding: scale(16),
           borderWidth: isDark ? 1 : 0,
           borderColor: colors.border,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
+          shadowOffset: { width: 0, height: scale(2) },
           shadowOpacity: isDark ? 0.25 : 0.1,
-          shadowRadius: 6,
+          shadowRadius: scale(6),
           elevation: 3,
         },
       }),

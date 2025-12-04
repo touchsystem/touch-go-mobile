@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -15,6 +15,12 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onConfirm,
 }) => {
   const { colors, isDark } = useTheme();
+  const { width } = Dimensions.get('window');
+  
+  // Calcula tamanho responsivo baseado na largura da tela
+  const buttonSize = Math.min(width * 0.15, 65); // 15% da largura, máximo 65px
+  const gap = Math.max(width * 0.02, 4); // 2% da largura, mínimo 4px
+  const fontSize = Math.max(width * 0.045, 16); // 4.5% da largura, mínimo 16px
 
   const styles = useMemo(
     () =>
@@ -26,19 +32,19 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
           flexDirection: 'row',
           justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: 12,
-          gap: 8,
+          marginBottom: gap,
+          gap: gap,
         },
         numberButton: {
-          width: 70,
-          height: 70,
+          width: buttonSize,
+          height: buttonSize,
           backgroundColor: isDark ? '#1C2230' : '#F2F4F7',
-          borderRadius: 12,
+          borderRadius: scale(12),
           justifyContent: 'center',
           alignItems: 'center',
         },
         numberText: {
-          fontSize: 20,
+          fontSize: fontSize,
           fontWeight: '600',
           color: colors.text,
         },
@@ -46,7 +52,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
           color: isDark ? '#F4F4F5' : '#111827',
         },
       }),
-    [colors, isDark]
+    [colors, isDark, buttonSize, gap, fontSize]
   );
 
   const NumberButton = ({ number }: { number: string }) => (
@@ -78,11 +84,11 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
       </View>
       <View style={styles.row}>
         <TouchableOpacity style={styles.numberButton} onPress={onDelete}>
-          <Ionicons name="backspace-outline" size={24} color={styles.iconColor.color} />
+          <Ionicons name="backspace-outline" size={fontSize + 4} color={styles.iconColor.color} />
         </TouchableOpacity>
         <NumberButton number="0" />
         <TouchableOpacity style={styles.numberButton} onPress={onConfirm}>
-          <Ionicons name="checkmark" size={24} color={styles.iconColor.color} />
+          <Ionicons name="checkmark" size={fontSize + 4} color={styles.iconColor.color} />
         </TouchableOpacity>
       </View>
     </View>

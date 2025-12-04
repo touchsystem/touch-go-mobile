@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { scale } from '../../utils/responsive';
 
 export const ThemeToggle: React.FC = () => {
   const { theme, isDark, setTheme, colors } = useTheme();
@@ -24,7 +25,7 @@ export const ThemeToggle: React.FC = () => {
     >
       <Ionicons
         name={isDark ? 'sunny-outline' : 'moon-outline'}
-        size={20}
+        size={scale(20)}
         color={colors.text}
       />
     </TouchableOpacity>
@@ -33,9 +34,9 @@ export const ThemeToggle: React.FC = () => {
 
 const styles = StyleSheet.create({
   button: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: scale(40),
+    height: scale(40),
+    borderRadius: scale(20),
     justifyContent: 'center',
     alignItems: 'center',
   },

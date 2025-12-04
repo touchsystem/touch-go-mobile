@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { scale, scaleFont } from '../../utils/responsive';
 
 interface ButtonProps {
   title: string;
@@ -32,12 +33,12 @@ export const Button: React.FC<ButtonProps> = (props) => {
     () =>
       StyleSheet.create({
         button: {
-          height: 50,
-          borderRadius: 10,
+          height: scale(50),
+          borderRadius: scale(10),
           justifyContent: 'center',
           alignItems: 'center',
           flexDirection: 'row',
-          gap: 8,
+          gap: scale(8),
         },
         primary: {
           backgroundColor: colors.primary,
@@ -54,7 +55,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
           opacity: 0.6,
         },
         text: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
         },
         primaryText: {

@@ -24,6 +24,7 @@ import axiosInstance from '../services/api';
 import { storage, storageKeys } from '../services/storage';
 import { Table } from '../types';
 import { capitalizeFirstLetter, formatCurrency } from '../utils/format';
+import { scale, scaleFont } from '../utils/responsive';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -129,69 +130,69 @@ export default function OrdersScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: 20,
-          paddingTop: 40,
+          padding: scale(20),
+          paddingTop: scale(40),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         headerTitle: {
-          fontSize: 18,
+          fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
         },
         content: {
           flex: 1,
-          padding: 16,
+          padding: scale(16),
           backgroundColor: colors.background,
         },
         tableCard: {
-          marginBottom: 16,
+          marginBottom: scale(16),
         },
         infoText: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
         },
         orderSection: {
-          marginBottom: 16,
+          marginBottom: scale(16),
           flex: 1,
-          minHeight: 200,
+          minHeight: scale(200),
         },
         orderHeader: {
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: 12,
+          marginBottom: scale(12),
         },
         sectionTitle: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
         },
         itemsCount: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
         },
         cartItem: {
-          marginBottom: 12,
+          marginBottom: scale(12),
         },
         emptyCart: {
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 40,
+          padding: scale(40),
         },
         emptyCartText: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           color: colors.textSecondary,
-          marginTop: 12,
+          marginTop: scale(12),
         },
         cartItemContent: {
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 12,
+          gap: scale(12),
         },
         observationButton: {
-          padding: 4,
+          padding: scale(4),
         },
         cartItemInfo: {
           flex: 1,
@@ -201,61 +202,61 @@ export default function OrdersScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 6,
+          gap: scale(6),
           flexShrink: 0,
         },
         cartItemName: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
-          marginBottom: 4,
+          marginBottom: scale(4),
         },
         cartItemPrice: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
         },
         cartItemObservation: {
-          fontSize: 12,
+          fontSize: scaleFont(12),
           color: colors.textSecondary,
           fontStyle: 'italic',
-          marginTop: 4,
+          marginTop: scale(4),
         },
         quantityText: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
-          minWidth: 30,
+          minWidth: scale(30),
           textAlign: 'center',
         },
         totalSection: {
-          marginTop: 16,
+          marginTop: scale(16),
         },
         totalCard: {
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: 8,
+          padding: scale(8),
         },
         totalLabel: {
-          fontSize: 18,
+          fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
         },
         totalValue: {
-          fontSize: 20,
+          fontSize: scaleFont(20),
           fontWeight: 'bold',
           color: colors.text,
         },
         footer: {
-          padding: 16,
+          padding: scale(16),
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
         },
         quantityButton: {
-          width: 32,
-          height: 32,
-          borderRadius: 16,
+          width: scale(32),
+          height: scale(32),
+          borderRadius: scale(16),
           backgroundColor: isDark ? '#1F2533' : '#E5E7EB',
           justifyContent: 'center',
           alignItems: 'center',
@@ -586,9 +587,9 @@ export default function OrdersScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={{ width: 24 }} />
+        <View style={{ width: scale(24) }} />
         <Text style={styles.headerTitle}>Vendas</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: scale(24) }} />
       </View>
 
       <View style={styles.content}>
@@ -638,7 +639,7 @@ export default function OrdersScreen() {
 
           {cart.length === 0 ? (
             <View style={styles.emptyCart}>
-              <Ionicons name="cart-outline" size={48} color={colors.textSecondary} />
+              <Ionicons name="cart-outline" size={scale(48)} color={colors.textSecondary} />
               <Text style={styles.emptyCartText}>Carrinho vazio</Text>
             </View>
           ) : (
@@ -667,7 +668,7 @@ export default function OrdersScreen() {
                         }
                         activeOpacity={0.7}
                       >
-                        <Ionicons name="ellipsis-vertical" size={20} color={colors.textSecondary} />
+                        <Ionicons name="ellipsis-vertical" size={scale(20)} color={colors.textSecondary} />
                       </TouchableOpacity>
                       <View style={styles.cartItemInfo}>
                         <Text style={styles.cartItemName}>
@@ -701,14 +702,14 @@ export default function OrdersScreen() {
                             style={styles.quantityButton}
                             onPress={() => handleQuantityChange(principal.uuid, -1)}
                           >
-                            <Ionicons name="remove" size={20} color={colors.text} />
+                            <Ionicons name="remove" size={scale(20)} color={colors.text} />
                           </TouchableOpacity>
                         ) : (
                           <TouchableOpacity
                             style={[styles.quantityButton, { backgroundColor: colors.error + '20' }]}
                             onPress={() => handleRemovePrincipalAndRelacionais(principal)}
                           >
-                            <Ionicons name="trash-outline" size={20} color={colors.error} />
+                            <Ionicons name="trash-outline" size={scale(20)} color={colors.error} />
                           </TouchableOpacity>
                         )}
                         <Text style={styles.quantityText}>{principal.quantidade}</Text>
@@ -716,7 +717,7 @@ export default function OrdersScreen() {
                           style={styles.quantityButton}
                           onPress={() => handleQuantityChange(principal.uuid, 1)}
                         >
-                          <Ionicons name="add" size={20} color={colors.text} />
+                          <Ionicons name="add" size={scale(20)} color={colors.text} />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -744,7 +745,7 @@ export default function OrdersScreen() {
           <Button
             title={`Enviar Pedido - ${formatCurrency(getTotal())}`}
             onPress={handleSendOrder}
-            icon={<Ionicons name="paper-plane-outline" size={20} color="#fff" />}
+            icon={<Ionicons name="paper-plane-outline" size={scale(20)} color="#fff" />}
           />
         </View>
       )}

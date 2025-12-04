@@ -19,6 +19,7 @@ import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Product } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useRelationalGroups } from '../hooks/useRelationalGroups';
+import { scale, scaleFont } from '../utils/responsive';
 
 export default function ProductsScreen() {
   const { codGp } = useLocalSearchParams<{ codGp?: string }>();
@@ -42,34 +43,34 @@ export default function ProductsScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: 20,
-          paddingTop: Math.max(insets.top, 10),
+          padding: scale(20),
+          paddingTop: Math.max(insets.top, scale(10)),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         headerTitle: {
-          fontSize: 18,
+          fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
         },
         orderSummary: {
           flexDirection: 'row',
           alignItems: 'center',
-          padding: 12,
+          padding: scale(12),
           backgroundColor: isDark ? '#1C2230' : '#EEF2F7',
-          gap: 8,
+          gap: scale(8),
         },
         orderSummaryText: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
         },
         orderSummaryDot: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
         },
         orderSummaryPrice: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           fontWeight: '600',
           color: colors.text,
           marginLeft: 'auto',
@@ -78,19 +79,19 @@ export default function ProductsScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           backgroundColor: colors.surface,
-          margin: 16,
-          paddingHorizontal: 12,
-          borderRadius: 10,
+          margin: scale(16),
+          paddingHorizontal: scale(12),
+          borderRadius: scale(10),
           borderWidth: 1,
           borderColor: colors.border,
         },
         searchIcon: {
-          marginRight: 8,
+          marginRight: scale(8),
         },
         searchInput: {
           flex: 1,
-          height: 40,
-          fontSize: 16,
+          height: scale(40),
+          fontSize: scaleFont(16),
           color: colors.text,
         },
         loadingContainer: {
@@ -100,66 +101,66 @@ export default function ProductsScreen() {
           backgroundColor: colors.background,
         },
         loadingText: {
-          marginTop: 12,
-          fontSize: 14,
+          marginTop: scale(12),
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
         },
         errorContainer: {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          padding: 20,
+          padding: scale(20),
           backgroundColor: colors.background,
         },
         errorText: {
-          marginTop: 12,
-          fontSize: 16,
+          marginTop: scale(12),
+          fontSize: scaleFont(16),
           color: colors.error,
           textAlign: 'center',
         },
         retryButton: {
-          marginTop: 20,
-          paddingHorizontal: 20,
-          paddingVertical: 10,
+          marginTop: scale(20),
+          paddingHorizontal: scale(20),
+          paddingVertical: scale(10),
           backgroundColor: colors.primary,
-          borderRadius: 10,
+          borderRadius: scale(10),
         },
         retryButtonText: {
           color: '#fff',
-          fontSize: 14,
+          fontSize: scaleFont(14),
           fontWeight: '600',
         },
         emptyContainer: {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          padding: 20,
+          padding: scale(20),
         },
         emptyText: {
-          marginTop: 12,
-          fontSize: 16,
+          marginTop: scale(12),
+          fontSize: scaleFont(16),
           color: colors.textSecondary,
           textAlign: 'center',
         },
         clearSearchText: {
-          marginTop: 12,
-          fontSize: 14,
+          marginTop: scale(12),
+          fontSize: scaleFont(14),
           color: colors.primary,
           textDecorationLine: 'underline',
         },
         listContent: {
-          padding: 16,
+          padding: scale(16),
         },
         orderButton: {
           backgroundColor: colors.primary,
-          padding: 16,
+          padding: scale(16),
           alignItems: 'center',
-          margin: 16,
-          borderRadius: 10,
+          margin: scale(16),
+          borderRadius: scale(10),
         },
         orderButtonText: {
           color: '#fff',
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
         },
       }),
@@ -270,7 +271,7 @@ export default function ProductsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Produtos</Text>
         <View style={{ width: 24 }} />
@@ -292,7 +293,7 @@ export default function ProductsScreen() {
       )}
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+        <Ionicons name="search-outline" size={scale(20)} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar produtos..."
@@ -309,7 +310,7 @@ export default function ProductsScreen() {
         </View>
       ) : error ? (
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Ionicons name="alert-circle-outline" size={scale(48)} color={colors.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={styles.retryButton}
@@ -320,7 +321,7 @@ export default function ProductsScreen() {
         </View>
       ) : filteredProducts.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="cube-outline" size={48} color={colors.textSecondary} />
+          <Ionicons name="cube-outline" size={scale(48)} color={colors.textSecondary} />
           <Text style={styles.emptyText}>
             {searchQuery ? 'Nenhum produto encontrado' : 'Nenhum produto disponível'}
           </Text>

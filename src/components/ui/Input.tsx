@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ViewStyle, TextInputProps } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { scale, scaleFont } from '../../utils/responsive';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -19,21 +20,21 @@ export const Input: React.FC<InputProps> = (props) => {
     () =>
       StyleSheet.create({
         container: {
-          marginBottom: 20,
+          marginBottom: scale(20),
         },
         label: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           fontWeight: '500',
           color: colors.text,
-          marginBottom: 8,
+          marginBottom: scale(8),
         },
         inputWrapper: {
           flexDirection: 'row',
           alignItems: 'center',
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 10,
-          paddingHorizontal: 12,
+          borderRadius: scale(10),
+          paddingHorizontal: scale(12),
           backgroundColor: isDark ? '#1A1F2B' : '#FFFFFF',
         },
         inputWrapperError: {
@@ -41,18 +42,18 @@ export const Input: React.FC<InputProps> = (props) => {
         },
         input: {
           flex: 1,
-          height: 50,
-          fontSize: 16,
+          height: scale(50),
+          fontSize: scaleFont(16),
           color: colors.text,
         },
         rightIcon: {
-          marginLeft: 10,
-          padding: 4,
+          marginLeft: scale(10),
+          padding: scale(4),
         },
         errorText: {
-          fontSize: 12,
+          fontSize: scaleFont(12),
           color: colors.error,
-          marginTop: 4,
+          marginTop: scale(4),
         },
       }),
     [colors, isDark]

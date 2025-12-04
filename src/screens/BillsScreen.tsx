@@ -20,6 +20,7 @@ import { Card } from '../components/ui/Card';
 import { ViewBillModal } from '../components/ui/ViewBillModal';
 import { useAuth } from '../contexts/AuthContext';
 import { storage, storageKeys } from '../services/storage';
+import { scale, scaleFont } from '../utils/responsive';
 
 export default function BillsScreen() {
   const { tables, loading, error, fetchTables } = useTableContext();
@@ -99,65 +100,65 @@ export default function BillsScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 20,
-          paddingTop: Math.max(insets.top, 40),
+          padding: scale(20),
+          paddingTop: Math.max(insets.top, scale(40)),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         headerTitle: {
-          fontSize: 18,
+          fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
         },
         content: {
           flex: 1,
-          padding: 16,
+          padding: scale(16),
         },
         searchContainer: {
           flexDirection: 'row',
           alignItems: 'center',
           backgroundColor: isDark ? '#1A1F2B' : '#F4F4F5',
-          marginBottom: 16,
-          paddingHorizontal: 12,
-          borderRadius: 8,
+          marginBottom: scale(16),
+          paddingHorizontal: scale(12),
+          borderRadius: scale(8),
           borderWidth: 1,
           borderColor: colors.border,
         },
         searchIcon: {
-          marginRight: 8,
+          marginRight: scale(8),
         },
         searchInput: {
           flex: 1,
-          height: 40,
-          fontSize: 16,
+          height: scale(40),
+          fontSize: scaleFont(16),
           color: colors.text,
         },
         grid: {
-          gap: 8,
+          gap: scale(8),
           justifyContent: 'center',
-          paddingBottom: 16,
+          paddingBottom: scale(16),
         },
         tableCard: {
           width: '23%',
-          minHeight: 60,
+          minHeight: scale(60),
         },
         tableButton: {
           width: '100%',
-          padding: 12,
-          borderRadius: 12,
+          padding: scale(12),
+          borderRadius: scale(12),
           alignItems: 'center',
           justifyContent: 'center',
           borderWidth: 2,
-          minHeight: 80,
+          minHeight: scale(80),
         },
         tableNumber: {
-          fontSize: 18,
+          fontSize: scaleFont(18),
           fontWeight: '600',
-          marginBottom: 4,
+          marginBottom: scale(4),
         },
         tableStatus: {
-          fontSize: 10,
+          fontSize: scaleFont(10),
         },
         loadingContainer: {
           flex: 1,
@@ -168,25 +169,25 @@ export default function BillsScreen() {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          padding: 20,
+          padding: scale(20),
         },
         errorText: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.error,
           textAlign: 'center',
-          marginTop: 12,
+          marginTop: scale(12),
         },
         emptyContainer: {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          padding: 40,
+          padding: scale(40),
         },
         emptyText: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           color: colors.textSecondary,
           textAlign: 'center',
-          marginTop: 12,
+          marginTop: scale(12),
         },
       }),
     [colors, isDark, insets]
@@ -286,7 +287,7 @@ export default function BillsScreen() {
           <Text style={styles.headerTitle}>Contas</Text>
         </View>
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Ionicons name="alert-circle-outline" size={scale(48)} color={colors.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={{
@@ -313,7 +314,7 @@ export default function BillsScreen() {
 
       <View style={styles.content}>
         <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+          <Ionicons name="search-outline" size={scale(20)} color={colors.textSecondary} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar mesa por número..."
@@ -324,7 +325,7 @@ export default function BillsScreen() {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              <Ionicons name="close-circle" size={scale(20)} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
         </View>
@@ -339,13 +340,13 @@ export default function BillsScreen() {
         >
           {filteredTables.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
+              <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
               <Text style={styles.emptyText}>
                 {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
               </Text>
             </View>
           ) : (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: scale(8) }}>
               {filteredTables.map((item) => {
                 const tableColor = getTableColor(item.status);
                 const statusText = getTableStatusText(item.status);

@@ -11,9 +11,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LoginForm } from '../components/login/LoginForm';
-import { ServerConfigButton } from '../components/login/ServerConfigButton';
+import { ConfigButton } from '../components/login/ConfigButton';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { useTheme } from '../contexts/ThemeContext';
+import { scale, scaleFont } from '../utils/responsive';
 
 export default function LoginScreen() {
   const { colors, isDark } = useTheme();
@@ -28,67 +29,68 @@ export default function LoginScreen() {
     },
     content: {
       flex: 1,
-      padding: 20,
+      padding: scale(20),
     },
     header: {
       flexDirection: 'row',
-      justifyContent: 'flex-end',
-      paddingTop: 10,
-      paddingHorizontal: 20,
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingTop: scale(10),
+      paddingHorizontal: scale(20),
     },
     title: {
-      marginTop: 20,
-      fontSize: 24,
+      marginTop: scale(20),
+      fontSize: scaleFont(24),
       fontWeight: 'bold',
       textAlign: 'center',
-      marginBottom: 30,
+      marginBottom: scale(30),
       color: colors.text,
     },
     iconContainer: {
       alignItems: 'center',
-      marginBottom: 40,
+      marginBottom: scale(40),
     },
     iconCircle: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
+      width: scale(80),
+      height: scale(80),
+      borderRadius: scale(40),
       backgroundColor: colors.border,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 20,
+      marginBottom: scale(20),
     },
     welcomeText: {
-      fontSize: 20,
+      fontSize: scaleFont(20),
       fontWeight: 'bold',
       color: colors.text,
-      marginBottom: 8,
+      marginBottom: scale(8),
     },
     subtitle: {
-      fontSize: 12,
+      fontSize: scaleFont(12),
       color: colors.textSecondary,
     },
     supportSection: {
       marginTop: 'auto',
-      marginBottom: 20,
+      marginBottom: scale(20),
     },
     supportText: {
-      fontSize: 11,
+      fontSize: scaleFont(11),
       color: colors.textSecondary,
       textAlign: 'center',
-      marginBottom: 15,
+      marginBottom: scale(15),
     },
     supportButtons: {
       flexDirection: 'row',
       justifyContent: 'center',
-      gap: 20,
+      gap: scale(20),
     },
     supportButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: scale(5),
     },
     supportButtonText: {
-      fontSize: 12,
+      fontSize: scaleFont(12),
       color: colors.text,
     },
   });
@@ -104,6 +106,7 @@ export default function LoginScreen() {
           style={{ flex: 1, backgroundColor: colors.background }}
         >
           <View style={themedStyles.header}>
+            <ConfigButton />
             <ThemeToggle />
           </View>
           <ScrollView 
@@ -114,7 +117,7 @@ export default function LoginScreen() {
             <View style={themedStyles.content}>
               <View style={themedStyles.iconContainer}>
                 <View style={themedStyles.iconCircle}>
-                  <Ionicons name="restaurant" size={48} color={colors.text} />
+                  <Ionicons name="restaurant" size={scale(48)} color={colors.text} />
                 </View>
                 <Text style={themedStyles.welcomeText}>EatzGo Mobile</Text>
                 <Text style={themedStyles.subtitle}>Faça login para acessar o sistema</Text>
@@ -128,18 +131,14 @@ export default function LoginScreen() {
                 </Text>
                 <View style={themedStyles.supportButtons}>
                   <TouchableOpacity style={themedStyles.supportButton}>
-                    <Ionicons name="call-outline" size={18} color={colors.icon} />
+                    <Ionicons name="call-outline" size={scale(18)} color={colors.icon} />
                     <Text style={themedStyles.supportButtonText}>Suporte</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={themedStyles.supportButton}>
-                    <Ionicons name="help-circle-outline" size={18} color={colors.icon} />
+                    <Ionicons name="help-circle-outline" size={scale(18)} color={colors.icon} />
                     <Text style={themedStyles.supportButtonText}>Ajuda</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
-
-              <View style={{ marginBottom: 20 }}>
-                <ServerConfigButton />
               </View>
             </View>
           </ScrollView>

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet, Modal as RNModal, Pressable } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { scale } from '../../utils/responsive';
 
 interface ModalProps {
   visible: boolean;
@@ -28,8 +29,8 @@ export const Modal: React.FC<ModalProps> = ({ visible, onClose, children }) => {
         content: {
           width: '100%',
           backgroundColor: colors.surface,
-          borderRadius: 16,
-          padding: 20,
+          borderRadius: scale(16),
+          padding: scale(20),
         },
       }),
     [colors]

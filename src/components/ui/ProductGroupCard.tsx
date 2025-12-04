@@ -5,6 +5,7 @@ import { Card } from './Card';
 import { useTheme } from '../../contexts/ThemeContext';
 import { capitalizeFirstLetter } from '../../utils/format';
 import { GroupImage } from './GroupImage';
+import { scale, scaleFont } from '../../utils/responsive';
 
 interface ProductGroupCardProps {
   group: ProductGroup;
@@ -19,22 +20,22 @@ export const ProductGroupCard: React.FC<ProductGroupCardProps> = ({ group, onPre
       StyleSheet.create({
         card: {
           flex: 1,
-          margin: 4,
-          minHeight: 120,
+          margin: scale(4),
+          minHeight: scale(120),
         },
         imageContainer: {
           width: '100%',
-          height: 70,
-          marginBottom: 8,
+          height: scale(70),
+          marginBottom: scale(8),
         },
         name: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           fontWeight: '600',
           color: colors.text,
-          marginBottom: 2,
+          marginBottom: scale(2),
         },
         count: {
-          fontSize: 12,
+          fontSize: scaleFont(12),
           color: colors.textSecondary,
         },
       }),

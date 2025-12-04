@@ -13,6 +13,7 @@ import { useProducts } from '../hooks/useProducts';
 import { ProductGroupCard } from '../components/ui/ProductGroupCard';
 import { useTheme } from '../contexts/ThemeContext';
 import { ProductGroup } from '../types';
+import { scale, scaleFont } from '../utils/responsive';
 
 export default function MenuScreen() {
   const { groups, loading, fetchGroups } = useProducts();
@@ -37,19 +38,19 @@ export default function MenuScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 20,
-          paddingTop: Math.max(insets.top, 10),
+          padding: scale(20),
+          paddingTop: Math.max(insets.top, scale(10)),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         headerTitle: {
-          fontSize: 18,
+          fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
         },
         listContent: {
-          padding: 12,
+          padding: scale(12),
         },
         row: {
           justifyContent: 'space-between',
@@ -58,13 +59,13 @@ export default function MenuScreen() {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          padding: 20,
+          padding: scale(20),
         },
         emptyText: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           color: colors.textSecondary,
           textAlign: 'center',
-          marginTop: 12,
+          marginTop: scale(12),
         },
       }),
     [colors, insets]
@@ -96,7 +97,7 @@ export default function MenuScreen() {
           <Text style={styles.headerTitle}>Cardápio</Text>
         </View>
         <View style={styles.emptyContainer}>
-          <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
+          <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
           <Text style={styles.emptyText}>Nenhum grupo de produtos disponível</Text>
         </View>
       </View>

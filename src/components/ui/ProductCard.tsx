@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
 import { capitalizeFirstLetter } from '../../utils/format';
+import { scale, scaleFont } from '../../utils/responsive';
 
 interface ProductCardProps {
   product: Product;
@@ -18,9 +19,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
       StyleSheet.create({
         container: {
           backgroundColor: colors.card,
-          borderRadius: 12,
-          marginBottom: 12,
-          padding: 16,
+          borderRadius: scale(12),
+          marginBottom: scale(12),
+          padding: scale(16),
           borderWidth: isDark ? 1 : 0,
           borderColor: colors.border,
         },
@@ -31,28 +32,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
         },
         info: {
           flex: 1,
-          marginRight: 12,
+          marginRight: scale(12),
         },
         name: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
-          marginBottom: 4,
+          marginBottom: scale(4),
         },
         description: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
-          marginBottom: 8,
+          marginBottom: scale(8),
         },
         price: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
         },
         addButton: {
-          width: 44,
-          height: 44,
-          borderRadius: 22,
+          width: scale(44),
+          height: scale(44),
+          borderRadius: scale(22),
           backgroundColor: isDark ? '#1F2533' : '#E5E7EB',
           justifyContent: 'center',
           alignItems: 'center',

@@ -15,6 +15,7 @@ import { Button } from '../components/ui/Button';
 import { useCart } from '../contexts/CartContext';
 import { formatCurrency } from '../utils/format';
 import { useTheme } from '../contexts/ThemeContext';
+import { scale, scaleFont } from '../utils/responsive';
 
 export default function ProductGroupsScreen() {
   const { groups, loading, fetchGroups } = useProducts();
@@ -39,38 +40,38 @@ export default function ProductGroupsScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: 20,
-          paddingTop: 40,
+          padding: scale(20),
+          paddingTop: scale(40),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         headerTitle: {
-          fontSize: 18,
+          fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
         },
         headerRight: {
-          width: 24,
+          width: scale(24),
         },
         listContent: {
-          padding: 12,
+          padding: scale(12),
         },
         row: {
           justifyContent: 'space-between',
         },
         footer: {
-          padding: 16,
+          padding: scale(16),
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
         },
         sendButton: {
-          marginBottom: 12,
+          marginBottom: scale(12),
         },
         footerButtons: {
           flexDirection: 'row',
-          gap: 12,
+          gap: scale(12),
         },
         footerButton: {
           flex: 1,
@@ -116,7 +117,7 @@ export default function ProductGroupsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Grupos de Produtos</Text>
         <View style={styles.headerRight} />
@@ -140,7 +141,7 @@ export default function ProductGroupsScreen() {
         <Button
           title="Enviar Pedido"
           onPress={handleSendOrder}
-          icon={<Ionicons name="paper-plane-outline" size={20} color="#fff" />}
+          icon={<Ionicons name="paper-plane-outline" size={scale(20)} color="#fff" />}
           style={styles.sendButton}
         />
         <View style={styles.footerButtons}>
@@ -148,14 +149,14 @@ export default function ProductGroupsScreen() {
             title="Salvar"
             variant="outline"
             onPress={handleSave}
-            icon={<Ionicons name="lock-closed-outline" size={18} color={colors.text} />}
+            icon={<Ionicons name="lock-closed-outline" size={scale(18)} color={colors.text} />}
             style={styles.footerButton}
           />
           <Button
             title="Limpar"
             variant="outline"
             onPress={handleClear}
-            icon={<Ionicons name="trash-outline" size={18} color={colors.text} />}
+            icon={<Ionicons name="trash-outline" size={scale(18)} color={colors.text} />}
             style={styles.footerButton}
           />
         </View>

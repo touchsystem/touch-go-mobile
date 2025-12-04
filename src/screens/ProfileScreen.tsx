@@ -15,6 +15,7 @@ import { ColorPicker } from '../components/ui/ColorPicker';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { scale, scaleFont } from '../utils/responsive';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
@@ -33,104 +34,104 @@ export default function ProfileScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 20,
-          paddingTop: 40,
+          padding: scale(20),
+          paddingTop: scale(40),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         headerTitle: {
-          fontSize: 18,
+          fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
         },
         scrollContent: {
-          padding: 16,
+          padding: scale(16),
         },
         avatarContainer: {
           alignItems: 'center',
-          marginBottom: 24,
+          marginBottom: scale(24),
         },
         avatar: {
-          width: 100,
-          height: 100,
-          borderRadius: 50,
+          width: scale(100),
+          height: scale(100),
+          borderRadius: scale(50),
           backgroundColor: colors.primary,
           justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: 16,
+          marginBottom: scale(16),
         },
         avatarText: {
-          fontSize: 36,
+          fontSize: scaleFont(36),
           fontWeight: 'bold',
           color: '#fff',
         },
         userName: {
-          fontSize: 24,
+          fontSize: scaleFont(24),
           fontWeight: '600',
           color: colors.text,
-          marginBottom: 4,
+          marginBottom: scale(4),
         },
         userEmail: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
         },
         section: {
-          marginBottom: 24,
+          marginBottom: scale(24),
         },
         sectionTitle: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
-          marginBottom: 12,
+          marginBottom: scale(12),
         },
         infoRow: {
           flexDirection: 'row',
           alignItems: 'center',
-          paddingVertical: 12,
+          paddingVertical: scale(12),
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         infoLabel: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
           flex: 1,
         },
         infoValue: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           fontWeight: '500',
           color: colors.text,
         },
         logoutButton: {
-          marginTop: 12,
+          marginTop: scale(12),
         },
         logoutButtonDanger: {
-          marginTop: 12,
+          marginTop: scale(12),
           borderColor: colors.error,
         },
         themeSection: {
-          marginBottom: 24,
+          marginBottom: scale(24),
         },
         themeRow: {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          paddingVertical: 12,
+          paddingVertical: scale(12),
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
         },
         themeLabel: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
           flex: 1,
         },
         themeToggleContainer: {
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 12,
+          gap: scale(12),
         },
         themeModeText: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           fontWeight: '500',
           color: colors.text,
         },
@@ -251,7 +252,7 @@ export default function ProfileScreen() {
           title="Trocar Usuário"
           variant="outline"
           onPress={handleChangeWaiter}
-          icon={<Ionicons name="person-outline" size={20} color={colors.text} />}
+          icon={<Ionicons name="person-outline" size={scale(20)} color={colors.text} />}
           style={styles.logoutButton}
         />
 
@@ -259,7 +260,7 @@ export default function ProfileScreen() {
           title="Sair do Sistema"
           variant="outline"
           onPress={handleLogout}
-          icon={<Ionicons name="log-out-outline" size={20} color={colors.error} />}
+          icon={<Ionicons name="log-out-outline" size={scale(20)} color={colors.error} />}
           style={[styles.logoutButton, styles.logoutButtonDanger]}
           textStyle={{ color: colors.error }}
         />
