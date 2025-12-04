@@ -71,6 +71,16 @@ export default function SettingsScreen() {
           color: colors.text,
           marginBottom: scale(12),
         },
+        blockTitle: {
+          fontSize: scaleFont(14),
+          fontWeight: '600',
+          color: colors.text,
+          marginTop: scale(16),
+          marginBottom: scale(8),
+          paddingHorizontal: scale(16),
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+        },
         settingRow: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -224,79 +234,54 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* IP do Servidor */}
-        <View style={styles.section}>
-          <Text style={styles.inputLabel}>Ip do Servidor</Text>
-          <TextInput
-            style={styles.input}
-            value={settings.serverIp}
-            onChangeText={(text) => updateSetting('serverIp', text)}
-            placeholder="192.168.0.100"
-            placeholderTextColor={colors.textSecondary}
-            keyboardType="numeric"
-          />
-        </View>
+        {/* Bloco: Servidor e Conexão */}
+        <Text style={styles.blockTitle}>Servidor e Conexão</Text>
+        <Card style={styles.section}>
+          <View style={{ marginBottom: scale(16) }}>
+            <Text style={styles.inputLabel}>IP do Servidor</Text>
+            <TextInput
+              style={styles.input}
+              value={settings.serverIp}
+              onChangeText={(text) => updateSetting('serverIp', text)}
+              placeholder="192.168.0.100"
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="numeric"
+            />
+          </View>
 
-        {/* Número do Celular */}
-        <View style={styles.section}>
-          <Text style={styles.inputLabel}>Número do Celular</Text>
-          <TextInput
-            style={styles.input}
-            value={settings.cellphoneNumber || '20'}
-            onChangeText={(text) => updateSetting('cellphoneNumber', text)}
-            placeholder="20"
-            placeholderTextColor={colors.textSecondary}
-            keyboardType="numeric"
-          />
-        </View>
+          <View style={{ marginBottom: scale(16) }}>
+            <Text style={styles.inputLabel}>Porta</Text>
+            <TextInput
+              style={styles.input}
+              value={settings.serverPort}
+              onChangeText={(text) => updateSetting('serverPort', text)}
+              placeholder="5000"
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="numeric"
+            />
+          </View>
 
-        {/* Configurações com Toggles */}
+          <View>
+            <Text style={styles.inputLabel}>Número do Equipamento</Text>
+            <TextInput
+              style={styles.input}
+              value={settings.cellphoneNumber || '20'}
+              onChangeText={(text) => updateSetting('cellphoneNumber', text)}
+              placeholder="20"
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="numeric"
+            />
+          </View>
+        </Card>
+
+        {/* Bloco: Interface e Visualização */}
+        <Text style={styles.blockTitle}>Interface e Visualização</Text>
         <Card style={styles.section}>
           <View style={styles.toggleRow}>
             <Text style={styles.toggleLabel}>Tela Deitada</Text>
             <Switch
               value={settings.landscapeScreen}
               onValueChange={(value) => updateSetting('landscapeScreen', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Venda Direta</Text>
-            <Switch
-              value={settings.directSale}
-              onValueChange={(value) => updateSetting('directSale', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Recebimento direta com cartão</Text>
-            <Switch
-              value={settings.directReceiptWithCard}
-              onValueChange={(value) => updateSetting('directReceiptWithCard', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Mostrar Turista</Text>
-            <Switch
-              value={settings.showTourist}
-              onValueChange={(value) => updateSetting('showTourist', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Agrupar Quantidade no Pedido</Text>
-            <Switch
-              value={settings.groupQuantityInOrder}
-              onValueChange={(value) => updateSetting('groupQuantityInOrder', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Balança</Text>
-            <Switch
-              value={settings.scale}
-              onValueChange={(value) => updateSetting('scale', value)}
             />
           </View>
 
@@ -308,22 +293,54 @@ export default function SettingsScreen() {
             />
           </View>
 
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Abertura Cartão</Text>
+          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.toggleLabel}>Mostrar Turista</Text>
             <Switch
-              value={settings.cardOpening}
-              onValueChange={(value) => updateSetting('cardOpening', value)}
+              value={settings.showTourist}
+              onValueChange={(value) => updateSetting('showTourist', value)}
+            />
+          </View>
+        </Card>
+
+        {/* Bloco: Vendas e Pedidos */}
+        <Text style={styles.blockTitle}>Vendas e Pedidos</Text>
+        <Card style={styles.section}>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Venda Direta</Text>
+            <Switch
+              value={settings.directSale}
+              onValueChange={(value) => updateSetting('directSale', value)}
             />
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Bar2</Text>
+            <Text style={styles.toggleLabel}>Recebimento Direta com Cartão</Text>
             <Switch
-              value={settings.bar2}
-              onValueChange={(value) => updateSetting('bar2', value)}
+              value={settings.directReceiptWithCard}
+              onValueChange={(value) => updateSetting('directReceiptWithCard', value)}
             />
           </View>
 
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Entrada Direta</Text>
+            <Switch
+              value={settings.directEntry}
+              onValueChange={(value) => updateSetting('directEntry', value)}
+            />
+          </View>
+
+          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.toggleLabel}>Agrupar Quantidade no Pedido</Text>
+            <Switch
+              value={settings.groupQuantityInOrder}
+              onValueChange={(value) => updateSetting('groupQuantityInOrder', value)}
+            />
+          </View>
+        </Card>
+
+        {/* Bloco: Comandas e Impressão */}
+        <Text style={styles.blockTitle}>Comandas e Impressão</Text>
+        <Card style={styles.section}>
           <View style={styles.toggleRow}>
             <Text style={styles.toggleLabel}>Segunda via Comanda</Text>
             <Switch
@@ -348,6 +365,46 @@ export default function SettingsScreen() {
             />
           </View>
 
+          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.toggleLabel}>Segunda Comanda Mesa</Text>
+            <Switch
+              value={settings.secondTableOrder}
+              onValueChange={(value) => updateSetting('secondTableOrder', value)}
+            />
+          </View>
+        </Card>
+
+        {/* Bloco: Cartões e Mesas */}
+        <Text style={styles.blockTitle}>Cartões e Mesas</Text>
+        <Card style={styles.section}>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Abertura Cartão</Text>
+            <Switch
+              value={settings.cardOpening}
+              onValueChange={(value) => updateSetting('cardOpening', value)}
+            />
+          </View>
+
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Campos Obrigatórios Abertura Cartão</Text>
+            <Switch
+              value={settings.mandatoryFieldsCardOpening}
+              onValueChange={(value) => updateSetting('mandatoryFieldsCardOpening', value)}
+            />
+          </View>
+
+          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.toggleLabel}>Cartão NFC</Text>
+            <Switch
+              value={settings.nfcCard}
+              onValueChange={(value) => updateSetting('nfcCard', value)}
+            />
+          </View>
+        </Card>
+
+        {/* Bloco: Caixa e Contas */}
+        <Text style={styles.blockTitle}>Caixa e Contas</Text>
+        <Card style={styles.section}>
           <View style={styles.toggleRow}>
             <Text style={styles.toggleLabel}>Caixa</Text>
             <Switch
@@ -357,47 +414,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Cartão NFC</Text>
-            <Switch
-              value={settings.nfcCard}
-              onValueChange={(value) => updateSetting('nfcCard', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Entrada Direta</Text>
-            <Switch
-              value={settings.directEntry}
-              onValueChange={(value) => updateSetting('directEntry', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Emitir Nota Fiscal Webenefix</Text>
-            <Switch
-              value={settings.emitWebenefixInvoice}
-              onValueChange={(value) => updateSetting('emitWebenefixInvoice', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Campos Obrigatorios Abertura Cartão</Text>
-            <Switch
-              value={settings.mandatoryFieldsCardOpening}
-              onValueChange={(value) => updateSetting('mandatoryFieldsCardOpening', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Segunda Comanda Mesa</Text>
-            <Switch
-              value={settings.secondTableOrder}
-              onValueChange={(value) => updateSetting('secondTableOrder', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Remover as opcoes de contas</Text>
+            <Text style={styles.toggleLabel}>Remover as Opções de Contas</Text>
             <Switch
               value={settings.removeAccountOptions}
               onValueChange={(value) => updateSetting('removeAccountOptions', value)}
@@ -405,7 +422,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Remover conta caixa</Text>
+            <Text style={styles.toggleLabel}>Remover Conta Caixa</Text>
             <Switch
               value={settings.removeCashierAccount}
               onValueChange={(value) => updateSetting('removeCashierAccount', value)}
@@ -417,6 +434,34 @@ export default function SettingsScreen() {
             <Switch
               value={settings.hideAnticipation}
               onValueChange={(value) => updateSetting('hideAnticipation', value)}
+            />
+          </View>
+        </Card>
+
+        {/* Bloco: Equipamentos e Integrações */}
+        <Text style={styles.blockTitle}>Equipamentos e Integrações</Text>
+        <Card style={styles.section}>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Balança</Text>
+            <Switch
+              value={settings.scale}
+              onValueChange={(value) => updateSetting('scale', value)}
+            />
+          </View>
+
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Bar2</Text>
+            <Switch
+              value={settings.bar2}
+              onValueChange={(value) => updateSetting('bar2', value)}
+            />
+          </View>
+
+          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.toggleLabel}>Emitir Nota Fiscal Webenefix</Text>
+            <Switch
+              value={settings.emitWebenefixInvoice}
+              onValueChange={(value) => updateSetting('emitWebenefixInvoice', value)}
             />
           </View>
         </Card>
