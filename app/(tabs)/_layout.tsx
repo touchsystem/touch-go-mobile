@@ -2,10 +2,12 @@ import { useTheme } from '@/src/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useSegments } from 'expo-router';
 import React, { useMemo } from 'react';
+import { useSystemSettings } from '@/src/hooks/useSystemSettings';
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const segments = useSegments();
+  const { settings } = useSystemSettings();
 
   // Verifica se está na tela de settings ou payment-methods
   const isSettingsScreen = segments.includes('settings') || segments.includes('payment-methods');
@@ -17,6 +19,16 @@ export default function TabLayout() {
       tabBarStyle: isSettingsScreen ? { display: 'none' } : undefined,
     }),
     [colors, isSettingsScreen]
+  );
+
+  // Opções da aba de Contas baseadas na configuração
+  const billsScreenOptions = useMemo(
+    () => ({
+      title: 'Contas',
+      tabBarIcon: ({ color }: { color: string }) => <Ionicons name="document-text-outline" size={24} color={color} />,
+      href: settings.printAccounts ? undefined : null, // Mostra/esconde baseado na configuração
+    }),
+    [settings.printAccounts]
   );
 
   return (
@@ -37,10 +49,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="bills"
-        options={{
-          title: 'Contas',
-          tabBarIcon: ({ color }) => <Ionicons name="document-text-outline" size={24} color={color} />,
-        }}
+        options={billsScreenOptions}
       />
       <Tabs.Screen
         name="profile"

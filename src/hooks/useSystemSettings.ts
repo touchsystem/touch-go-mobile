@@ -33,6 +33,7 @@ export interface SystemSettings {
   removeAccountOptions: boolean;
   removeCashierAccount: boolean;
   hideAnticipation: boolean;
+  printAccounts: boolean;
 }
 
 const DEFAULT_SETTINGS: SystemSettings = {
@@ -62,6 +63,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
   removeAccountOptions: false,
   removeCashierAccount: false,
   hideAnticipation: false,
+  printAccounts: true,
 };
 
 const SETTINGS_STORAGE_KEY = 'systemSettings';

@@ -365,6 +365,14 @@ export default function SettingsScreen() {
             />
           </View>
 
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Impressão de Contas</Text>
+            <Switch
+              value={settings.printAccounts}
+              onValueChange={(value) => updateSetting('printAccounts', value)}
+            />
+          </View>
+
           <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
             <Text style={styles.toggleLabel}>Segunda Comanda Mesa</Text>
             <Switch
