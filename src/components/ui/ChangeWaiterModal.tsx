@@ -8,11 +8,13 @@ import {
   TextInput,
   Alert,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Button } from './Button';
 import { storage, storageKeys } from '../../services/storage';
+import api from '../../services/api';
 
 interface ChangeWaiterModalProps {
   visible: boolean;
@@ -29,13 +31,23 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
 }) => {
   const { colors, isDark } = useTheme();
   const [nick, setNick] = useState(currentNick);
+  const [validating, setValidating] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (visible) {
       // Carrega o último nick usado do storage
       loadLastUsedNick();
+      setValidationError(null);
     }
   }, [visible]);
+
+  useEffect(() => {
+    // Limpa erro de validação quando o nick muda
+    if (validationError) {
+      setValidationError(null);
+    }
+  }, [nick]);
 
   const loadLastUsedNick = async () => {
     try {
@@ -93,11 +105,21 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
         input: {
           backgroundColor: isDark ? '#1A1F2B' : '#FFFFFF',
           borderWidth: 1,
-          borderColor: colors.border,
+          borderColor: validationError ? colors.error : colors.border,
           borderRadius: 8,
           padding: 12,
           fontSize: 16,
           color: colors.text,
+        },
+        errorText: {
+          fontSize: 12,
+          color: colors.error,
+          marginTop: 4,
+        },
+        validationContainer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginTop: 4,
         },
         buttonsContainer: {
           flexDirection: 'row',
@@ -106,12 +128,69 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
           marginTop: 20,
         },
       }),
-    [colors, isDark]
+    [colors, isDark, validationError]
   );
+
+  const validateNick = async (nickToValidate: string): Promise<boolean> => {
+    try {
+      setValidating(true);
+      setValidationError(null);
+
+      // Busca usuário por nick na API usando o mesmo endpoint do projeto web
+      const response = await api.get('/usuarios', {
+        params: { usuario: nickToValidate.trim() },
+      });
+      
+      // Verifica se retornou um array com pelo menos um usuário
+      const users = response.data;
+      if (Array.isArray(users) && users.length > 0) {
+        // Verifica se algum usuário tem o nick exato (case-insensitive)
+        const foundUser = users.find(
+          (user: any) => user.nick?.toLowerCase() === nickToValidate.trim().toLowerCase()
+        );
+        
+        if (foundUser && foundUser.id) {
+          // Usuário encontrado
+          return true;
+        }
+      }
+      
+      // Usuário não encontrado
+      setValidationError('Usuário não encontrado');
+      return false;
+    } catch (error: any) {
+      // Se for 404, usuário não existe
+      if (error.response?.status === 404) {
+        setValidationError('Usuário não encontrado');
+        return false;
+      }
+      
+      // Se retornar array vazio, usuário não existe
+      if (error.response?.status === 200 && Array.isArray(error.response?.data) && error.response.data.length === 0) {
+        setValidationError('Usuário não encontrado');
+        return false;
+      }
+      
+      // Outros erros (rede, servidor, etc)
+      const errorMessage = error.response?.data?.erro || error.message || 'Erro ao validar usuário';
+      setValidationError(errorMessage);
+      return false;
+    } finally {
+      setValidating(false);
+    }
+  };
 
   const handleConfirm = async () => {
     if (!nick.trim()) {
       Alert.alert('Erro', 'O usuário é obrigatório!');
+      return;
+    }
+
+    // Valida se o nick existe
+    const isValid = await validateNick(nick.trim());
+    
+    if (!isValid) {
+      // Erro já foi definido em validationError
       return;
     }
 
@@ -152,7 +231,22 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
                 placeholderTextColor={colors.textSecondary}
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!validating}
               />
+              {validating && (
+                <View style={styles.validationContainer}>
+                  <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8 }} />
+                  <Text style={[styles.errorText, { color: colors.textSecondary }]}>
+                    Validando usuário...
+                  </Text>
+                </View>
+              )}
+              {validationError && !validating && (
+                <View style={styles.validationContainer}>
+                  <Ionicons name="alert-circle" size={16} color={colors.error} style={{ marginRight: 4 }} />
+                  <Text style={styles.errorText}>{validationError}</Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.buttonsContainer}>
@@ -166,6 +260,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
                 title="Confirmar"
                 onPress={handleConfirm}
                 style={{ minWidth: 100 }}
+                disabled={validating || !!validationError}
               />
             </View>
           </View>

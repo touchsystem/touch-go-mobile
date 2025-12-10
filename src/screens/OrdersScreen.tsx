@@ -264,7 +264,24 @@ export default function OrdersScreen() {
         infoRow: {
           flexDirection: 'row',
           justifyContent: 'space-between',
+          alignItems: 'center',
           marginTop: 8,
+        },
+        infoLeft: {
+          flex: 1,
+        },
+        changeTableButton: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: scale(4),
+          paddingHorizontal: scale(12),
+          paddingVertical: scale(6),
+          borderRadius: scale(8),
+          backgroundColor: isDark ? '#1F2533' : '#E5E7EB',
+        },
+        changeTableText: {
+          fontSize: scaleFont(12),
+          fontWeight: '600',
         },
       }),
     [colors, isDark, listHeight, insets]
@@ -596,8 +613,35 @@ export default function OrdersScreen() {
         {selectedTable && (
           <Card style={styles.tableCard}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoText}>Usuário: {user?.nome || 'N/A'}</Text>
-              <Text style={styles.infoText}>Mesa: #{selectedTable.numero}</Text>
+              <View style={styles.infoLeft}>
+                <Text style={styles.infoText}>Usuário: {user?.nome || 'N/A'}</Text>
+                <Text style={styles.infoText}>Mesa: #{selectedTable.numero}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  Alert.alert(
+                    'Trocar Mesa',
+                    'Deseja trocar a mesa selecionada?',
+                    [
+                      {
+                        text: 'Cancelar',
+                        style: 'cancel',
+                      },
+                      {
+                        text: 'Trocar',
+                        onPress: () => {
+                          setSelectedTable(null);
+                          setIsTableMapVisible(true);
+                        },
+                      },
+                    ]
+                  );
+                }}
+                style={styles.changeTableButton}
+              >
+                <Ionicons name="swap-horizontal-outline" size={scale(20)} color={colors.primary} />
+                <Text style={[styles.changeTableText, { color: colors.primary }]}>Trocar</Text>
+              </TouchableOpacity>
             </View>
           </Card>
         )}

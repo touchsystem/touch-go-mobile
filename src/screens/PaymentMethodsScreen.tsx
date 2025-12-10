@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
+  BackHandler,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,15 +12,32 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '../components/ui/Card';
 import { Switch } from '../components/ui/Switch';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { usePaymentMethods } from '../hooks/usePaymentMethods';
 import { scale, scaleFont } from '../utils/responsive';
 
 export default function PaymentMethodsScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const { colors } = useTheme();
   const { paymentMethods, updatePaymentMethod, loading } = usePaymentMethods();
   const insets = useSafeAreaInsets();
+
+  const handleBack = () => {
+    // Sempre volta para a tela de configurações
+    router.replace('/(tabs)/settings');
+  };
+
+  // Intercepta o botão físico de voltar do Android
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      router.replace('/(tabs)/settings');
+      return true; // Previne o comportamento padrão (fechar app)
+    });
+
+    return () => backHandler.remove();
+  }, [router]);
 
   const styles = useMemo(
     () =>
@@ -76,7 +94,7 @@ export default function PaymentMethodsScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={handleBack}
         >
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>

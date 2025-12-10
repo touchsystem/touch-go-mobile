@@ -1,9 +1,9 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback, memo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -135,13 +135,13 @@ export default function BillsScreen() {
           color: colors.text,
         },
         grid: {
-          gap: scale(8),
-          justifyContent: 'center',
+          padding: scale(8),
           paddingBottom: scale(16),
         },
         tableCard: {
           width: '23%',
           minHeight: scale(60),
+          margin: scale(2),
         },
         tableButton: {
           width: '100%',
@@ -242,21 +242,23 @@ export default function BillsScreen() {
     setSelectedTable(null);
   };
 
+  // Otimização: Remove duplicatas em O(n) em vez de O(n²)
   const filteredTables = useMemo(() => {
-    // Remove duplicatas baseado em mesa_cartao (mantém apenas a ÚLTIMA ocorrência para preservar atualizações)
-    const uniqueTables = tables.filter((table, index, self) => {
-      // Encontra o último índice da mesa com o mesmo mesa_cartao
-      let lastIndex = -1;
-      for (let i = self.length - 1; i >= 0; i--) {
-        if (self[i].mesa_cartao === table.mesa_cartao) {
-          lastIndex = i;
-          break;
-        }
+    // Usa Map para remover duplicatas de forma eficiente (O(n))
+    const tableMap = new Map<number, Table>();
+    
+    // Itera uma vez e mantém apenas a última ocorrência de cada mesa
+    for (let i = tables.length - 1; i >= 0; i--) {
+      const table = tables[i];
+      if (!tableMap.has(table.mesa_cartao)) {
+        tableMap.set(table.mesa_cartao, table);
       }
-      // Mantém apenas a última ocorrência (a mais atualizada)
-      return index === lastIndex;
-    });
+    }
+    
+    // Converte Map para array e ordena por mesa_cartao para manter ordem correta
+    const uniqueTables = Array.from(tableMap.values()).sort((a, b) => a.mesa_cartao - b.mesa_cartao);
 
+    // Aplica filtro de busca se houver
     if (!searchQuery.trim()) {
       return uniqueTables;
     }
@@ -330,70 +332,39 @@ export default function BillsScreen() {
           )}
         </View>
 
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.grid}
-          scrollEnabled={!isViewBillModalVisible}
-          nestedScrollEnabled={false}
-          pointerEvents={isViewBillModalVisible ? 'none' : 'auto'}
-          keyboardShouldPersistTaps="handled"
-        >
-          {filteredTables.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
-              <Text style={styles.emptyText}>
-                {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
-              </Text>
-            </View>
-          ) : (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: scale(8) }}>
-              {filteredTables.map((item) => {
-                const tableColor = getTableColor(item.status);
-                const statusText = getTableStatusText(item.status);
-                const canViewBill = item.status === 'O' || item.status === 'F';
-
-                return (
-                  <View key={`table-${item.mesa_cartao}`} style={styles.tableCard}>
-                    <TouchableOpacity
-                      style={[
-                        styles.tableButton,
-                        {
-                          backgroundColor: tableColor,
-                          borderColor: colors.border,
-                          borderWidth: 2,
-                        },
-                      ]}
-                      onPress={() => handleTableSelect(item)}
-                      activeOpacity={0.7}
-                      disabled={!canViewBill}
-                    >
-                      <Text
-                        style={[
-                          styles.tableNumber,
-                          {
-                            color: item.status === 'L' && !isDark ? '#111827' : '#FFFFFF',
-                          },
-                        ]}
-                      >
-                        {item.mesa_cartao}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.tableStatus,
-                          {
-                            color: item.status === 'L' && !isDark ? '#6B7280' : '#FFFFFF',
-                          },
-                        ]}
-                      >
-                        {statusText}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-        </ScrollView>
+        {filteredTables.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
+            <Text style={styles.emptyText}>
+              {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredTables}
+            numColumns={4}
+            keyExtractor={(item) => `table-${item.mesa_cartao}`}
+            contentContainerStyle={styles.grid}
+            scrollEnabled={!isViewBillModalVisible}
+            keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={16}
+            updateCellsBatchingPeriod={50}
+            initialNumToRender={16}
+            windowSize={5}
+            renderItem={({ item }) => (
+              <TableCard
+                table={item}
+                onPress={handleTableSelect}
+                getTableColor={getTableColor}
+                getTableStatusText={getTableStatusText}
+                colors={colors}
+                isDark={isDark}
+                styles={styles}
+              />
+            )}
+          />
+        )}
       </View>
 
       {selectedTable && (
@@ -406,4 +377,67 @@ export default function BillsScreen() {
     </View>
   );
 }
+
+// Componente memoizado para melhor performance
+const TableCard = memo<{
+  table: Table;
+  onPress: (table: Table) => void;
+  getTableColor: (status: string) => string;
+  getTableStatusText: (status: string) => string;
+  colors: any;
+  isDark: boolean;
+  styles: any;
+}>(({ table, onPress, getTableColor, getTableStatusText, colors, isDark, styles }) => {
+  const tableColor = getTableColor(table.status);
+  const statusText = getTableStatusText(table.status);
+  const canViewBill = table.status === 'O' || table.status === 'F';
+
+  return (
+    <View style={styles.tableCard}>
+      <TouchableOpacity
+        style={[
+          styles.tableButton,
+          {
+            backgroundColor: tableColor,
+            borderColor: colors.border,
+            borderWidth: 2,
+          },
+        ]}
+        onPress={() => onPress(table)}
+        activeOpacity={0.7}
+        disabled={!canViewBill}
+      >
+        <Text
+          style={[
+            styles.tableNumber,
+            {
+              color: table.status === 'L' && !isDark ? '#111827' : '#FFFFFF',
+            },
+          ]}
+        >
+          {table.mesa_cartao}
+        </Text>
+        <Text
+          style={[
+            styles.tableStatus,
+            {
+              color: table.status === 'L' && !isDark ? '#6B7280' : '#FFFFFF',
+            },
+          ]}
+        >
+          {statusText}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}, (prevProps, nextProps) => {
+  // Comparação customizada para evitar re-renders desnecessários
+  return (
+    prevProps.table.mesa_cartao === nextProps.table.mesa_cartao &&
+    prevProps.table.status === nextProps.table.status &&
+    prevProps.isDark === nextProps.isDark
+  );
+});
+
+TableCard.displayName = 'TableCard';
 

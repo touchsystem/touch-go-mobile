@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, memo, useCallback } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -251,18 +251,19 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         [colors, isDark]
     );
 
-    // Função para parsear fração
-    const parseFraction = (qtd: any): number => {
+    // Função para parsear fração (movida para fora do useCallback)
+    const parseFraction = useCallback((qtd: any): number => {
         if (typeof qtd === 'string' && qtd.includes('/')) {
             const [num, den] = qtd.split('/').map(Number);
             return den ? num / den : 0;
         }
         return Number(qtd) || 0;
-    };
+    }, []);
 
     // Função para calcular o total de um item incluindo relacionais
     // Segue a mesma lógica do receipt-content.tsx
-    const calculateItemTotal = (item: Venda): number => {
+    // Memoizada com useCallback para evitar recriações
+    const calculateItemTotal = useCallback((item: Venda): number => {
         const relacionais =
             (item.itens_relacionais && Array.isArray(item.itens_relacionais))
                 ? item.itens_relacionais
@@ -312,9 +313,13 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         const itemTotal = totalPrincipal + totalRelacionais - (item.desconto || 0);
 
         return itemTotal;
-    };
+    }, [parseFraction]);
 
-    const total = data?.vendas?.reduce((sum, item) => sum + calculateItemTotal(item), 0) || 0;
+    // Memoiza o cálculo do total para evitar recálculos desnecessários
+    const total = useMemo(() => {
+      if (!data?.vendas || data.vendas.length === 0) return 0;
+      return data.vendas.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+    }, [data?.vendas]);
 
     return (
         <Modal
@@ -368,33 +373,15 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                         removeClippedSubviews={true}
                                         overScrollMode="auto"
                                     >
-                                        {data.vendas.map((item) => {
-                                            const relacionais = item.itens_relacionais || item.relacionados || [];
-                                            const itemTotal = calculateItemTotal(item);
-
-                                            return (
-                                                <View key={item.id_venda}>
-                                                    <View style={styles.itemRow}>
-                                                        <View style={styles.itemInfo}>
-                                                            <Text style={styles.itemName}>{item.produto}</Text>
-                                                            <Text style={styles.itemQuantity}>x{item.qtd}</Text>
-                                                            {relacionais.length > 0 && (
-                                                                <View style={{ marginTop: 4 }}>
-                                                                    {relacionais.map((rel, idx) => (
-                                                                        <Text key={idx} style={[styles.itemQuantity, { marginLeft: 8, fontSize: 11 }]}>
-                                                                            + {typeof rel.qtd === 'string' ? rel.qtd : `${rel.qtd}x`} {rel.produto || ''}
-                                                                        </Text>
-                                                                    ))}
-                                                                </View>
-                                                            )}
-                                                        </View>
-                                                        <Text style={styles.itemPrice}>
-                                                            {formatCurrency(itemTotal)}
-                                                        </Text>
-                                                    </View>
-                                                </View>
-                                            );
-                                        })}
+                                        {data.vendas.map((item) => (
+                                            <BillItem
+                                                key={item.id_venda}
+                                                item={item}
+                                                styles={styles}
+                                                formatCurrency={formatCurrency}
+                                                calculateItemTotal={calculateItemTotal}
+                                            />
+                                        ))}
                                     </ScrollView>
 
                                     <View style={styles.totalRow}>
@@ -424,4 +411,50 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         </Modal>
     );
 };
+
+// Componente memoizado para item da conta (melhora performance)
+const BillItem = memo<{
+    item: Venda;
+    styles: any;
+    formatCurrency: (value: number) => string;
+    calculateItemTotal: (item: Venda) => number;
+}>(({ item, styles, formatCurrency, calculateItemTotal }) => {
+    const relacionais = item.itens_relacionais || item.relacionados || [];
+    const itemTotal = useMemo(() => calculateItemTotal(item), [item, calculateItemTotal]);
+
+    return (
+        <View>
+            <View style={styles.itemRow}>
+                <View style={styles.itemInfo}>
+                    <Text style={styles.itemName}>{item.produto}</Text>
+                    <Text style={styles.itemQuantity}>x{item.qtd}</Text>
+                    {relacionais.length > 0 && (
+                        <View style={{ marginTop: 4 }}>
+                            {relacionais.map((rel, idx) => (
+                                <Text key={idx} style={[styles.itemQuantity, { marginLeft: 8, fontSize: 11 }]}>
+                                    + {typeof rel.qtd === 'string' ? rel.qtd : `${rel.qtd}x`} {rel.produto || ''}
+                                </Text>
+                            ))}
+                        </View>
+                    )}
+                </View>
+                <Text style={styles.itemPrice}>
+                    {formatCurrency(itemTotal)}
+                </Text>
+            </View>
+        </View>
+    );
+}, (prevProps, nextProps) => {
+    // Comparação customizada para evitar re-renders desnecessários
+    return (
+        prevProps.item.id_venda === nextProps.item.id_venda &&
+        prevProps.item.qtd === nextProps.item.qtd &&
+        prevProps.item.pv === nextProps.item.pv &&
+        prevProps.item.desconto === nextProps.item.desconto &&
+        JSON.stringify(prevProps.item.itens_relacionais) === JSON.stringify(nextProps.item.itens_relacionais) &&
+        JSON.stringify(prevProps.item.relacionados) === JSON.stringify(nextProps.item.relacionados)
+    );
+});
+
+BillItem.displayName = 'BillItem';
 

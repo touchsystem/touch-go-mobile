@@ -1,17 +1,22 @@
 {
   "expo": {
-    "name": "touch-go-mobile",
-    "slug": "touch-go-mobile",
+    "name": "Eatzgo Mobile",
+    "slug": "eatzgo-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "touchgomobile",
+    "scheme": "eatzgomobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.touchgo.mobile",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -22,7 +27,8 @@
       "predictiveBackGestureEnabled": false,
       "navigationBar": {
         "visible": "immersive"
-      }
+      },
+      "usesCleartextTraffic": true
     },
     "web": {
       "output": "static",
@@ -47,6 +53,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "expo-navigation-bar": {},
+      "eas": {
+        "projectId": "783333ca-e803-4e94-ae4a-fa54e74f413d"
+      }
     }
   }
 }

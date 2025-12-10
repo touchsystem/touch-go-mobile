@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,13 +51,14 @@ export default function LoginScreen() {
       alignItems: 'center',
       marginBottom: scale(40),
     },
-    iconCircle: {
-      width: scale(80),
-      height: scale(80),
-      borderRadius: scale(40),
-      backgroundColor: colors.border,
-      justifyContent: 'center',
+    logoContainer: {
       alignItems: 'center',
+      marginBottom: scale(30),
+    },
+    logo: {
+      width: scale(200),
+      height: scale(120),
+      resizeMode: 'contain',
       marginBottom: scale(20),
     },
     welcomeText: {
@@ -116,8 +118,14 @@ export default function LoginScreen() {
           >
             <View style={themedStyles.content}>
               <View style={themedStyles.iconContainer}>
-                <View style={themedStyles.iconCircle}>
-                  <Ionicons name="restaurant" size={scale(48)} color={colors.text} />
+                <View style={themedStyles.logoContainer}>
+                  <Image
+                    source={isDark 
+                      ? require('../../assets/images/logo_dark.png')
+                      : require('../../assets/images/logo_light.png')
+                    }
+                    style={themedStyles.logo}
+                  />
                 </View>
                 <Text style={themedStyles.welcomeText}>EatzGo Mobile</Text>
                 <Text style={themedStyles.subtitle}>Faça login para acessar o sistema</Text>

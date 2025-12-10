@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useMemo, useState, useEffect } from 'react';
 import {
   Alert,
+  BackHandler,
   ScrollView,
   StyleSheet,
   Text,
@@ -221,12 +222,35 @@ export default function SettingsScreen() {
     router.push('/(tabs)/payment-methods');
   };
 
+  const handleBack = () => {
+    // Se não estiver autenticado, vai para login, senão volta normalmente
+    if (!user) {
+      router.replace('/login');
+    } else {
+      router.back();
+    }
+  };
+
+  // Intercepta o botão físico de voltar do Android
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (!user) {
+        router.replace('/login');
+      } else {
+        router.back();
+      }
+      return true; // Previne o comportamento padrão (fechar app)
+    });
+
+    return () => backHandler.remove();
+  }, [user, router]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={handleBack}
         >
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
