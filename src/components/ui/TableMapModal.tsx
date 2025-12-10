@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, memo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   FlatList,
   ActivityIndicator,
   TextInput,
-  ScrollView,
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -105,8 +104,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
           color: colors.textSecondary,
         },
         grid: {
-          gap: 8,
-          justifyContent: 'center',
+          padding: 8,
           paddingBottom: 16,
         },
         rowWrapper: {
@@ -116,6 +114,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
         tableCard: {
           width: '23%',
           minHeight: 60,
+          margin: 2,
         },
         tableButton: {
           width: '100%',
@@ -178,18 +177,35 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
     [colors, isDark]
   );
 
+  // Otimização: Remove duplicatas e ordena por mesa_cartao
   const filteredTables = useMemo(() => {
+    // Usa Map para remover duplicatas de forma eficiente (O(n))
+    const tableMap = new Map<number, Table>();
+    
+    // Itera uma vez e mantém apenas a última ocorrência de cada mesa
+    for (let i = tables.length - 1; i >= 0; i--) {
+      const table = tables[i];
+      if (!tableMap.has(table.mesa_cartao)) {
+        tableMap.set(table.mesa_cartao, table);
+      }
+    }
+    
+    // Converte Map para array e ordena por mesa_cartao
+    let uniqueTables = Array.from(tableMap.values()).sort((a, b) => a.mesa_cartao - b.mesa_cartao);
+
+    // Aplica filtro de busca se houver
     if (!searchQuery.trim()) {
-      return tables;
+      return uniqueTables;
     }
     const query = searchQuery.trim();
-    return tables.filter((table) => {
+    return uniqueTables.filter((table) => {
       const tableNumber = table.mesa_cartao.toString();
       return tableNumber.includes(query);
     });
   }, [tables, searchQuery]);
 
-  const getTableColor = (status: string) => {
+  // Memoiza funções para evitar recriações
+  const getTableColor = useCallback((status: string) => {
     switch (status) {
       case 'L':
         return isDark ? '#374151' : '#E5E7EB'; // Livre
@@ -204,9 +220,9 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
       default:
         return colors.border;
     }
-  };
+  }, [isDark, colors.border]);
 
-  const getTableStatusText = (status: string) => {
+  const getTableStatusText = useCallback((status: string) => {
     switch (status) {
       case 'L':
         return 'Livre';
@@ -221,12 +237,12 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
       default:
         return '';
     }
-  };
+  }, []);
 
-  const handleTableSelect = (table: Table) => {
+  const handleTableSelect = useCallback((table: Table) => {
     onSelectTable(table);
     onClose();
-  };
+  }, [onSelectTable, onClose]);
 
   if (!visible) {
     return null;
@@ -306,71 +322,107 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
                 )}
               </View>
 
-              <ScrollView
-                style={styles.scrollableContent}
-                contentContainerStyle={styles.grid}
-                keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled={true}
-              >
-                {filteredTables.length === 0 ? (
-                  <View style={styles.emptyContainer}>
-                    <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
-                    <Text style={styles.emptyText}>
-                      {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
-                    {filteredTables.map((item) => {
-                      const isSelected = selectedTableNumber === item.mesa_cartao;
-                      const tableColor = getTableColor(item.status);
-                      const statusText = getTableStatusText(item.status);
-
-                      return (
-                        <View key={item.id} style={styles.tableCard}>
-                          <TouchableOpacity
-                            style={[
-                              styles.tableButton,
-                              {
-                                backgroundColor: tableColor,
-                                borderColor: isSelected ? colors.primary : colors.border,
-                                borderWidth: isSelected ? 3 : 2,
-                              },
-                            ]}
-                            onPress={() => handleTableSelect(item)}
-                            activeOpacity={0.7}
-                          >
-                            <Text
-                              style={[
-                                styles.tableNumber,
-                                {
-                                  color: item.status === 'L' && !isDark ? '#111827' : '#FFFFFF',
-                                },
-                              ]}
-                            >
-                              {item.mesa_cartao}
-                            </Text>
-                            <Text
-                              style={[
-                                styles.tableStatus,
-                                {
-                                  color: item.status === 'L' && !isDark ? '#6B7280' : '#FFFFFF',
-                                },
-                              ]}
-                            >
-                              {statusText}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      );
-                    })}
-                  </View>
-                )}
-              </ScrollView>
+              {filteredTables.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
+                  <Text style={styles.emptyText}>
+                    {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
+                  </Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={filteredTables}
+                  numColumns={4}
+                  keyExtractor={(item) => `table-${item.mesa_cartao}-${item.id}`}
+                  contentContainerStyle={styles.grid}
+                  style={styles.scrollableContent}
+                  keyboardShouldPersistTaps="handled"
+                  removeClippedSubviews={true}
+                  maxToRenderPerBatch={16}
+                  updateCellsBatchingPeriod={50}
+                  initialNumToRender={16}
+                  windowSize={5}
+                  renderItem={({ item }) => (
+                    <TableCard
+                      table={item}
+                      isSelected={selectedTableNumber === item.mesa_cartao}
+                      onPress={handleTableSelect}
+                      getTableColor={getTableColor}
+                      getTableStatusText={getTableStatusText}
+                      colors={colors}
+                      isDark={isDark}
+                      styles={styles}
+                    />
+                  )}
+                />
+              )}
           </View>
         </TouchableOpacity>
       </TouchableOpacity>
     </Modal>
   );
 };
+
+// Componente memoizado para melhor performance
+const TableCard = memo<{
+  table: Table;
+  isSelected: boolean;
+  onPress: (table: Table) => void;
+  getTableColor: (status: string) => string;
+  getTableStatusText: (status: string) => string;
+  colors: any;
+  isDark: boolean;
+  styles: any;
+}>(({ table, isSelected, onPress, getTableColor, getTableStatusText, colors, isDark, styles }) => {
+  const tableColor = getTableColor(table.status);
+  const statusText = getTableStatusText(table.status);
+
+  return (
+    <View style={styles.tableCard}>
+      <TouchableOpacity
+        style={[
+          styles.tableButton,
+          {
+            backgroundColor: tableColor,
+            borderColor: isSelected ? colors.primary : colors.border,
+            borderWidth: isSelected ? 3 : 2,
+          },
+        ]}
+        onPress={() => onPress(table)}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={[
+            styles.tableNumber,
+            {
+              color: table.status === 'L' && !isDark ? '#111827' : '#FFFFFF',
+            },
+          ]}
+        >
+          {table.mesa_cartao}
+        </Text>
+        <Text
+          style={[
+            styles.tableStatus,
+            {
+              color: table.status === 'L' && !isDark ? '#6B7280' : '#FFFFFF',
+            },
+          ]}
+        >
+          {statusText}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}, (prevProps, nextProps) => {
+  // Comparação customizada para evitar re-renders desnecessários
+  return (
+    prevProps.table.mesa_cartao === nextProps.table.mesa_cartao &&
+    prevProps.table.status === nextProps.table.status &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isDark === nextProps.isDark
+  );
+});
+
+TableCard.displayName = 'TableCard';
 

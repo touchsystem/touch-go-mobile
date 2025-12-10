@@ -2,12 +2,16 @@ import { useTheme } from '@/src/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useSegments } from 'expo-router';
 import React, { useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSystemSettings } from '@/src/hooks/useSystemSettings';
+import { useCart } from '@/src/contexts/CartContext';
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const segments = useSegments();
   const { settings } = useSystemSettings();
+  const { cart, getTotalItems } = useCart();
+  const totalItems = useMemo(() => getTotalItems(), [cart]);
 
   // Verifica se está na tela de settings ou payment-methods
   const isSettingsScreen = segments.includes('settings') || segments.includes('payment-methods');
@@ -31,6 +35,26 @@ export default function TabLayout() {
     [settings.printAccounts]
   );
 
+  // Opções da aba de Pedidos com badge de quantidade
+  const ordersScreenOptions = useMemo(
+    () => ({
+      title: 'Pedidos',
+      tabBarIcon: ({ color }: { color: string }) => (
+        <View style={{ position: 'relative' }}>
+          <Ionicons name="cart-outline" size={24} color={color} />
+          {totalItems > 0 && (
+            <View style={[styles.badge, { backgroundColor: colors?.error || '#EF4444' }]}>
+              <Text style={styles.badgeText}>
+                {totalItems > 99 ? '99+' : totalItems}
+              </Text>
+            </View>
+          )}
+        </View>
+      ),
+    }),
+    [totalItems, colors?.error]
+  );
+
   return (
     <Tabs screenOptions={screenOptions}>
       <Tabs.Screen
@@ -42,10 +66,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="orders"
-        options={{
-          title: 'Pedidos',
-          tabBarIcon: ({ color }) => <Ionicons name="receipt-outline" size={24} color={color} />,
-        }}
+        options={ordersScreenOptions}
       />
       <Tabs.Screen
         name="bills"
@@ -105,3 +126,25 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
