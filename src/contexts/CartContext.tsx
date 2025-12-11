@@ -171,21 +171,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             const fractionalTotal = relacionais.reduce((sum: number, rel: any) => {
               if (typeof rel.fractionQty === 'number' || rel.fractionLabel) {
                 // Prioriza fractionValue se disponível (já calculado corretamente)
-                if (rel.fractionValue !== undefined && rel.fractionValue !== null) {
+                if (rel.fractionValue !== undefined && rel.fractionValue !== null && rel.fractionValue > 0) {
                   return sum + rel.fractionValue;
                 }
-                // Se o item já tem pv calculado corretamente, usa ele
+                // Se o item já tem pv calculado corretamente e é maior que zero, usa ele
                 if (rel.pv && rel.pv > 0) {
                   return sum + rel.pv;
                 }
-                // Senão, calcula baseado na fração
+                // Senão, calcula baseado na fração apenas se houver preço
                 const priceUnit = rel.pv ?? rel.preco ?? rel.precoVenda ?? 0;
-                const fraction = rel.fractionQty ?? 1;
-                return sum + (priceUnit * fraction);
+                if (priceUnit > 0) {
+                  const fraction = rel.fractionQty ?? 1;
+                  return sum + (priceUnit * fraction);
+                }
               }
               return sum;
             }, 0);
-            valorPrincipal += fractionalTotal * principal.quantidade;
+            // Só adiciona se houver valor nos fracionados
+            if (fractionalTotal > 0) {
+              valorPrincipal += fractionalTotal * principal.quantidade;
+            }
           } else {
             // Modo MAIOR PREÇO: usa apenas o maior preço entre os sabores
             const unitMaxPrice = relacionais.reduce((m: number, rel: any) => {
@@ -193,7 +198,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
               const price = rel.fractionValue ?? rel.pv ?? rel.preco ?? 0;
               return price > m ? price : m;
             }, 0);
-            valorPrincipal += unitMaxPrice * principal.quantidade;
+            // Só adiciona se houver preço maior que zero
+            if (unitMaxPrice > 0) {
+              valorPrincipal += unitMaxPrice * principal.quantidade;
+            }
           }
         } else {
           // Relacionais normais (não fracionados)
@@ -211,7 +219,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getTotalItems = (): number => {
-    return cart.reduce((total, item) => total + item.quantidade, 0);
+    // Conta apenas os itens principais (não relacionais)
+    // Itens relacionais são parte do item principal e não devem ser contados separadamente
+    return cart.reduce((total, item) => {
+      // Se o item é relacional (tem uuid_principal ou codm_relacional), não conta
+      if (item.uuid_principal || item.codm_relacional) {
+        return total;
+      }
+      // Conta apenas itens principais
+      return total + item.quantidade;
+    }, 0);
   };
 
   return (

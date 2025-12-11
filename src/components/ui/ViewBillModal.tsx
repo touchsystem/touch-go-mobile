@@ -275,37 +275,41 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             (item as any).fractionQty ?? item.qtd ?? (item as any)._qty ?? (item as any).quantity ?? 1
         );
 
-        // Calcula total do principal
-        // Se totalItem existe e é > 0, usa ele. Se for 0 mas tem relacionais, ignora e usa pv*qtd
-        let totalPrincipal = 0;
+        // Se totalItem existe e é > 0, ele já inclui os relacionais calculados pelo backend
+        // Nesse caso, usa ele diretamente sem somar relacionais novamente
         if (item.totalItem !== undefined && item.totalItem > 0) {
-            totalPrincipal = Number(item.totalItem);
-        } else {
-            totalPrincipal = (item.pv ?? 0) * principalQty;
+            return Number(item.totalItem) - (item.desconto || 0);
         }
 
+        // Se totalItem não existe ou é 0, calcula manualmente
+        let totalPrincipal = (item.pv ?? 0) * principalQty;
+
         // Soma dos relacionais
-        // Se os relacionais já têm totalItem calculado, usa diretamente (não multiplica pela qtd do principal)
-        // Se não, calcula e multiplica pela qtd do principal
+        // IMPORTANTE: Quando os relacionais têm totalItem, esse valor é POR UNIDADE
+        // e precisa ser multiplicado pela quantidade do principal
         let totalRelacionais = 0;
         if (relacionais.length > 0) {
             // Verifica se os relacionais têm totalItem (já calculado)
             const hasTotalItem = relacionais.some((rel: Relacional) => rel.totalItem !== undefined);
 
             if (hasTotalItem) {
-                // Relacionais já têm totalItem calculado, soma diretamente
-                totalRelacionais = relacionais.reduce((sum: number, rel: Relacional) => {
+                // Relacionais têm totalItem, mas esse valor é POR UNIDADE
+                // Soma todos os totalItem dos relacionais (valor por unidade)
+                const unitAdditionalSum = relacionais.reduce((sum: number, rel: Relacional) => {
                     return sum + (rel.totalItem !== undefined ? Number(rel.totalItem) : 0);
                 }, 0);
+                // MULTIPLICA pela quantidade do principal (porque totalItem é por unidade)
+                totalRelacionais = unitAdditionalSum * principalQty;
             } else {
                 // Relacionais não têm totalItem, calcula e multiplica pela qtd do principal
-                const unitAdditionalSum = relacionais.reduce((relSum: number, rel: Relacional) => {
+                const unitAdditionalSum = relacionais.reduce((sum: number, rel: Relacional) => {
                     const relQty = parseFraction(
                         (rel as any).fractionQty ?? rel.qtd ?? (rel as any)._qty ?? (rel as any).quantity ?? 1
                     );
                     const relUnit = rel.precoVenda ?? rel.pv ?? 0;
-                    return relSum + (relQty * relUnit);
+                    return sum + (relQty * relUnit);
                 }, 0);
+                // Multiplica pela quantidade do principal
                 totalRelacionais = unitAdditionalSum * principalQty;
             }
         }

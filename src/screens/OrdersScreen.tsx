@@ -81,21 +81,26 @@ export default function OrdersScreen() {
           const fractionalTotal = relacionais.reduce((sum: number, rel: any) => {
             if (typeof rel.fractionQty === 'number' || rel.fractionLabel) {
               // Prioriza fractionValue se disponível (já calculado corretamente)
-              if (rel.fractionValue !== undefined && rel.fractionValue !== null) {
+              if (rel.fractionValue !== undefined && rel.fractionValue !== null && rel.fractionValue > 0) {
                 return sum + rel.fractionValue;
               }
-              // Se o item já tem pv calculado corretamente, usa ele
+              // Se o item já tem pv calculado corretamente e é maior que zero, usa ele
               if (rel.pv && rel.pv > 0) {
                 return sum + rel.pv;
               }
-              // Senão, calcula baseado na fração
+              // Senão, calcula baseado na fração apenas se houver preço
               const priceUnit = rel.pv ?? rel.preco ?? rel.precoVenda ?? 0;
-              const fraction = rel.fractionQty ?? 1;
-              return sum + (priceUnit * fraction);
+              if (priceUnit > 0) {
+                const fraction = rel.fractionQty ?? 1;
+                return sum + (priceUnit * fraction);
+              }
             }
             return sum;
           }, 0);
-          valorPrincipal += fractionalTotal;
+          // Só adiciona se houver valor nos fracionados
+          if (fractionalTotal > 0) {
+            valorPrincipal += fractionalTotal;
+          }
         } else {
           // Modo MAIOR PREÇO: usa apenas o maior preço entre os sabores
           const unitMaxPrice = relacionais.reduce((m: number, rel: any) => {
@@ -103,7 +108,10 @@ export default function OrdersScreen() {
             const price = rel.fractionValue ?? rel.pv ?? rel.preco ?? 0;
             return price > m ? price : m;
           }, 0);
-          valorPrincipal += unitMaxPrice;
+          // Só adiciona se houver preço maior que zero
+          if (unitMaxPrice > 0) {
+            valorPrincipal += unitMaxPrice;
+          }
         }
       } else {
         // Relacionais normais (não fracionados)
