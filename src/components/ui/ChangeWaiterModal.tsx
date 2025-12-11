@@ -15,6 +15,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { Button } from './Button';
 import { storage, storageKeys } from '../../services/storage';
 import api from '../../services/api';
+import { scale, scaleFont, scaleWidth, widthPercentage } from '../../utils/responsive';
 
 interface ChangeWaiterModalProps {
   visible: boolean;
@@ -73,9 +74,9 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
         },
         modalContent: {
           backgroundColor: colors.surface,
-          borderRadius: 16,
-          padding: 20,
-          width: Math.min(Dimensions.get('window').width * 0.9, 500),
+          borderRadius: scale(16),
+          padding: scale(20),
+          width: Math.min(widthPercentage(90), scaleWidth(500)),
           borderWidth: 1,
           borderColor: colors.border,
         },
@@ -83,49 +84,49 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: 20,
+          marginBottom: scale(20),
         },
         title: {
-          fontSize: 20,
+          fontSize: scaleFont(20),
           fontWeight: '600',
           color: colors.text,
         },
         closeButton: {
-          padding: 4,
+          padding: scale(4),
         },
         formGroup: {
-          marginBottom: 20,
+          marginBottom: scale(20),
         },
         label: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           fontWeight: '500',
           color: colors.text,
-          marginBottom: 8,
+          marginBottom: scale(8),
         },
         input: {
           backgroundColor: isDark ? '#1A1F2B' : '#FFFFFF',
           borderWidth: 1,
           borderColor: validationError ? colors.error : colors.border,
-          borderRadius: 8,
-          padding: 12,
-          fontSize: 16,
+          borderRadius: scale(8),
+          padding: scale(12),
+          fontSize: scaleFont(16),
           color: colors.text,
         },
         errorText: {
-          fontSize: 12,
+          fontSize: scaleFont(12),
           color: colors.error,
-          marginTop: 4,
+          marginTop: scale(4),
         },
         validationContainer: {
           flexDirection: 'row',
           alignItems: 'center',
-          marginTop: 4,
+          marginTop: scale(4),
         },
         buttonsContainer: {
           flexDirection: 'row',
           justifyContent: 'flex-end',
-          gap: 12,
-          marginTop: 20,
+          gap: scale(12),
+          marginTop: scale(20),
         },
       }),
     [colors, isDark, validationError]
@@ -217,7 +218,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
             <View style={styles.header}>
               <Text style={styles.title}>Trocar Usuário</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color={colors.text} />
+                <Ionicons name="close" size={scale(24)} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -235,7 +236,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
               />
               {validating && (
                 <View style={styles.validationContainer}>
-                  <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8 }} />
+                  <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: scale(8) }} />
                   <Text style={[styles.errorText, { color: colors.textSecondary }]}>
                     Validando usuário...
                   </Text>
@@ -243,7 +244,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
               )}
               {validationError && !validating && (
                 <View style={styles.validationContainer}>
-                  <Ionicons name="alert-circle" size={16} color={colors.error} style={{ marginRight: 4 }} />
+                  <Ionicons name="alert-circle" size={scale(16)} color={colors.error} style={{ marginRight: scale(4) }} />
                   <Text style={styles.errorText}>{validationError}</Text>
                 </View>
               )}

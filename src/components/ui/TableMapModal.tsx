@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTables, Table } from '../../hooks/useTables';
 import { Card } from './Card';
+import { scale, scaleFont, scaleWidth, scaleHeight, widthPercentage } from '../../utils/responsive';
 
 interface TableMapModalProps {
   visible: boolean;
@@ -53,38 +54,38 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
         },
         modalContent: {
           backgroundColor: colors.surface,
-          borderRadius: 16,
-          padding: 20,
-          width: Math.min(Dimensions.get('window').width * 0.9, 500),
-          maxHeight: Dimensions.get('window').height * 0.85,
-          minHeight: 400,
+          borderRadius: scale(16),
+          padding: scale(20),
+          width: Math.min(widthPercentage(90), scaleWidth(600)),
+          maxHeight: scaleHeight(700),
+          minHeight: scaleHeight(400),
           borderWidth: 1,
           borderColor: colors.border,
         },
         scrollableContent: {
-          maxHeight: 300,
-          minHeight: 200,
+          maxHeight: scaleHeight(300),
+          minHeight: scaleHeight(200),
         },
         header: {
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: 20,
+          marginBottom: scale(20),
         },
         title: {
-          fontSize: 20,
+          fontSize: scaleFont(20),
           fontWeight: '600',
           color: colors.text,
         },
         closeButton: {
-          padding: 4,
+          padding: scale(4),
         },
         legend: {
           flexDirection: 'row',
           flexWrap: 'wrap',
-          gap: 12,
-          marginBottom: 16,
-          paddingBottom: 16,
+          gap: scale(12),
+          marginBottom: scale(16),
+          paddingBottom: scale(16),
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
           justifyContent: 'center',
@@ -92,65 +93,65 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
         legendItem: {
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 6,
+          gap: scale(6),
         },
         legendColor: {
-          width: 16,
-          height: 16,
-          borderRadius: 4,
+          width: scale(16),
+          height: scale(16),
+          borderRadius: scale(4),
         },
         legendText: {
-          fontSize: 12,
+          fontSize: scaleFont(12),
           color: colors.textSecondary,
         },
         grid: {
-          padding: 8,
-          paddingBottom: 16,
+          padding: scale(8),
+          paddingBottom: scale(16),
         },
         rowWrapper: {
           justifyContent: 'center',
-          gap: 8,
+          gap: scale(8),
         },
         tableCard: {
           width: '23%',
-          minHeight: 60,
-          margin: 2,
+          minHeight: scaleHeight(60),
+          margin: scale(2),
         },
         tableButton: {
           width: '100%',
-          padding: 8,
-          borderRadius: 8,
+          padding: scale(8),
+          borderRadius: scale(8),
           alignItems: 'center',
           justifyContent: 'center',
           borderWidth: 2,
         },
         tableNumber: {
-          fontSize: 16,
+          fontSize: scaleFont(16),
           fontWeight: '600',
-          marginBottom: 2,
+          marginBottom: scale(2),
         },
         tableStatus: {
-          fontSize: 9,
+          fontSize: scaleFont(9),
         },
         loadingContainer: {
-          padding: 40,
+          padding: scale(40),
           alignItems: 'center',
         },
         errorContainer: {
-          padding: 40,
+          padding: scale(40),
           alignItems: 'center',
         },
         errorText: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.error,
           textAlign: 'center',
         },
         emptyContainer: {
-          padding: 40,
+          padding: scale(40),
           alignItems: 'center',
         },
         emptyText: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           color: colors.textSecondary,
           textAlign: 'center',
         },
@@ -158,19 +159,19 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
           flexDirection: 'row',
           alignItems: 'center',
           backgroundColor: isDark ? '#1A1F2B' : '#F4F4F5',
-          marginBottom: 16,
-          paddingHorizontal: 12,
-          borderRadius: 8,
+          marginBottom: scale(16),
+          paddingHorizontal: scale(12),
+          borderRadius: scale(8),
           borderWidth: 1,
           borderColor: colors.border,
         },
         searchIcon: {
-          marginRight: 8,
+          marginRight: scale(8),
         },
         searchInput: {
           flex: 1,
-          height: 40,
-          fontSize: 16,
+          height: scale(40),
+          fontSize: scaleFont(16),
           color: colors.text,
         },
       }),
@@ -256,7 +257,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
             <View style={styles.header}>
               <Text style={styles.title}>Selecionar Mesa</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color={colors.text} />
+                <Ionicons name="close" size={scale(24)} color={colors.text} />
               </TouchableOpacity>
             </View>
             <View style={styles.loadingContainer}>
@@ -276,11 +277,11 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
             <View style={styles.header}>
               <Text style={styles.title}>Selecionar Mesa</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color={colors.text} />
+                <Ionicons name="close" size={scale(24)} color={colors.text} />
               </TouchableOpacity>
             </View>
             <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+              <Ionicons name="alert-circle-outline" size={scale(48)} color={colors.error} />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           </View>
@@ -301,12 +302,12 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
               <View style={styles.header}>
                 <Text style={styles.title}>Selecionar Mesa</Text>
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <Ionicons name="close" size={24} color={colors.text} />
+                  <Ionicons name="close" size={scale(24)} color={colors.text} />
                 </TouchableOpacity>
               </View>
 
               <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={scale(20)} color={colors.textSecondary} style={styles.searchIcon} />
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Buscar mesa por número..."
@@ -317,14 +318,14 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
                 />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity onPress={() => setSearchQuery('')}>
-                    <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+                    <Ionicons name="close-circle" size={scale(20)} color={colors.textSecondary} />
                   </TouchableOpacity>
                 )}
               </View>
 
               {filteredTables.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                  <Ionicons name="restaurant-outline" size={48} color={colors.textSecondary} />
+                  <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
                   <Text style={styles.emptyText}>
                     {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
                   </Text>

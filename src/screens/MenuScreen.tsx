@@ -62,12 +62,18 @@ export default function MenuScreen() {
         headerNick: {
           fontSize: scaleFont(12),
           color: colors.textSecondary,
-          textAlign: 'left',
+          textAlign: 'right',
           marginTop: scale(4),
         },
         headerLeft: {
           flexDirection: 'column',
           alignItems: 'flex-start',
+          justifyContent: 'center',
+          minWidth: scale(80),
+        },
+        headerRight: {
+          flexDirection: 'column',
+          alignItems: 'flex-end',
           justifyContent: 'center',
           minWidth: scale(80),
         },
@@ -143,13 +149,13 @@ export default function MenuScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
+          <View style={{ width: scale(40) }} />
+          <Text style={styles.headerTitle}>Cardápio</Text>
+          <View style={styles.headerRight}>
             {profileNick && (
               <Text style={styles.headerNick}>{profileNick}</Text>
             )}
           </View>
-          <Text style={styles.headerTitle}>Cardápio</Text>
-          <View style={{ width: scale(40) }} />
         </View>
         <View style={styles.emptyContainer}>
           <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
@@ -166,18 +172,18 @@ export default function MenuScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          {profileNick && (
-            <Text style={styles.headerNick}>{profileNick}</Text>
-          )}
-        </View>
-        <Text style={styles.headerTitle}>Cardápio</Text>
         <TouchableOpacity
           style={styles.searchButton}
           onPress={handleSearchPress}
         >
           <Ionicons name="search-outline" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>Cardápio</Text>
+        <View style={styles.headerRight}>
+          {profileNick && (
+            <Text style={styles.headerNick}>{profileNick}</Text>
+          )}
+        </View>
       </View>
 
       <FlatList

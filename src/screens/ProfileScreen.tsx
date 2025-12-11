@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   Alert,
   ScrollView,
@@ -18,6 +18,8 @@ import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { scale, scaleFont } from '../utils/responsive';
+import { storage, storageKeys } from '../services/storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
@@ -25,6 +27,22 @@ export default function ProfileScreen() {
   const { colors, theme } = useTheme();
   const insets = useSafeAreaInsets();
   const [isChangeWaiterModalVisible, setIsChangeWaiterModalVisible] = useState(false);
+  const [profileNick, setProfileNick] = useState<string | null>(null);
+
+  const loadProfileNick = useCallback(async () => {
+    const nick = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
+    setProfileNick(nick);
+  }, []);
+
+  useEffect(() => {
+    loadProfileNick();
+  }, [loadProfileNick]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfileNick();
+    }, [loadProfileNick])
+  );
 
   const styles = useMemo(
     () =>
@@ -57,6 +75,18 @@ export default function ProfileScreen() {
           color: colors.text,
           textAlign: 'center',
           flex: 1,
+        },
+        headerNick: {
+          fontSize: scaleFont(12),
+          color: colors.textSecondary,
+          textAlign: 'right',
+          marginTop: scale(4),
+        },
+        headerRight: {
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          minWidth: scale(80),
         },
         scrollContent: {
           padding: scale(16),
@@ -222,7 +252,11 @@ export default function ProfileScreen() {
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Perfil</Text>
-        <View style={{ width: scale(40) }} />
+        <View style={styles.headerRight}>
+          {profileNick && (
+            <Text style={styles.headerNick}>{profileNick}</Text>
+          )}
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>

@@ -4,6 +4,7 @@ import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { useServerConfig } from '../../hooks/useServerConfig';
+import { scale, scaleFont } from '../../utils/responsive';
 
 interface ServerConfigModalProps {
   visible: boolean;
@@ -67,16 +68,16 @@ export const ServerConfigModal: React.FC<ServerConfigModalProps> = ({
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 18,
+    fontSize: scaleFont(18),
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: scale(20),
     textAlign: 'center',
   },
   buttons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 10,
-    marginTop: 10,
+    gap: scale(10),
+    marginTop: scale(10),
   },
   button: {
     flex: 1,

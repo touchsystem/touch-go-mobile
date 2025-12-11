@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Button } from './Button';
+import { scale, scaleFont, scaleWidth, widthPercentage } from '../../utils/responsive';
 
 interface OrderItemModalProps {
   visible: boolean;
@@ -53,9 +54,9 @@ export const OrderItemModal: React.FC<OrderItemModalProps> = ({
         },
         modalContent: {
           backgroundColor: colors.surface,
-          borderRadius: 16,
-          padding: 20,
-          width: Math.min(Dimensions.get('window').width * 0.9, 500),
+          borderRadius: scale(16),
+          padding: scale(20),
+          width: Math.min(widthPercentage(90), scaleWidth(500)),
           borderWidth: 1,
           borderColor: colors.border,
         },
@@ -63,50 +64,50 @@ export const OrderItemModal: React.FC<OrderItemModalProps> = ({
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: 20,
+          marginBottom: scale(20),
         },
         title: {
-          fontSize: 20,
+          fontSize: scaleFont(20),
           fontWeight: '600',
           color: colors.text,
         },
         closeButton: {
-          padding: 4,
+          padding: scale(4),
         },
         formGroup: {
-          marginBottom: 20,
+          marginBottom: scale(20),
         },
         label: {
-          fontSize: 14,
+          fontSize: scaleFont(14),
           fontWeight: '500',
           color: colors.text,
-          marginBottom: 8,
+          marginBottom: scale(8),
         },
         quantityInput: {
           backgroundColor: isDark ? '#1A1F2B' : '#FFFFFF',
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 8,
-          padding: 12,
-          fontSize: 16,
+          borderRadius: scale(8),
+          padding: scale(12),
+          fontSize: scaleFont(16),
           color: colors.text,
         },
         observationInput: {
           backgroundColor: isDark ? '#1A1F2B' : '#FFFFFF',
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 8,
-          padding: 12,
-          fontSize: 16,
+          borderRadius: scale(8),
+          padding: scale(12),
+          fontSize: scaleFont(16),
           color: colors.text,
-          minHeight: 100,
+          minHeight: scaleHeight(100),
           textAlignVertical: 'top',
         },
         buttonsContainer: {
           flexDirection: 'row',
           justifyContent: 'flex-end',
-          gap: 12,
-          marginTop: 20,
+          gap: scale(12),
+          marginTop: scale(20),
         },
       }),
     [colors, isDark]
@@ -156,13 +157,13 @@ export const OrderItemModal: React.FC<OrderItemModalProps> = ({
             <View style={styles.header}>
               <Text style={styles.title}>Editar Item</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color={colors.text} />
+                <Ionicons name="close" size={scale(24)} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Produto</Text>
-              <Text style={{ color: colors.textSecondary, fontSize: 14 }}>{itemName}</Text>
+              <Text style={{ color: colors.textSecondary, fontSize: scaleFont(14) }}>{itemName}</Text>
             </View>
 
             <View style={styles.formGroup}>

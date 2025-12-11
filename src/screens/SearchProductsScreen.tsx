@@ -22,6 +22,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useRelationalGroups } from '../hooks/useRelationalGroups';
 import { scale, scaleFont } from '../utils/responsive';
 import { useAuth } from '../contexts/AuthContext';
+import { storage, storageKeys } from '../services/storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function SearchProductsScreen() {
   const { products, loading, error, fetchProducts } = useProducts();
@@ -33,6 +35,22 @@ export default function SearchProductsScreen() {
   const insets = useSafeAreaInsets();
   const { fetchRelationalGroups } = useRelationalGroups();
   const { user } = useAuth();
+  const [profileNick, setProfileNick] = useState<string | null>(null);
+
+  const loadProfileNick = useCallback(async () => {
+    const nick = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
+    setProfileNick(nick);
+  }, []);
+
+  useEffect(() => {
+    loadProfileNick();
+  }, [loadProfileNick]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfileNick();
+    }, [loadProfileNick])
+  );
 
   // Busca todos os produtos ao carregar a tela
   useEffect(() => {
@@ -72,6 +90,18 @@ export default function SearchProductsScreen() {
           color: colors.text,
           textAlign: 'center',
           flex: 1,
+        },
+        headerNick: {
+          fontSize: scaleFont(12),
+          color: colors.textSecondary,
+          textAlign: 'right',
+          marginTop: scale(4),
+        },
+        headerRight: {
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          minWidth: scale(80),
         },
         orderSummary: {
           flexDirection: 'row',
@@ -333,7 +363,11 @@ export default function SearchProductsScreen() {
             <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Pesquisar Produtos</Text>
-          <View style={{ width: scale(40) }} />
+          <View style={styles.headerRight}>
+            {profileNick && (
+              <Text style={styles.headerNick}>{profileNick}</Text>
+            )}
+          </View>
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -354,7 +388,11 @@ export default function SearchProductsScreen() {
             <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Pesquisar Produtos</Text>
-          <View style={{ width: scale(40) }} />
+          <View style={styles.headerRight}>
+            {profileNick && (
+              <Text style={styles.headerNick}>{profileNick}</Text>
+            )}
+          </View>
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={scale(48)} color={colors.error} />
@@ -380,7 +418,11 @@ export default function SearchProductsScreen() {
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Pesquisar Produtos</Text>
-        <View style={{ width: scale(40) }} />
+        <View style={styles.headerRight}>
+          {profileNick && (
+            <Text style={styles.headerNick}>{profileNick}</Text>
+          )}
+        </View>
       </View>
 
 

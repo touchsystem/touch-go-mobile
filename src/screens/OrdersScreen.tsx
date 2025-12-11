@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   Alert,
   Dimensions,
@@ -25,6 +25,7 @@ import { storage, storageKeys } from '../services/storage';
 import { Table } from '../types';
 import { capitalizeFirstLetter, formatCurrency } from '../utils/format';
 import { scale, scaleFont } from '../utils/responsive';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -32,6 +33,23 @@ export default function OrdersScreen() {
   const { cart, updateQuantity, updateCartItem, removeFromCart, getTotal, getTotalItems, clearCart } = useCart();
   const { selectedTable, setSelectedTable } = useTableContext();
   const { user } = useAuth();
+  const [profileNick, setProfileNick] = useState<string | null>(null);
+
+  const loadProfileNick = useCallback(async () => {
+    const nick = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
+    setProfileNick(nick);
+  }, []);
+
+  useEffect(() => {
+    loadProfileNick();
+  }, [loadProfileNick]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfileNick();
+    }, [loadProfileNick])
+  );
+
   const [isTableMapVisible, setIsTableMapVisible] = useState(false);
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
   const [isOrderItemModalVisible, setIsOrderItemModalVisible] = useState(false);
@@ -158,6 +176,18 @@ export default function OrdersScreen() {
           color: colors.text,
           textAlign: 'center',
           flex: 1,
+        },
+        headerNick: {
+          fontSize: scaleFont(12),
+          color: colors.textSecondary,
+          textAlign: 'right',
+          marginTop: scale(4),
+        },
+        headerRight: {
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          minWidth: scale(80),
         },
         content: {
           flex: 1,
@@ -629,7 +659,11 @@ export default function OrdersScreen() {
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Vendas</Text>
-        <View style={{ width: scale(40) }} />
+        <View style={styles.headerRight}>
+          {profileNick && (
+            <Text style={styles.headerNick}>{profileNick}</Text>
+          )}
+        </View>
       </View>
 
       <View style={styles.content}>

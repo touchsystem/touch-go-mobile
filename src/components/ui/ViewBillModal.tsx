@@ -18,6 +18,7 @@ import api from '../../services/api';
 import { storage, storageKeys } from '../../services/storage';
 import { formatCurrency } from '../../utils/format';
 import { Button } from './Button';
+import { scale, scaleFont, scaleWidth, scaleHeight, widthPercentage } from '../../utils/responsive';
 
 interface ViewBillModalProps {
     visible: boolean;
@@ -156,10 +157,10 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 },
                 modalContent: {
                     backgroundColor: colors.surface,
-                    borderRadius: 16,
-                    padding: 20,
-                    width: Math.min(Dimensions.get('window').width * 0.9, 500),
-                    maxHeight: Dimensions.get('window').height * 0.85,
+                    borderRadius: scale(16),
+                    padding: scale(20),
+                    width: Math.min(widthPercentage(90), scaleWidth(500)),
+                    maxHeight: scaleHeight(700),
                     borderWidth: 1,
                     borderColor: colors.border,
                     justifyContent: 'flex-start',
@@ -168,49 +169,49 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginBottom: 20,
+                    marginBottom: scale(20),
                 },
                 title: {
-                    fontSize: 20,
+                    fontSize: scaleFont(20),
                     fontWeight: '600',
                     color: colors.text,
                 },
                 closeButton: {
-                    padding: 4,
+                    padding: scale(4),
                 },
                 scrollContent: {
-                    maxHeight: 350,
-                    minHeight: 200,
+                    maxHeight: scaleHeight(350),
+                    minHeight: scaleHeight(200),
                     flexGrow: 0,
                 },
                 scrollContentContainer: {
-                    paddingBottom: 10,
+                    paddingBottom: scale(10),
                     flexGrow: 0,
                 },
                 itemRow: {
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    paddingVertical: 12,
+                    paddingVertical: scale(12),
                     borderBottomWidth: 1,
                     borderBottomColor: colors.border,
                 },
                 itemInfo: {
                     flex: 1,
-                    marginRight: 12,
+                    marginRight: scale(12),
                 },
                 itemName: {
-                    fontSize: 14,
+                    fontSize: scaleFont(14),
                     fontWeight: '500',
                     color: colors.text,
-                    marginBottom: 4,
+                    marginBottom: scale(4),
                 },
                 itemQuantity: {
-                    fontSize: 12,
+                    fontSize: scaleFont(12),
                     color: colors.textSecondary,
                 },
                 itemPrice: {
-                    fontSize: 14,
+                    fontSize: scaleFont(14),
                     fontWeight: '600',
                     color: colors.text,
                 },
@@ -218,34 +219,34 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    paddingTop: 16,
-                    marginTop: 16,
+                    paddingTop: scale(16),
+                    marginTop: scale(16),
                     borderTopWidth: 2,
                     borderTopColor: colors.border,
                 },
                 totalLabel: {
-                    fontSize: 18,
+                    fontSize: scaleFont(18),
                     fontWeight: '600',
                     color: colors.text,
                 },
                 totalValue: {
-                    fontSize: 18,
+                    fontSize: scaleFont(18),
                     fontWeight: 'bold',
                     color: colors.primary,
                 },
                 loadingContainer: {
-                    padding: 40,
+                    padding: scale(40),
                     alignItems: 'center',
                 },
                 emptyContainer: {
-                    padding: 40,
+                    padding: scale(40),
                     alignItems: 'center',
                 },
                 emptyText: {
-                    fontSize: 14,
+                    fontSize: scaleFont(14),
                     color: colors.textSecondary,
                     textAlign: 'center',
-                    marginTop: 12,
+                    marginTop: scale(12),
                 },
             }),
         [colors, isDark]
@@ -349,7 +350,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                             <View style={styles.header}>
                                 <Text style={styles.title}>Conta - Mesa {mesaCartao}</Text>
                                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                                    <Ionicons name="close" size={24} color={colors.text} />
+                                    <Ionicons name="close" size={scale(24)} color={colors.text} />
                                 </TouchableOpacity>
                             </View>
 
@@ -359,7 +360,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                 </View>
                             ) : !data?.vendas || data.vendas.length === 0 ? (
                                 <View style={styles.emptyContainer}>
-                                    <Ionicons name="receipt-outline" size={48} color={colors.textSecondary} />
+                                    <Ionicons name="receipt-outline" size={scale(48)} color={colors.textSecondary} />
                                     <Text style={styles.emptyText}>Nenhum item encontrado para esta mesa</Text>
                                 </View>
                             ) : (
@@ -401,10 +402,10 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                             printing ? (
                                                 <ActivityIndicator size="small" color="#fff" />
                                             ) : (
-                                                <Ionicons name="print-outline" size={20} color="#fff" />
+                                                <Ionicons name="print-outline" size={scale(20)} color="#fff" />
                                             )
                                         }
-                                        style={{ marginTop: 20 }}
+                                        style={{ marginTop: scale(20) }}
                                     />
                                 </>
                             )}
@@ -433,9 +434,9 @@ const BillItem = memo<{
                     <Text style={styles.itemName}>{item.produto}</Text>
                     <Text style={styles.itemQuantity}>x{item.qtd}</Text>
                     {relacionais.length > 0 && (
-                        <View style={{ marginTop: 4 }}>
+                        <View style={{ marginTop: scale(4) }}>
                             {relacionais.map((rel, idx) => (
-                                <Text key={idx} style={[styles.itemQuantity, { marginLeft: 8, fontSize: 11 }]}>
+                                <Text key={idx} style={[styles.itemQuantity, { marginLeft: scale(8), fontSize: scaleFont(11) }]}>
                                     + {typeof rel.qtd === 'string' ? rel.qtd : `${rel.qtd}x`} {rel.produto || ''}
                                 </Text>
                             ))}

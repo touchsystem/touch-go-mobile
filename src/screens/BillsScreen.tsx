@@ -28,6 +28,7 @@ export default function BillsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const [profileNick, setProfileNick] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [isViewBillModalVisible, setIsViewBillModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +38,21 @@ export default function BillsScreen() {
   const FETCH_COOLDOWN = 2000; // 2 segundos entre atualizações
   const hasInitialLoad = useRef(false);
   const fetchTablesRef = useRef(fetchTables);
+
+  const loadProfileNick = useCallback(async () => {
+    const nick = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
+    setProfileNick(nick);
+  }, []);
+
+  useEffect(() => {
+    loadProfileNick();
+  }, [loadProfileNick]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfileNick();
+    }, [loadProfileNick])
+  );
 
   // Atualiza a ref sempre que fetchTables mudar
   useEffect(() => {
@@ -120,6 +136,18 @@ export default function BillsScreen() {
           color: colors.text,
           textAlign: 'center',
           flex: 1,
+        },
+        headerNick: {
+          fontSize: scaleFont(12),
+          color: colors.textSecondary,
+          textAlign: 'right',
+          marginTop: scale(4),
+        },
+        headerRight: {
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          minWidth: scale(80),
         },
         content: {
           flex: 1,
@@ -328,7 +356,11 @@ export default function BillsScreen() {
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Contas</Text>
-        <View style={{ width: scale(40) }} />
+        <View style={styles.headerRight}>
+          {profileNick && (
+            <Text style={styles.headerNick}>{profileNick}</Text>
+          )}
+        </View>
       </View>
 
       <View style={styles.content}>
