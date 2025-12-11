@@ -145,9 +145,10 @@ export default function ProductsScreen() {
         },
         emptyContainer: {
           flex: 1,
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           alignItems: 'center',
           padding: scale(20),
+          paddingTop: scale(80),
         },
         emptyText: {
           marginTop: scale(12),

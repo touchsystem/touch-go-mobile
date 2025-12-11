@@ -175,36 +175,22 @@ export default function SearchProductsScreen() {
         },
         emptyContainer: {
           flex: 1,
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           alignItems: 'center',
-          padding: scale(40),
-        },
-        emptyIcon: {
-          marginBottom: scale(16),
+          padding: scale(20),
+          paddingTop: scale(80),
         },
         emptyText: {
+          marginTop: scale(12),
           fontSize: scaleFont(16),
-          color: colors.text,
-          textAlign: 'center',
-          marginBottom: scale(8),
-          fontWeight: '600',
-        },
-        emptySubtext: {
-          fontSize: scaleFont(14),
           color: colors.textSecondary,
           textAlign: 'center',
         },
-        clearSearchButton: {
-          marginTop: scale(16),
-          paddingHorizontal: scale(20),
-          paddingVertical: scale(10),
-          backgroundColor: colors.primary,
-          borderRadius: scale(8),
-        },
         clearSearchText: {
-          color: '#fff',
+          marginTop: scale(12),
           fontSize: scaleFont(14),
-          fontWeight: '600',
+          color: colors.primary,
+          textDecorationLine: 'underline',
         },
         orderButton: {
           backgroundColor: colors.primary,
@@ -431,27 +417,12 @@ export default function SearchProductsScreen() {
         </View>
       ) : filteredProducts.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons 
-            name={searchQuery ? "search-outline" : "cube-outline"} 
-            size={scale(64)} 
-            color={colors.textSecondary} 
-            style={styles.emptyIcon}
-          />
+          <Ionicons name="cube-outline" size={scale(48)} color={colors.textSecondary} />
           <Text style={styles.emptyText}>
-            {searchQuery 
-              ? 'Nenhum produto encontrado' 
-              : 'Digite para buscar produtos'}
+            {searchQuery ? 'Nenhum produto encontrado' : 'Nenhum produto disponível'}
           </Text>
           {searchQuery && (
-            <Text style={styles.emptySubtext}>
-              Tente usar palavras-chave diferentes
-            </Text>
-          )}
-          {searchQuery && (
-            <TouchableOpacity 
-              style={styles.clearSearchButton}
-              onPress={() => setSearchQuery('')}
-            >
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
               <Text style={styles.clearSearchText}>Limpar busca</Text>
             </TouchableOpacity>
           )}
@@ -486,3 +457,4 @@ export default function SearchProductsScreen() {
     </View>
   );
 }
+
