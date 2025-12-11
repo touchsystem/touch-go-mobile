@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProducts } from '../hooks/useProducts';
 import { ProductGroupCard } from '../components/ui/ProductGroupCard';
 import { Button } from '../components/ui/Button';
@@ -24,6 +25,7 @@ export default function ProductGroupsScreen() {
   const { getTotal, getTotalItems, clearCart } = useCart();
   const router = useRouter();
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const styles = useMemo(
     () =>
@@ -42,19 +44,23 @@ export default function ProductGroupsScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: scale(20),
-          paddingTop: scale(40),
+          paddingHorizontal: scale(20),
+          paddingVertical: scale(20),
+          paddingTop: Math.max(insets.top + scale(10), scale(20)),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
+          minHeight: scale(70),
         },
         headerTitle: {
           fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
+          textAlign: 'center',
+          flex: 1,
         },
         headerRight: {
-          width: scale(24),
+          width: scale(40),
         },
         listContent: {
           padding: scale(12),
@@ -121,7 +127,10 @@ export default function ProductGroupsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          style={{ width: scale(40), height: scale(40), justifyContent: 'center', alignItems: 'center' }}
+        >
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Grupos de Produtos</Text>

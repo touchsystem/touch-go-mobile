@@ -41,25 +41,34 @@ export default function MenuScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: scale(20),
-          paddingTop: Math.max(insets.top, scale(10)),
+          paddingHorizontal: scale(20),
+          paddingVertical: scale(20),
+          paddingTop: Math.max(insets.top + scale(10), scale(20)),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
+          minHeight: scale(70),
         },
         headerTitle: {
           fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
+          textAlign: 'center',
+          flex: 1,
         },
         searchButton: {
-          padding: scale(8),
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: scale(40),
+          height: scale(40),
         },
         listContent: {
           padding: scale(12),
+          paddingBottom: scale(20),
         },
         row: {
           justifyContent: 'space-between',
+          alignItems: 'stretch',
         },
         emptyContainer: {
           flex: 1,
@@ -120,6 +129,7 @@ export default function MenuScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={{ width: scale(40) }} />
         <Text style={styles.headerTitle}>Cardápio</Text>
         <TouchableOpacity
           style={styles.searchButton}

@@ -6,8 +6,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { ChangeWaiterModal } from '../components/ui/ChangeWaiterModal';
@@ -21,6 +23,7 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { colors, theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [isChangeWaiterModalVisible, setIsChangeWaiterModalVisible] = useState(false);
 
   const styles = useMemo(
@@ -33,17 +36,27 @@ export default function ProfileScreen() {
         header: {
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
-          padding: scale(20),
-          paddingTop: scale(40),
+          justifyContent: 'space-between',
+          paddingHorizontal: scale(20),
+          paddingVertical: scale(20),
+          paddingTop: Math.max(insets.top + scale(10), scale(20)),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
+          minHeight: scale(70),
+        },
+        backButton: {
+          width: scale(40),
+          height: scale(40),
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         headerTitle: {
           fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
+          textAlign: 'center',
+          flex: 1,
         },
         scrollContent: {
           padding: scale(16),
@@ -192,7 +205,14 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Perfil</Text>
+        <View style={{ width: scale(40) }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>

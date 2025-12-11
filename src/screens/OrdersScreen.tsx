@@ -130,16 +130,26 @@ export default function OrdersScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: scale(20),
-          paddingTop: scale(40),
+          paddingHorizontal: scale(20),
+          paddingVertical: scale(20),
+          paddingTop: Math.max(insets.top + scale(10), scale(20)),
           backgroundColor: colors.surface,
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
+          minHeight: scale(70),
+        },
+        backButton: {
+          width: scale(40),
+          height: scale(40),
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         headerTitle: {
           fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
+          textAlign: 'center',
+          flex: 1,
         },
         content: {
           flex: 1,
@@ -604,9 +614,14 @@ export default function OrdersScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={{ width: scale(24) }} />
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Vendas</Text>
-        <View style={{ width: scale(24) }} />
+        <View style={{ width: scale(40) }} />
       </View>
 
       <View style={styles.content}>
