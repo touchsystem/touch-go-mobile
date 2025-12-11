@@ -4,6 +4,8 @@ export interface User {
   nick: string;
   email: string;
   nivel: number;
+  nivel_nome?: string;
+  nivelNome?: string;
   CDEMP?: string;
 }
 

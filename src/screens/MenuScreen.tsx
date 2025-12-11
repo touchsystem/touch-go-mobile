@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useProducts } from '../hooks/useProducts';
 import { ProductGroupCard } from '../components/ui/ProductGroupCard';
@@ -16,6 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { ProductGroup } from '../types';
 import { scale, scaleFont } from '../utils/responsive';
+import { storage, storageKeys } from '../services/storage';
 
 export default function MenuScreen() {
   const { user } = useAuth();
@@ -23,6 +25,7 @@ export default function MenuScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const [profileNick, setProfileNick] = React.useState<string | null>(null);
 
   const styles = useMemo(
     () =>
@@ -55,6 +58,18 @@ export default function MenuScreen() {
           color: colors.text,
           textAlign: 'center',
           flex: 1,
+        },
+        headerNick: {
+          fontSize: scaleFont(12),
+          color: colors.textSecondary,
+          textAlign: 'left',
+          marginTop: scale(4),
+        },
+        headerLeft: {
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          justifyContent: 'center',
+          minWidth: scale(80),
         },
         searchButton: {
           justifyContent: 'center',
@@ -93,6 +108,22 @@ export default function MenuScreen() {
     }
   }, [user, fetchGroups]);
 
+  const loadProfileNick = useCallback(async () => {
+    const nick = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
+    setProfileNick(nick);
+  }, []);
+
+  useEffect(() => {
+    loadProfileNick();
+  }, [loadProfileNick]);
+
+  // Atualiza o nick quando a tela receber foco (quando voltar do perfil após trocar usuário)
+  useFocusEffect(
+    useCallback(() => {
+      loadProfileNick();
+    }, [loadProfileNick])
+  );
+
   const handleGroupPress = (group: ProductGroup) => {
     router.push({
       pathname: '/(tabs)/products',
@@ -112,7 +143,13 @@ export default function MenuScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            {profileNick && (
+              <Text style={styles.headerNick}>{profileNick}</Text>
+            )}
+          </View>
           <Text style={styles.headerTitle}>Cardápio</Text>
+          <View style={{ width: scale(40) }} />
         </View>
         <View style={styles.emptyContainer}>
           <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
@@ -129,7 +166,11 @@ export default function MenuScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={{ width: scale(40) }} />
+        <View style={styles.headerLeft}>
+          {profileNick && (
+            <Text style={styles.headerNick}>{profileNick}</Text>
+          )}
+        </View>
         <Text style={styles.headerTitle}>Cardápio</Text>
         <TouchableOpacity
           style={styles.searchButton}
