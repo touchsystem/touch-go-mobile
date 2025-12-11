@@ -84,17 +84,26 @@ export default function ProductsScreen() {
           alignItems: 'center',
           backgroundColor: colors.surface,
           margin: scale(16),
-          paddingHorizontal: scale(12),
-          borderRadius: scale(10),
+          marginBottom: scale(12),
+          paddingHorizontal: scale(16),
+          paddingVertical: scale(12),
+          borderRadius: scale(12),
           borderWidth: 1,
           borderColor: colors.border,
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 3,
+          elevation: 3,
         },
         searchIcon: {
-          marginRight: scale(8),
+          marginRight: scale(12),
         },
         searchInput: {
           flex: 1,
-          height: scale(40),
           fontSize: scaleFont(16),
           color: colors.text,
         },
@@ -300,7 +309,7 @@ export default function ProductsScreen() {
       )}
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={scale(20)} color={colors.textSecondary} style={styles.searchIcon} />
+        <Ionicons name="search-outline" size={scale(22)} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar produtos..."
@@ -308,6 +317,11 @@ export default function ProductsScreen() {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={scale(20)} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {loading ? (
