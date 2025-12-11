@@ -29,7 +29,7 @@ import { scale, scaleFont } from '../utils/responsive';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function OrdersScreen() {
-  const { cart, updateQuantity, updateCartItem, removeFromCart, getTotal, clearCart } = useCart();
+  const { cart, updateQuantity, updateCartItem, removeFromCart, getTotal, getTotalItems, clearCart } = useCart();
   const { selectedTable, setSelectedTable } = useTableContext();
   const { user } = useAuth();
   const [isTableMapVisible, setIsTableMapVisible] = useState(false);
@@ -689,10 +689,7 @@ export default function OrdersScreen() {
           <View style={styles.orderHeader}>
             <Text style={styles.sectionTitle}>Pedido Atual</Text>
             <Text style={styles.itemsCount}>
-              {cart.filter(
-                (item) => item.codm_status === 'R' || !item.codm_status || !item.codm_relacional
-              ).length}{' '}
-              itens
+              {getTotalItems()} {getTotalItems() === 1 ? 'item' : 'itens'}
             </Text>
           </View>
 
