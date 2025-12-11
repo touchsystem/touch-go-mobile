@@ -73,3 +73,4 @@ export const heightPercentage = (percentage: number): number => {
   return (SCREEN_HEIGHT * percentage) / 100;
 };
 
+

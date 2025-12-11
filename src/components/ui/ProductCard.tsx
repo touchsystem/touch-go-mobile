@@ -24,15 +24,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
           padding: scale(16),
           borderWidth: isDark ? 1 : 0,
           borderColor: colors.border,
+          minHeight: scale(80),
         },
         content: {
           flexDirection: 'row',
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: 'flex-start',
+          flex: 1,
         },
         info: {
           flex: 1,
           marginRight: scale(12),
+          minHeight: scale(48),
         },
         name: {
           fontSize: scaleFont(16),
@@ -41,14 +44,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
           marginBottom: scale(4),
         },
         description: {
-          fontSize: scaleFont(14),
+          fontSize: scaleFont(13),
           color: colors.textSecondary,
-          marginBottom: scale(8),
+          marginBottom: scale(6),
         },
         price: {
           fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
+          marginTop: 'auto',
         },
         addButton: {
           width: scale(44),
@@ -57,6 +61,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
           backgroundColor: isDark ? '#1F2533' : '#E5E7EB',
           justifyContent: 'center',
           alignItems: 'center',
+          flexShrink: 0,
         },
       }),
     [colors, isDark]
@@ -80,9 +85,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => {
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.info}>
-          <Text style={styles.name}>{nome}</Text>
+          <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
+            {nome}
+          </Text>
           {descricao && descricao !== nome && (
-            <Text style={styles.description}>{descricao}</Text>
+            <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">
+              {descricao}
+            </Text>
           )}
           <Text style={styles.price}>{formatPrice(preco)}</Text>
         </View>

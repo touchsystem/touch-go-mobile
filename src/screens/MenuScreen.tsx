@@ -5,6 +5,7 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -39,7 +40,7 @@ export default function MenuScreen() {
         header: {
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
           padding: scale(20),
           paddingTop: Math.max(insets.top, scale(10)),
           backgroundColor: colors.surface,
@@ -50,6 +51,9 @@ export default function MenuScreen() {
           fontSize: scaleFont(18),
           fontWeight: '600',
           color: colors.text,
+        },
+        searchButton: {
+          padding: scale(8),
         },
         listContent: {
           padding: scale(12),
@@ -109,10 +113,20 @@ export default function MenuScreen() {
     );
   }
 
+  const handleSearchPress = () => {
+    router.push('/(tabs)/search-products');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Cardápio</Text>
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={handleSearchPress}
+        >
+          <Ionicons name="search-outline" size={scale(24)} color={colors.text} />
+        </TouchableOpacity>
       </View>
 
       <FlatList

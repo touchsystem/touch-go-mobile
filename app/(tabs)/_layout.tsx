@@ -38,7 +38,7 @@ export default function TabLayout() {
   // Opções da aba de Pedidos com badge de quantidade
   const ordersScreenOptions = useMemo(
     () => ({
-      title: 'Pedidos',
+      title: 'Carrinho',
       tabBarIcon: ({ color }: { color: string }) => (
         <View style={{ position: 'relative' }}>
           <Ionicons name="cart-outline" size={24} color={color} />
@@ -119,6 +119,12 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="product-options"
+        options={{
+          href: null, // Hide from tabs
+        }}
+      />
+      <Tabs.Screen
+        name="search-products"
         options={{
           href: null, // Hide from tabs
         }}
