@@ -12,7 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Button } from './Button';
-import { scale, scaleFont, scaleWidth, widthPercentage } from '../../utils/responsive';
+import { scale, scaleFont, scaleWidth, scaleHeight, widthPercentage } from '../../utils/responsive';
 
 interface OrderItemModalProps {
   visible: boolean;
