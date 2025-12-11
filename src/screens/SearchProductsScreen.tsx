@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -244,12 +245,6 @@ export default function SearchProductsScreen() {
   }, [products, searchQuery]);
 
   const handleProductPress = useCallback(async (product: Product) => {
-    if (!selectedTable) {
-      // Se não tiver mesa selecionada, abre o modal de seleção de mesa
-      router.push('/(tabs)/orders');
-      return;
-    }
-
     try {
       const codm = product.codm || product.id?.toString() || '';
       if (!codm) {
@@ -272,6 +267,7 @@ export default function SearchProductsScreen() {
           codm_status: product.status || 'C',
           codm_relacional: undefined,
         });
+        Alert.alert('Sucesso', `${nome} adicionado ao carrinho!`);
         return;
       }
 
@@ -308,6 +304,7 @@ export default function SearchProductsScreen() {
           codm_status: product.status || 'C',
           codm_relacional: undefined,
         });
+        Alert.alert('Sucesso', `${nome} adicionado ao carrinho!`);
       }
     } catch (error) {
       console.error('Erro ao adicionar produto:', error);
@@ -331,8 +328,9 @@ export default function SearchProductsScreen() {
         codm_status: product.status || 'C',
         codm_relacional: undefined,
       });
+      Alert.alert('Sucesso', `${nome} adicionado ao carrinho!`);
     }
-  }, [selectedTable, router, fetchRelationalGroups, addToCart]);
+  }, [router, fetchRelationalGroups, addToCart]);
 
   const handleViewOrder = () => {
     router.push('/(tabs)/orders');
@@ -399,20 +397,6 @@ export default function SearchProductsScreen() {
         <View style={{ width: scale(40) }} />
       </View>
 
-      {selectedTable && (
-        <View style={styles.orderSummary}>
-          <Text style={styles.orderSummaryText}>
-            Mesa #{selectedTable.numero}
-          </Text>
-          <Text style={styles.orderSummaryDot}>•</Text>
-          <Text style={styles.orderSummaryText}>
-            {getTotalItems()} itens
-          </Text>
-          <Text style={styles.orderSummaryPrice}>
-            {formatCurrency(getTotal())}
-          </Text>
-        </View>
-      )}
 
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={scale(22)} color={colors.textSecondary} style={styles.searchIcon} />
