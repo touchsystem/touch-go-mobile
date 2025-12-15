@@ -68,10 +68,10 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     const [printing, setPrinting] = useState(false);
 
     useEffect(() => {
-        if (visible && mesaCartao) {
+        if (visible && mesaCartao && !printing) {
             fetchBillData();
         }
-    }, [visible, mesaCartao]);
+    }, [visible, mesaCartao, printing]);
 
     const fetchBillData = async () => {
         try {
@@ -109,8 +109,14 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 `/caixa/imprimir-conta?mesa=${mesaCartao}&nick=${nickToUse}`
             );
 
+            // Reseta o estado de impressão ANTES de atualizar a mesa para evitar loop
+            setPrinting(false);
+            
             // Atualiza apenas a mesa específica após imprimir (sem reload completo)
-            await refreshTable(mesaCartao);
+            // Não recarrega os dados da conta para evitar loop
+            refreshTable(mesaCartao).catch(err => {
+                console.error('Erro ao atualizar mesa:', err);
+            });
             
             if (response.data?.mensagem) {
                 Alert.alert('Sucesso', response.data.mensagem, [
@@ -133,11 +139,11 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             }
         } catch (error: any) {
             console.error('Error printing bill:', error);
+            setPrinting(false);
             Alert.alert(
                 'Erro',
                 error.response?.data?.erro || error.message || 'Erro ao imprimir conta'
             );
-            setPrinting(false);
         }
     };
 
