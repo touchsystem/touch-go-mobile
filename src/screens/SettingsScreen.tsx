@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   BackHandler,
   ScrollView,
@@ -10,17 +10,16 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { Alert } from '../utils/alert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Switch } from '../components/ui/Switch';
-import { ConfigButton } from '../components/login/ConfigButton';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useServerConfig } from '../hooks/useServerConfig';
 import { useSystemSettings } from '../hooks/useSystemSettings';
-import { scale, scaleFont, widthPercentage } from '../utils/responsive';
+import { Alert } from '../utils/alert';
+import { scale, scaleFont } from '../utils/responsive';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -183,7 +182,7 @@ export default function SettingsScreen() {
         const urlObj = new URL(url);
         const ip = urlObj.hostname;
         const port = urlObj.port || '5001';
-        
+
         // Só atualiza se for diferente para evitar loops
         if (settings.serverIp !== ip || settings.serverPort !== port) {
           updateSettings({
@@ -203,10 +202,10 @@ export default function SettingsScreen() {
     try {
       // Atualiza a URL do servidor se o IP ou porta mudaram
       const newUrl = `http://${settings.serverIp}:${settings.serverPort}`;
-      
+
       // Salva as configurações do sistema
       await updateSettings(settings);
-      
+
       // Atualiza a configuração do servidor se necessário
       if (config.apiUrlLocal !== newUrl) {
         await updateConfig({
@@ -215,7 +214,7 @@ export default function SettingsScreen() {
           apiUrlLocal: newUrl,
         });
       }
-      
+
       Alert.alert('Sucesso', 'Configurações salvas com sucesso!');
     } catch (error) {
       Alert.alert('Erro', 'Erro ao salvar configurações');
