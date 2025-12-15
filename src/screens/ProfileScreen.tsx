@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+import { Alert } from '../utils/alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -89,44 +89,44 @@ export default function ProfileScreen() {
           minWidth: scale(80),
         },
         scrollContent: {
-          padding: scale(16),
+          padding: scale(12),
         },
         avatarContainer: {
           alignItems: 'center',
-          marginBottom: scale(24),
+          marginBottom: scale(16),
         },
         avatar: {
-          width: scale(100),
-          height: scale(100),
-          borderRadius: scale(50),
+          width: scale(80),
+          height: scale(80),
+          borderRadius: scale(40),
           backgroundColor: colors.primary,
           justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: scale(16),
+          marginBottom: scale(8),
         },
         avatarText: {
-          fontSize: scaleFont(36),
+          fontSize: scaleFont(28),
           fontWeight: 'bold',
           color: '#fff',
         },
         userName: {
-          fontSize: scaleFont(24),
+          fontSize: scaleFont(20),
           fontWeight: '600',
           color: colors.text,
-          marginBottom: scale(4),
+          marginBottom: scale(2),
         },
         userEmail: {
-          fontSize: scaleFont(14),
+          fontSize: scaleFont(12),
           color: colors.textSecondary,
         },
         section: {
-          marginBottom: scale(24),
+          marginBottom: scale(16),
         },
         sectionTitle: {
           fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
-          marginBottom: scale(12),
+          marginBottom: scale(8),
         },
         infoRow: {
           flexDirection: 'row',
@@ -153,7 +153,7 @@ export default function ProfileScreen() {
           borderColor: colors.error,
         },
         themeSection: {
-          marginBottom: scale(24),
+          marginBottom: scale(16),
         },
         themeRow: {
           flexDirection: 'row',
@@ -269,30 +269,6 @@ export default function ProfileScreen() {
           <Text style={styles.userName}>{user?.nome || 'Usuário'}</Text>
           <Text style={styles.userEmail}>{user?.email || ''}</Text>
         </View>
-
-        <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Informações Pessoais</Text>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Nome</Text>
-            <Text style={styles.infoValue}>{user?.nome || 'N/A'}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Apelido</Text>
-            <Text style={styles.infoValue}>{user?.nick || 'N/A'}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{user?.email || 'N/A'}</Text>
-          </View>
-
-          <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.infoLabel}>Nível de Acesso</Text>
-            <Text style={styles.infoValue}>{getLevelName(user)}</Text>
-          </View>
-        </Card>
 
         <Card style={styles.themeSection}>
           <Text style={styles.sectionTitle}>Aparência</Text>

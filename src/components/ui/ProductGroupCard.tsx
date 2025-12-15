@@ -47,13 +47,13 @@ export const ProductGroupCard: React.FC<ProductGroupCardProps> = ({ group, onPre
           minHeight: scale(50),
         },
         name: {
-          fontSize: scaleFont(14),
+          fontSize: scaleFont(16),
           fontWeight: '600',
           color: colors.text,
           marginBottom: scale(4),
           textAlign: 'left',
           width: '100%',
-          lineHeight: scaleFont(18),
+          lineHeight: scaleFont(14),
         },
         count: {
           fontSize: scaleFont(12),
@@ -81,7 +81,7 @@ export const ProductGroupCard: React.FC<ProductGroupCardProps> = ({ group, onPre
         <View style={styles.textContainer}>
           <Text 
             style={styles.name} 
-            numberOfLines={2} 
+            numberOfLines={1} 
             ellipsizeMode="tail"
           >
             {displayName}

@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useState, memo, useCallback } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Dimensions,
     Modal,
     ScrollView,
@@ -11,6 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { Alert } from '../../utils/alert';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTableContext } from '../../contexts/TableContext';

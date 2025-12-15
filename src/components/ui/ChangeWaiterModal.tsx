@@ -6,10 +6,10 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
-  Alert,
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
+import { Alert } from '../../utils/alert';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Button } from './Button';

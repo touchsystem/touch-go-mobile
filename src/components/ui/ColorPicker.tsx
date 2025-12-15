@@ -15,7 +15,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ onColorSelect }) => {
     onColorSelect?.(color);
   };
 
-  const colorOptions = Object.entries(THEME_COLORS) as [ThemeColor, typeof THEME_COLORS[ThemeColor]][];
+  // Limitar apenas às 4 cores: azul, vermelho, laranja e verde
+  const allowedColors: ThemeColor[] = ['blue', 'red', 'orange', 'green'];
+  const colorOptions = allowedColors.map((key) => [key, THEME_COLORS[key]] as [ThemeColor, typeof THEME_COLORS[ThemeColor]]);
 
   return (
     <View style={styles.container}>

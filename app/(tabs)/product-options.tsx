@@ -18,6 +18,7 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { RelationalGroup } from '../../src/hooks/useRelationalGroups';
 import api from '../../src/services/api';
 import { capitalizeFirstLetter, formatCurrency } from '../../src/utils/format';
+import { Alert } from '../../src/utils/alert';
 
 function generateUUID() {
   return Math.random().toString(36).substring(2, 15) + Date.now();
@@ -291,6 +292,8 @@ export default function ProductOptionsScreen() {
     };
 
     addToCart(produtoCompleto);
+    const nomeProduto = capitalizeFirstLetter(produto?.des2 || produto?.nome || 'Produto');
+    Alert.alert('Sucesso', `${nomeProduto} adicionado ao carrinho!`);
     router.replace('/(tabs)/orders');
   };
 

@@ -20,6 +20,7 @@ import { Product } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useRelationalGroups } from '../hooks/useRelationalGroups';
 import { scale, scaleFont } from '../utils/responsive';
+import { Alert } from '../utils/alert';
 
 export default function ProductsScreen() {
   const { codGp } = useLocalSearchParams<{ codGp?: string }>();
@@ -215,6 +216,7 @@ export default function ProductsScreen() {
           codm_status: product.status || 'C',
           codm_relacional: undefined,
         });
+        Alert.alert('Sucesso', `${nome} adicionado ao carrinho!`);
         return;
       }
 
@@ -251,6 +253,7 @@ export default function ProductsScreen() {
           codm_status: product.status || 'C',
           codm_relacional: undefined,
         });
+        Alert.alert('Sucesso', `${nome} adicionado ao carrinho!`);
       }
     } catch (error) {
       console.error('Erro ao adicionar produto:', error);
@@ -274,6 +277,7 @@ export default function ProductsScreen() {
         codm_status: product.status || 'C',
         codm_relacional: undefined,
       });
+      Alert.alert('Sucesso', `${nome} adicionado ao carrinho!`);
     }
   };
 

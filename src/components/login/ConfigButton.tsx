@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert } from '../../utils/alert';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useServerConfig } from '../../hooks/useServerConfig';
 import { Button } from '../ui/Button';

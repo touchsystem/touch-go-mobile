@@ -1,4 +1,5 @@
 import { AuthGuard } from '@/src/components/auth/AuthGuard';
+import { CustomAlert } from '@/src/components/ui/CustomAlert';
 import { useTheme } from '@/src/contexts/ThemeContext';
 import { AppProviders } from '@/src/providers/AppProviders';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
@@ -37,6 +38,7 @@ function ThemedLayout() {
             <Stack.Screen name="login" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
+          <CustomAlert />
         </AuthGuard>
       </NavigationThemeProvider>
     </View>
