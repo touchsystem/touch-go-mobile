@@ -182,7 +182,7 @@ export default function SettingsScreen() {
       try {
         const urlObj = new URL(url);
         const ip = urlObj.hostname;
-        const port = urlObj.port || '5000';
+        const port = urlObj.port || '5001';
         
         // Só atualiza se for diferente para evitar loops
         if (settings.serverIp !== ip || settings.serverPort !== port) {
@@ -285,7 +285,7 @@ export default function SettingsScreen() {
               style={styles.input}
               value={settings.serverPort}
               onChangeText={(text) => updateSetting('serverPort', text)}
-              placeholder="5000"
+              placeholder="5001"
               placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
             />

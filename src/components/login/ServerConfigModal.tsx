@@ -42,13 +42,13 @@ export const ServerConfigModal: React.FC<ServerConfigModalProps> = ({
         label="URL da API"
         value={apiUrl}
         onChangeText={setApiUrl}
-        placeholder="http://192.168.0.234:5000"
+        placeholder="http://192.168.0.234:5001"
       />
       <Input
         label="URL Local (opcional)"
         value={apiUrlLocal}
         onChangeText={setApiUrlLocal}
-        placeholder="http://localhost:5000"
+        placeholder="http://localhost:5001"
       />
       <View style={styles.buttons}>
         <Button

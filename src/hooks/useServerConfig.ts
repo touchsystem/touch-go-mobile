@@ -10,7 +10,7 @@ interface ServerConfig {
 export const useServerConfig = () => {
   const { getServerConfig, setServerConfig: saveServerConfig } = useAuth();
   const [config, setConfig] = useState<ServerConfig>({
-    apiUrl: 'http://192.168.0.234:5000',
+    apiUrl: 'http://192.168.0.234:5001',
     apiUrlLocal: '',
     appName: 'EatzGo',
   });

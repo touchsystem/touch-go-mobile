@@ -31,7 +31,7 @@ export const ConfigButton: React.FC = () => {
       const urlObj = new URL(url);
       return {
         ip: urlObj.hostname,
-        port: urlObj.port || '5000',
+        port: urlObj.port || '5001',
       };
     } catch {
       // Se não conseguir parsear, tenta extrair manualmente
@@ -39,17 +39,17 @@ export const ConfigButton: React.FC = () => {
       if (match) {
         return {
           ip: match[1] || '192.168.0.234',
-          port: match[2] || '5000',
+          port: match[2] || '5001',
         };
       }
       return {
         ip: '192.168.0.234',
-        port: '5000',
+        port: ' 5001',
       };
     }
   };
 
-  const currentUrl = config.apiUrlLocal || config.apiUrl || 'http://192.168.0.234:5000';
+  const currentUrl = config.apiUrlLocal || config.apiUrl || 'http://192.168.0.234:5001';
   const { ip: currentIp, port: currentPort } = parseUrl(currentUrl);
   
   const [serverIp, setServerIp] = useState(currentIp);
@@ -298,7 +298,7 @@ export const ConfigButton: React.FC = () => {
             label="Porta do Servidor"
             value={serverPort}
             onChangeText={setServerPort}
-            placeholder="5000"
+            placeholder="5001"
             keyboardType="numeric"
           />
         )}
