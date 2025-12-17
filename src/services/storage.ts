@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   TABLE: 'table',
   CART: 'cart',
   LAST_USED_NICK: 'lastUsedNick',
+  REMEMBERED_EMAIL: 'rememberedEmail',
 };
 
 // Verifica se o AsyncStorage está disponível

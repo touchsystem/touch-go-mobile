@@ -1,7 +1,7 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
-import { storage, storageKeys } from '../services/storage';
 import { setLogoutHandler } from '../services/auth-manager';
+import { storage, storageKeys } from '../services/storage';
 import { Empresa, LoginParams, LoginResponse, User } from '../types';
 
 interface AuthContextType {
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const decoded = decodeToken(token);
           if (decoded && decoded.exp && decoded.exp * 1000 > Date.now()) {
             setUser(storedUser);
-            
+
             // Garantir que o nick está salvo no LAST_USED_NICK para exibir no perfil
             if (storedUser.nick) {
               const lastUsedNick = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 await storage.setItem(storageKeys.LAST_USED_NICK, storedUser.nick);
               }
             }
-            
+
             // Atualizar baseURL do axios
             const config = await storage.getItem<{ apiUrl: string }>(storageKeys.SERVER_CONFIG);
             if (config?.apiUrl) {
@@ -116,12 +116,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       console.log('[AuthContext] User data:', userData);
       await storage.setItem(storageKeys.USER, userData);
-      
+
       // Salvar o nick do usuário logado para exibir no perfil
       if (userData.nick) {
         await storage.setItem(storageKeys.LAST_USED_NICK, userData.nick);
       }
-      
+
       setUser(userData);
 
       // Buscar dados completos do usuário
@@ -130,12 +130,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userResponse = await api.get(`/usuarios/${userData.id}`);
           const fullUserData = { ...userData, ...userResponse.data };
           await storage.setItem(storageKeys.USER, fullUserData);
-          
+
           // Atualizar o nick se vier nos dados completos
           if (fullUserData.nick) {
             await storage.setItem(storageKeys.LAST_USED_NICK, fullUserData.nick);
           }
-          
+
           setUser(fullUserData);
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -184,12 +184,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
 
       await storage.setItem(storageKeys.USER, userData);
-      
+
       // Salvar o nick do usuário logado para exibir no perfil
       if (userData.nick) {
         await storage.setItem(storageKeys.LAST_USED_NICK, userData.nick);
       }
-      
+
       setUser(userData);
     } catch (error: any) {
       const errorMessage = error.response?.data?.erro || error.message || 'Código inválido';

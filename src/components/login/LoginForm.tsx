@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Alert } from '../../utils/alert';
 import { useRouter } from 'expo-router';
@@ -8,6 +8,7 @@ import { Checkbox } from '../ui/Checkbox';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { storage, storageKeys } from '../../services/storage';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +20,22 @@ export const LoginForm: React.FC = () => {
   const { login } = useAuth();
   const router = useRouter();
   const { colors } = useTheme();
+
+  // Carregar email salvo quando o componente monta
+  useEffect(() => {
+    const loadRememberedEmail = async () => {
+      try {
+        const savedEmail = await storage.getItem<string>(storageKeys.REMEMBERED_EMAIL);
+        if (savedEmail) {
+          setEmail(savedEmail);
+          setRememberMe(true);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar email salvo:', error);
+      }
+    };
+    loadRememberedEmail();
+  }, []);
 
   const styles = useMemo(
     () =>
@@ -51,6 +68,13 @@ export const LoginForm: React.FC = () => {
 
     setLoading(true);
     try {
+      // Salvar ou remover email do storage baseado no "lembrar-me"
+      if (rememberMe) {
+        await storage.setItem(storageKeys.REMEMBERED_EMAIL, email);
+      } else {
+        await storage.removeItem(storageKeys.REMEMBERED_EMAIL);
+      }
+
       await login({ email, password });
       router.replace('/(tabs)/menu');
     } catch (error: any) {
