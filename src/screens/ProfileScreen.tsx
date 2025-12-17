@@ -30,14 +30,24 @@ export default function ProfileScreen() {
   const [profileNick, setProfileNick] = useState<string | null>(null);
 
   const loadProfileNick = useCallback(async () => {
+    // Primeiro tenta do storage
     const nick = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
     setProfileNick(nick);
   }, []);
 
+  // Carrega o nick quando o componente monta
   useEffect(() => {
     loadProfileNick();
   }, [loadProfileNick]);
 
+  // Atualiza o nick quando o user do AuthContext muda (após login)
+  useEffect(() => {
+    if (user?.nick) {
+      setProfileNick(user.nick);
+    }
+  }, [user?.nick]);
+
+  // Recarrega o nick quando a tela ganha foco
   useFocusEffect(
     useCallback(() => {
       loadProfileNick();

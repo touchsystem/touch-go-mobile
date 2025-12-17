@@ -46,6 +46,13 @@ export default function SearchProductsScreen() {
     loadProfileNick();
   }, [loadProfileNick]);
 
+  // Atualiza o nick quando o user do AuthContext muda (após login)
+  useEffect(() => {
+    if (user?.nick) {
+      setProfileNick(user.nick);
+    }
+  }, [user?.nick]);
+
   useFocusEffect(
     useCallback(() => {
       loadProfileNick();

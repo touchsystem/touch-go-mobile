@@ -119,9 +119,17 @@ export default function MenuScreen() {
     setProfileNick(nick);
   }, []);
 
+  // Carrega o nick quando o componente monta
   useEffect(() => {
     loadProfileNick();
   }, [loadProfileNick]);
+
+  // Atualiza o nick quando o user do AuthContext muda (após login)
+  useEffect(() => {
+    if (user?.nick) {
+      setProfileNick(user.nick);
+    }
+  }, [user?.nick]);
 
   // Atualiza o nick quando a tela receber foco (quando voltar do perfil após trocar usuário)
   useFocusEffect(
