@@ -1,24 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useMemo, useState, memo, useCallback } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
-    Dimensions,
     Modal,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
-import { Alert } from '../../utils/alert';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
 import { useTableContext } from '../../contexts/TableContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import api from '../../services/api';
 import { storage, storageKeys } from '../../services/storage';
+import { Alert } from '../../utils/alert';
 import { formatCurrency } from '../../utils/format';
+import { scale, scaleFont, scaleHeight, scaleWidth, widthPercentage } from '../../utils/responsive';
 import { Button } from './Button';
-import { scale, scaleFont, scaleWidth, scaleHeight, widthPercentage } from '../../utils/responsive';
 
 interface ViewBillModalProps {
     visible: boolean;
@@ -111,35 +110,23 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
 
             // Reseta o estado de impressão ANTES de atualizar a mesa para evitar loop
             setPrinting(false);
-            
+
+            // Fecha o modal imediatamente após sucesso
+            onClose();
+
             // Atualiza apenas a mesa específica após imprimir (sem reload completo)
-            // Não recarrega os dados da conta para evitar loop
             refreshTable(mesaCartao).catch(err => {
                 console.error('Erro ao atualizar mesa:', err);
             });
-            
-            if (response.data?.mensagem) {
-                Alert.alert('Sucesso', response.data.mensagem, [
-                    {
-                        text: 'OK',
-                        onPress: () => {
-                            onClose();
-                        },
-                    },
-                ]);
-            } else {
-                Alert.alert('Sucesso', 'Conta enviada para impressão!', [
-                    {
-                        text: 'OK',
-                        onPress: () => {
-                            onClose();
-                        },
-                    },
-                ]);
-            }
+
+            // Mostra alert de sucesso (sem botão OK, fecha automaticamente em 1s)
+            setTimeout(() => {
+                Alert.alert('Sucesso', response.data?.mensagem || 'Conta enviada para impressão!');
+            }, 300);
         } catch (error: any) {
             console.error('Error printing bill:', error);
             setPrinting(false);
+            // Em caso de erro, NÃO fecha o modal - mantém aberto para o usuário tentar novamente
             Alert.alert(
                 'Erro',
                 error.response?.data?.erro || error.message || 'Erro ao imprimir conta'
@@ -328,8 +315,8 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
 
     // Memoiza o cálculo do total para evitar recálculos desnecessários
     const total = useMemo(() => {
-      if (!data?.vendas || data.vendas.length === 0) return 0;
-      return data.vendas.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+        if (!data?.vendas || data.vendas.length === 0) return 0;
+        return data.vendas.reduce((sum, item) => sum + calculateItemTotal(item), 0);
     }, [data?.vendas]);
 
     return (
