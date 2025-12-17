@@ -188,6 +188,8 @@ export default function ProfileScreen() {
 
   const handleConfirmChangeWaiter = (newNick: string) => {
     // O nick já foi salvo no storage pelo modal
+    // Atualiza o nick exibido imediatamente
+    setProfileNick(newNick);
     Alert.alert('Sucesso', `Usuário alterado para: ${newNick}`);
   };
 
