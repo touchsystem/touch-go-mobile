@@ -49,7 +49,7 @@ export default function PaymentMethodsScreen() {
         header: {
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
           paddingHorizontal: scale(20),
           paddingVertical: scale(20),
           paddingTop: Math.max(insets.top + scale(10), scale(20)),
@@ -57,12 +57,8 @@ export default function PaymentMethodsScreen() {
           borderBottomWidth: 1,
           borderBottomColor: colors.border,
           minHeight: scale(70),
-          position: 'relative',
         },
         backButton: {
-          position: 'absolute',
-          left: scale(20),
-          top: Math.max(insets.top + scale(10), scale(20)),
           width: scale(40),
           height: scale(40),
           justifyContent: 'center',
@@ -106,6 +102,7 @@ export default function PaymentMethodsScreen() {
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Métodos de pagamentos</Text>
+        <View style={{ width: scale(40) }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>

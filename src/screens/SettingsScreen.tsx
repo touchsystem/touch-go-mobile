@@ -40,7 +40,7 @@ export default function SettingsScreen() {
         header: {
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
           paddingHorizontal: scale(20),
           paddingVertical: scale(20),
           paddingTop: Math.max(insets.top + scale(10), scale(20)),
@@ -50,9 +50,6 @@ export default function SettingsScreen() {
           minHeight: scale(70),
         },
         backButton: {
-          position: 'absolute',
-          left: scale(20),
-          top: Math.max(insets.top + scale(10), scale(20)),
           width: scale(40),
           height: scale(40),
           justifyContent: 'center',
@@ -260,6 +257,7 @@ export default function SettingsScreen() {
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>CONFIGURAÇÕES</Text>
+        <View style={{ width: scale(40) }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
