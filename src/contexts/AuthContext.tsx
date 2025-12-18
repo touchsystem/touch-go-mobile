@@ -3,7 +3,7 @@ import api from '../services/api';
 import { setLogoutHandler } from '../services/auth-manager';
 import { storage, storageKeys } from '../services/storage';
 import { Empresa, LoginParams, LoginResponse, User } from '../types';
-import { getDeviceId, getDeviceInfo } from '../utils/deviceId';
+import { getDeviceInfo, getVisualDeviceIdentifier } from '../utils/deviceId';
 
 interface AuthContextType {
   user: User | null;
@@ -98,9 +98,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const deviceInfo = await getDeviceInfo();
       const deviceId = deviceInfo.deviceId;
 
+      const visualId = getVisualDeviceIdentifier(deviceId);
+      
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('📱 INFORMAÇÕES DO DISPOSITIVO:');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`🔢 SERIAL NUMBER: ${deviceInfo.serialNumber || 'N/A'}`);
+      console.log(`🆔 ID Visual: ${visualId}`);
       console.log(`🔑 Device ID: ${deviceId}`);
       console.log(`📱 Nome: ${deviceInfo.deviceName || 'N/A'}`);
       console.log(`🏷️  Modelo: ${deviceInfo.modelName || 'N/A'}`);
@@ -117,6 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         senha: params.password,
         deviceId: deviceId,
         deviceInfo: {
+          serialNumber: deviceInfo.serialNumber,
           deviceName: deviceInfo.deviceName,
           modelName: deviceInfo.modelName,
           osName: deviceInfo.osName,
