@@ -98,6 +98,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const deviceInfo = await getDeviceInfo();
       const deviceId = deviceInfo.deviceId;
 
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📱 INFORMAÇÕES DO DISPOSITIVO:');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`🔑 Device ID: ${deviceId}`);
+      console.log(`📱 Nome: ${deviceInfo.deviceName || 'N/A'}`);
+      console.log(`🏷️  Modelo: ${deviceInfo.modelName || 'N/A'}`);
+      console.log(`🏭 Fabricante: ${deviceInfo.manufacturer || 'N/A'}`);
+      console.log(`📲 Marca: ${deviceInfo.brand || 'N/A'}`);
+      console.log(`💻 Sistema: ${deviceInfo.osName} ${deviceInfo.osVersion || ''}`);
+      console.log(`📦 App Versão: ${deviceInfo.appVersion || 'N/A'}`);
+      console.log(`🤖 Plataforma: ${deviceInfo.platform}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
       // Envia deviceId junto com o login
       const response = await api.post('/login', {
         email: params.email,
