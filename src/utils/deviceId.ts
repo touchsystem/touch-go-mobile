@@ -1,6 +1,7 @@
 import * as Application from 'expo-application';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+import { getNativeSerialNumber } from './nativeDeviceSerial';
 
 // Importação condicional - só funciona no build nativo, não no Expo Go
 let DeviceInfo: any = null;
@@ -56,27 +57,33 @@ export const getDeviceInfo = async (): Promise<DeviceInfo> => {
     const deviceId = await getDeviceId();
     const appVersion = Application.nativeApplicationVersion;
     
-    // Obtém o Serial Number (Android) - Só funciona no build nativo
+    // Obtém o Serial Number (Android) - Tenta módulo nativo primeiro
     let serialNumber: string | null = null;
-    if (DeviceInfo && Platform.OS === 'android') {
+    if (Platform.OS === 'android') {
       try {
-        serialNumber = await DeviceInfo.getSerialNumber();
-        console.log('[DeviceId] Serial Number obtido:', serialNumber);
+        // PRIORIDADE 1: Módulo Nativo Customizado (funciona no build)
+        serialNumber = await getNativeSerialNumber();
         
-        // Se retornar "unknown", tenta usar o androidId como alternativa
-        if (serialNumber === 'unknown') {
+        if (serialNumber) {
+          console.log('[DeviceId] ✅ Serial Number obtido do módulo nativo:', serialNumber);
+        } else if (DeviceInfo) {
+          // PRIORIDADE 2: react-native-device-info (se disponível)
+          serialNumber = await DeviceInfo.getSerialNumber();
+          console.log('[DeviceId] Serial Number obtido do DeviceInfo:', serialNumber);
+          
+          if (serialNumber === 'unknown') {
+            serialNumber = Application.getAndroidId();
+            console.log('[DeviceId] Serial retornou "unknown", usando androidId:', serialNumber);
+          }
+        } else {
+          // PRIORIDADE 3: Fallback para Android ID (Expo Go)
           serialNumber = Application.getAndroidId();
-          console.log('[DeviceId] Serial retornou "unknown", usando androidId:', serialNumber);
+          console.log('[DeviceId] ⚠️ Usando androidId como serial (Expo Go):', serialNumber);
         }
       } catch (err) {
-        console.log('[DeviceId] Erro ao obter serial number (normal no Expo Go):', err);
-        // Se falhar, usa o androidId como alternativa
+        console.log('[DeviceId] Erro ao obter serial, usando androidId:', err);
         serialNumber = Application.getAndroidId();
       }
-    } else if (Platform.OS === 'android') {
-      // Fallback para Expo Go - usa androidId
-      serialNumber = Application.getAndroidId();
-      console.log('[DeviceId] Usando androidId como serial (Expo Go):', serialNumber);
     }
 
     const deviceInfo: DeviceInfo = {
