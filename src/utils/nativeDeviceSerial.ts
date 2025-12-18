@@ -8,6 +8,8 @@ export interface NativeDeviceSerial {
   getDeviceManufacturer(): Promise<string>;
   getDeviceBrand(): Promise<string>;
   getAndroidId(): Promise<string>;
+  requestPermission(): Promise<string>;
+  hasPermission(): Promise<boolean>;
 }
 
 /**
@@ -101,6 +103,42 @@ export async function getNativeDeviceInfo() {
       brand: null,
       androidId: null,
     };
+  }
+}
+
+/**
+ * Verifica se o app tem permissão READ_PHONE_STATE
+ */
+export async function hasSerialPermission(): Promise<boolean> {
+  if (!nativeDeviceSerial) {
+    return false;
+  }
+
+  try {
+    const hasPermission = await nativeDeviceSerial.hasPermission();
+    return hasPermission;
+  } catch (error) {
+    console.error('[NativeDeviceSerial] Erro ao verificar permissão:', error);
+    return false;
+  }
+}
+
+/**
+ * Solicita permissão READ_PHONE_STATE ao usuário
+ * Android irá exibir um dialog de permissão
+ */
+export async function requestSerialPermission(): Promise<string> {
+  if (!nativeDeviceSerial) {
+    return 'NAO_DISPONIVEL';
+  }
+
+  try {
+    const result = await nativeDeviceSerial.requestPermission();
+    console.log('[NativeDeviceSerial] Resultado da solicitação:', result);
+    return result;
+  } catch (error) {
+    console.error('[NativeDeviceSerial] Erro ao solicitar permissão:', error);
+    return 'ERRO';
   }
 }
 

@@ -4,6 +4,7 @@ import { setLogoutHandler } from '../services/auth-manager';
 import { storage, storageKeys } from '../services/storage';
 import { Empresa, LoginParams, LoginResponse, User } from '../types';
 import { getDeviceInfo, getVisualDeviceIdentifier } from '../utils/deviceId';
+import { hasSerialPermission, requestSerialPermission } from '../utils/nativeDeviceSerial';
 
 interface AuthContextType {
   user: User | null;
@@ -94,12 +95,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (params: LoginParams): Promise<LoginResponse> => {
     try {
+      // Solicita permissão para obter serial number (Android 8+)
+      const hasPermission = await hasSerialPermission();
+      if (!hasPermission) {
+        console.log('[AuthContext] Solicitando permissão READ_PHONE_STATE...');
+        await requestSerialPermission();
+        // Aguarda um pouco para o usuário conceder a permissão
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
       // Obtém informações do dispositivo
       const deviceInfo = await getDeviceInfo();
       const deviceId = deviceInfo.deviceId;
 
       const visualId = getVisualDeviceIdentifier(deviceId);
-      
+
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('📱 INFORMAÇÕES DO DISPOSITIVO:');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
