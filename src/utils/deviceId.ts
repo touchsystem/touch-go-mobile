@@ -57,26 +57,26 @@ export const getDeviceInfo = async (): Promise<DeviceInfo> => {
         const deviceId = await getDeviceId();
         const appVersion = Application.nativeApplicationVersion;
 
-    // Obtém o Serial Number (Android) - APENAS o serial REAL, não usa fallback
-    let serialNumber: string | null = null;
-    if (Platform.OS === 'android') {
-      try {
-        // Tenta obter Serial Number REAL do módulo nativo
-        serialNumber = await getNativeSerialNumber();
-        
-        if (serialNumber && serialNumber !== 'DESCONHECIDO' && serialNumber !== 'SEM_PERMISSAO') {
-          console.log('[DeviceId] ✅ Serial Number REAL obtido:', serialNumber);
-        } else if (serialNumber) {
-          console.log('[DeviceId] ⚠️ Serial Number não disponível:', serialNumber);
-        } else {
-          console.log('[DeviceId] ⚠️ Serial Number não disponível (build nativo necessário)');
-          serialNumber = 'NAO_DISPONIVEL';
+        // Obtém o Serial Number (Android) - APENAS o serial REAL, não usa fallback
+        let serialNumber: string | null = null;
+        if (Platform.OS === 'android') {
+            try {
+                // Tenta obter Serial Number REAL do módulo nativo
+                serialNumber = await getNativeSerialNumber();
+
+                if (serialNumber && serialNumber !== 'DESCONHECIDO' && serialNumber !== 'SEM_PERMISSAO') {
+                    console.log('[DeviceId] ✅ Serial Number REAL obtido:', serialNumber);
+                } else if (serialNumber) {
+                    console.log('[DeviceId] ⚠️ Serial Number não disponível:', serialNumber);
+                } else {
+                    console.log('[DeviceId] ⚠️ Serial Number não disponível (build nativo necessário)');
+                    serialNumber = 'NAO_DISPONIVEL';
+                }
+            } catch (err) {
+                console.log('[DeviceId] ❌ Erro ao obter serial number:', err);
+                serialNumber = 'ERRO';
+            }
         }
-      } catch (err) {
-        console.log('[DeviceId] ❌ Erro ao obter serial number:', err);
-        serialNumber = 'ERRO';
-      }
-    }
 
         const deviceInfo: DeviceInfo = {
             deviceId,
