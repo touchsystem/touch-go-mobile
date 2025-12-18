@@ -3,6 +3,7 @@ import api from '../services/api';
 import { setLogoutHandler } from '../services/auth-manager';
 import { storage, storageKeys } from '../services/storage';
 import { Empresa, LoginParams, LoginResponse, User } from '../types';
+import { getDeviceId, getDeviceInfo } from '../utils/deviceId';
 
 interface AuthContextType {
   user: User | null;
@@ -93,9 +94,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (params: LoginParams): Promise<LoginResponse> => {
     try {
+      // Obtém informações do dispositivo
+      const deviceInfo = await getDeviceInfo();
+      const deviceId = deviceInfo.deviceId;
+
+      // Envia deviceId junto com o login
       const response = await api.post('/login', {
         email: params.email,
         senha: params.password,
+        deviceId: deviceId,
+        deviceInfo: {
+          deviceName: deviceInfo.deviceName,
+          modelName: deviceInfo.modelName,
+          osName: deviceInfo.osName,
+          osVersion: deviceInfo.osVersion,
+          platform: deviceInfo.platform,
+          appVersion: deviceInfo.appVersion,
+        },
       });
 
       const token = response.data.token;
@@ -120,6 +135,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Salvar o nick do usuário logado para exibir no perfil
       if (userData.nick) {
         await storage.setItem(storageKeys.LAST_USED_NICK, userData.nick);
+      }
+
+      // Salvar o Device ID no storage
+      if (deviceId) {
+        await storage.setItem(storageKeys.DEVICE_ID, deviceId);
+        console.log('[AuthContext] Device ID salvo no storage');
       }
 
       setUser(userData);

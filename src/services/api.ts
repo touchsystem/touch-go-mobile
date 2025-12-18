@@ -57,6 +57,12 @@ axiosInstance.interceptors.request.use(
       }
     }
 
+    // Adiciona Device ID no header de todas as requisições (exceto login)
+    const deviceId = await storage.getItem<string>(storageKeys.DEVICE_ID);
+    if (deviceId && !config.url?.includes('/login')) {
+      config.headers['X-Device-ID'] = deviceId;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

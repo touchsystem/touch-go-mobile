@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   CART: 'cart',
   LAST_USED_NICK: 'lastUsedNick',
   REMEMBERED_EMAIL: 'rememberedEmail',
+  DEVICE_ID: 'deviceId',
 };
 
 // Verifica se o AsyncStorage está disponível
