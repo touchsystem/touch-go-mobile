@@ -6,22 +6,22 @@ import { getNativeSerialNumber } from './nativeDeviceSerial';
 // Importação condicional - só funciona no build nativo, não no Expo Go
 let DeviceInfo: any = null;
 try {
-  DeviceInfo = require('react-native-device-info').default;
+    DeviceInfo = require('react-native-device-info').default;
 } catch (e) {
-  console.log('[DeviceId] react-native-device-info não disponível (normal no Expo Go)');
+    console.log('[DeviceId] react-native-device-info não disponível (normal no Expo Go)');
 }
 
 export interface DeviceInfo {
-  deviceId: string | null;
-  serialNumber: string | null;
-  deviceName: string | null;
-  modelName: string | null;
-  osName: string | null;
-  osVersion: string | null;
-  brand: string | null;
-  manufacturer: string | null;
-  platform: string;
-  appVersion: string | null;
+    deviceId: string | null;
+    serialNumber: string | null;
+    deviceName: string | null;
+    modelName: string | null;
+    osName: string | null;
+    osVersion: string | null;
+    brand: string | null;
+    manufacturer: string | null;
+    platform: string;
+    appVersion: string | null;
 }
 
 /**
@@ -53,86 +53,78 @@ export const getDeviceId = async (): Promise<string | null> => {
  * Útil para exibir no painel administrativo e para debug
  */
 export const getDeviceInfo = async (): Promise<DeviceInfo> => {
-  try {
-    const deviceId = await getDeviceId();
-    const appVersion = Application.nativeApplicationVersion;
-    
-    // Obtém o Serial Number (Android) - Tenta módulo nativo primeiro
+    try {
+        const deviceId = await getDeviceId();
+        const appVersion = Application.nativeApplicationVersion;
+
+    // Obtém o Serial Number (Android) - APENAS o serial REAL, não usa fallback
     let serialNumber: string | null = null;
     if (Platform.OS === 'android') {
       try {
-        // PRIORIDADE 1: Módulo Nativo Customizado (funciona no build)
+        // Tenta obter Serial Number REAL do módulo nativo
         serialNumber = await getNativeSerialNumber();
         
-        if (serialNumber) {
-          console.log('[DeviceId] ✅ Serial Number obtido do módulo nativo:', serialNumber);
-        } else if (DeviceInfo) {
-          // PRIORIDADE 2: react-native-device-info (se disponível)
-          serialNumber = await DeviceInfo.getSerialNumber();
-          console.log('[DeviceId] Serial Number obtido do DeviceInfo:', serialNumber);
-          
-          if (serialNumber === 'unknown') {
-            serialNumber = Application.getAndroidId();
-            console.log('[DeviceId] Serial retornou "unknown", usando androidId:', serialNumber);
-          }
+        if (serialNumber && serialNumber !== 'DESCONHECIDO' && serialNumber !== 'SEM_PERMISSAO') {
+          console.log('[DeviceId] ✅ Serial Number REAL obtido:', serialNumber);
+        } else if (serialNumber) {
+          console.log('[DeviceId] ⚠️ Serial Number não disponível:', serialNumber);
         } else {
-          // PRIORIDADE 3: Fallback para Android ID (Expo Go)
-          serialNumber = Application.getAndroidId();
-          console.log('[DeviceId] ⚠️ Usando androidId como serial (Expo Go):', serialNumber);
+          console.log('[DeviceId] ⚠️ Serial Number não disponível (build nativo necessário)');
+          serialNumber = 'NAO_DISPONIVEL';
         }
       } catch (err) {
-        console.log('[DeviceId] Erro ao obter serial, usando androidId:', err);
-        serialNumber = Application.getAndroidId();
+        console.log('[DeviceId] ❌ Erro ao obter serial number:', err);
+        serialNumber = 'ERRO';
       }
     }
 
-    const deviceInfo: DeviceInfo = {
-      deviceId,
-      serialNumber,
-      deviceName: Device.deviceName,
-      modelName: Device.modelName,
-      osName: Device.osName,
-      osVersion: Device.osVersion,
-      brand: Device.brand,
-      manufacturer: Device.manufacturer,
-      platform: Platform.OS,
-      appVersion,
-    };
+        const deviceInfo: DeviceInfo = {
+            deviceId,
+            serialNumber,
+            deviceName: Device.deviceName,
+            modelName: Device.modelName,
+            osName: Device.osName,
+            osVersion: Device.osVersion,
+            brand: Device.brand,
+            manufacturer: Device.manufacturer,
+            platform: Platform.OS,
+            appVersion,
+        };
 
-    console.log('[DeviceId] Informações do dispositivo:', {
-      ...deviceInfo,
-      deviceId: deviceId ? `${deviceId.substring(0, 8)}...` : null, // Log parcial por segurança
-    });
+        console.log('[DeviceId] Informações do dispositivo:', {
+            ...deviceInfo,
+            deviceId: deviceId ? `${deviceId.substring(0, 8)}...` : null, // Log parcial por segurança
+        });
 
-    return deviceInfo;
-  } catch (error) {
-    console.error('[DeviceId] Erro ao obter informações do dispositivo:', error);
-    return {
-      deviceId: null,
-      serialNumber: null,
-      deviceName: null,
-      modelName: null,
-      osName: null,
-      osVersion: null,
-      brand: null,
-      manufacturer: null,
-      platform: Platform.OS,
-      appVersion: null,
-    };
-  }
+        return deviceInfo;
+    } catch (error) {
+        console.error('[DeviceId] Erro ao obter informações do dispositivo:', error);
+        return {
+            deviceId: null,
+            serialNumber: null,
+            deviceName: null,
+            modelName: null,
+            osName: null,
+            osVersion: null,
+            brand: null,
+            manufacturer: null,
+            platform: Platform.OS,
+            appVersion: null,
+        };
+    }
 };
 
 /**
  * Formata as informações do dispositivo para exibição
  */
 export const formatDeviceInfo = (info: DeviceInfo): string => {
-  const parts = [];
-  
-  if (info.manufacturer) parts.push(info.manufacturer);
-  if (info.modelName) parts.push(info.modelName);
-  if (info.osName && info.osVersion) parts.push(`${info.osName} ${info.osVersion}`);
-  
-  return parts.join(' - ') || 'Dispositivo desconhecido';
+    const parts = [];
+
+    if (info.manufacturer) parts.push(info.manufacturer);
+    if (info.modelName) parts.push(info.modelName);
+    if (info.osName && info.osVersion) parts.push(`${info.osName} ${info.osVersion}`);
+
+    return parts.join(' - ') || 'Dispositivo desconhecido';
 };
 
 /**
@@ -143,10 +135,10 @@ export const formatDeviceInfo = (info: DeviceInfo): string => {
  * Exemplo: 0d8a21609c9b7f5b -> 0D8A-2160-9C9B-7F5B
  */
 export const getVisualDeviceIdentifier = (deviceId: string | null): string => {
-  if (!deviceId) return 'N/A';
-  
-  // Formata o Device ID em grupos de 4 caracteres maiúsculos
-  const formatted = deviceId.toUpperCase().match(/.{1,4}/g)?.join('-') || deviceId;
-  return formatted;
+    if (!deviceId) return 'N/A';
+
+    // Formata o Device ID em grupos de 4 caracteres maiúsculos
+    const formatted = deviceId.toUpperCase().match(/.{1,4}/g)?.join('-') || deviceId;
+    return formatted;
 };
 
