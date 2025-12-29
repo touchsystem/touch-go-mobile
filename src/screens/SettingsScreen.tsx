@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BackHandler,
   ScrollView,
@@ -11,6 +12,7 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import LanguageSelector from '../components/LanguageSelector';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Switch } from '../components/ui/Switch';
@@ -29,6 +31,7 @@ export default function SettingsScreen() {
   const { settings, updateSetting, updateSettings, loading: settingsLoading } = useSystemSettings();
   const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
+  const { t } = useTranslation();
 
   const styles = useMemo(
     () =>
@@ -256,16 +259,16 @@ export default function SettingsScreen() {
         >
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>CONFIGURAÇÕES</Text>
+        <Text style={styles.headerTitle}>{t('settings.title')}</Text>
         <View style={{ width: scale(40) }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Bloco: Servidor e Conexão */}
-        <Text style={styles.blockTitle}>Servidor e Conexão</Text>
+        {/* Server and Connection */}
+        <Text style={styles.blockTitle}>{t('settings.serverAndConnection')}</Text>
         <Card style={styles.section}>
           <View style={{ marginBottom: scale(16) }}>
-            <Text style={styles.inputLabel}>IP do Servidor</Text>
+            <Text style={styles.inputLabel}>{t('settings.serverIp')}</Text>
             <TextInput
               style={styles.input}
               value={settings.serverIp}
@@ -277,7 +280,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={{ marginBottom: scale(16) }}>
-            <Text style={styles.inputLabel}>Porta</Text>
+            <Text style={styles.inputLabel}>{t('settings.serverPort')}</Text>
             <TextInput
               style={styles.input}
               value={settings.serverPort}
@@ -289,7 +292,7 @@ export default function SettingsScreen() {
           </View>
 
           <View>
-            <Text style={styles.inputLabel}>Número do Equipamento</Text>
+            <Text style={styles.inputLabel}>{t('settings.equipmentNumber')}</Text>
             <TextInput
               style={styles.input}
               value={settings.cellphoneNumber || '20'}
@@ -301,11 +304,11 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
-        {/* Bloco: Interface e Visualização */}
-        <Text style={styles.blockTitle}>Interface e Visualização</Text>
+        {/* Interface and Display */}
+        <Text style={styles.blockTitle}>{t('settings.interface')}</Text>
         <Card style={styles.section}>
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Tela Deitada</Text>
+            <Text style={styles.toggleLabel}>{t('settings.landscapeScreen')}</Text>
             <Switch
               value={settings.landscapeScreen}
               onValueChange={(value) => updateSetting('landscapeScreen', value)}
@@ -313,27 +316,32 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Mostrar Borda</Text>
+            <Text style={styles.toggleLabel}>{t('settings.showBorder')}</Text>
             <Switch
               value={settings.showBorder}
               onValueChange={(value) => updateSetting('showBorder', value)}
             />
           </View>
 
-          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.toggleLabel}>Mostrar Turista</Text>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>{t('settings.showTourist')}</Text>
             <Switch
               value={settings.showTourist}
               onValueChange={(value) => updateSetting('showTourist', value)}
             />
           </View>
+
+          <View style={[styles.toggleRow, { borderBottomWidth: 0, paddingVertical: 16 }]}>
+            <Text style={styles.toggleLabel}>{t('settings.language')}</Text>
+            <LanguageSelector />
+          </View>
         </Card>
 
-        {/* Bloco: Vendas e Pedidos */}
-        <Text style={styles.blockTitle}>Vendas e Pedidos</Text>
+        {/* Sales and Orders */}
+        <Text style={styles.blockTitle}>{t('settings.sales')}</Text>
         <Card style={styles.section}>
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Venda Direta</Text>
+            <Text style={styles.toggleLabel}>{t('settings.directSale')}</Text>
             <Switch
               value={settings.directSale}
               onValueChange={(value) => updateSetting('directSale', value)}
@@ -341,7 +349,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Recebimento Direta com Cartão</Text>
+            <Text style={styles.toggleLabel}>{t('settings.directReceiptWithCard')}</Text>
             <Switch
               value={settings.directReceiptWithCard}
               onValueChange={(value) => updateSetting('directReceiptWithCard', value)}
@@ -349,7 +357,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Entrada Direta</Text>
+            <Text style={styles.toggleLabel}>{t('settings.directEntry')}</Text>
             <Switch
               value={settings.directEntry}
               onValueChange={(value) => updateSetting('directEntry', value)}
@@ -357,7 +365,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.toggleLabel}>Agrupar Quantidade no Pedido</Text>
+            <Text style={styles.toggleLabel}>{t('settings.groupQuantityInOrder')}</Text>
             <Switch
               value={settings.groupQuantityInOrder}
               onValueChange={(value) => updateSetting('groupQuantityInOrder', value)}
@@ -365,11 +373,11 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
-        {/* Bloco: Comandas e Impressão */}
-        <Text style={styles.blockTitle}>Comandas e Impressão</Text>
+        {/* Commands and Printing */}
+        <Text style={styles.blockTitle}>{t('settings.commands')}</Text>
         <Card style={styles.section}>
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Segunda via Comanda</Text>
+            <Text style={styles.toggleLabel}>{t('settings.secondCopyOrder')}</Text>
             <Switch
               value={settings.secondCopyOrder}
               onValueChange={(value) => updateSetting('secondCopyOrder', value)}
@@ -377,7 +385,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Comanda Resumida</Text>
+            <Text style={styles.toggleLabel}>{t('settings.summarizedOrder')}</Text>
             <Switch
               value={settings.summarizedOrder}
               onValueChange={(value) => updateSetting('summarizedOrder', value)}
@@ -385,7 +393,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Segunda via Conta Detalhada</Text>
+            <Text style={styles.toggleLabel}>{t('settings.secondCopyDetailedBill')}</Text>
             <Switch
               value={settings.secondCopyDetailedBill}
               onValueChange={(value) => updateSetting('secondCopyDetailedBill', value)}
@@ -393,7 +401,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Impressão de Contas</Text>
+            <Text style={styles.toggleLabel}>{t('settings.printAccounts')}</Text>
             <Switch
               value={settings.printAccounts}
               onValueChange={(value) => updateSetting('printAccounts', value)}
@@ -504,12 +512,12 @@ export default function SettingsScreen() {
         {/* Botões de Ação */}
         <View style={styles.actionButtons}>
           <Button
-            title="METODOS DE PAGAMENTO"
+            title={t('settings.paymentMethods')}
             onPress={handleOpenPaymentMethods}
             style={{ backgroundColor: '#007AFF' }}
           />
           <Button
-            title="SALVAR"
+            title={t('settings.save')}
             onPress={handleSave}
             disabled={saving || settingsLoading}
             style={{ backgroundColor: '#34C759' }}
