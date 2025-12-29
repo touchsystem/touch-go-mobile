@@ -543,3 +543,4 @@ Se tiver dúvidas na implementação, consulte:
 - `D:\NodeProjects\touch-go-mobile\src\contexts\AuthContext.tsx` - Envio do deviceId no login
 - `D:\NodeProjects\touch-go-mobile\src\services\api.ts` - Interceptor que adiciona X-Device-ID
 
+
