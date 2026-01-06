@@ -176,7 +176,6 @@ export default {
         changeTableMessage: 'Deseja trocar a mesa selecionada?',
         change: 'Trocar',
         user: 'Usuário',
-        table: 'Mesa',
         notAvailable: 'N/A',
     },
 
