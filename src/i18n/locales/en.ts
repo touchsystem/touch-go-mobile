@@ -130,6 +130,29 @@ export default {
         all: 'All',
         addToCart: 'Add to Cart',
         outOfStock: 'Out of stock',
+        noResults: 'No products found',
+        noProducts: 'No products available',
+    },
+
+    // SearchProducts
+    searchProducts: {
+        title: 'Search Products',
+    },
+
+    // ProductGroups
+    productGroups: {
+        title: 'Product Groups',
+    },
+
+    // ViewBillModal
+    viewBill: {
+        error: 'Error',
+        errorLoadingBill: 'Error loading table bill',
+        userNotFound: 'User not found. Configure the user in the profile.',
+        print: 'Print',
+        close: 'Close',
+        table: 'Table',
+        total: 'Total',
     },
 
     // Errors
@@ -193,12 +216,21 @@ export default {
     // Bills
     bills: {
         title: 'Bills',
-        searchPlaceholder: 'Search table...',
+        searchPlaceholder: 'Search table by number...',
         emptyTables: 'No tables found',
         table: 'Table',
         total: 'Total',
         viewBill: 'View Bill',
         noTables: 'No tables available',
+        warning: 'Warning',
+        noOrdersMessage: 'This table has no orders. Only occupied or closed tables can have bills.',
+        status: {
+            free: 'Free',
+            occupied: 'Occupied',
+            reserved: 'Reserved',
+            closed: 'Closed',
+            inactive: 'Inactive',
+        },
     },
 
     // Menu
@@ -210,13 +242,32 @@ export default {
 
     // Orders
     orders: {
+        title: 'Orders',
+        newOrder: 'New Order',
+        table: 'Table',
+        status: 'Status',
+        items: 'Items',
+        item: 'item',
+        itemPlural: 'items',
+        quantity: 'Quantity',
+        price: 'Price',
+        subtotal: 'Subtotal',
+        discount: 'Discount',
+        payment: 'Payment',
+        confirm: 'Confirm Order',
+        cancel: 'Cancel Order',
+        orderSent: 'Order sent successfully',
+        orderError: 'Error sending order',
         selectTable: 'Select Table',
         noTableSelected: 'No table selected',
         emptyCart: 'Empty cart',
         emptyCartMessage: 'Add products to cart to continue.',
         total: 'Total',
-        items: 'Items',
+        totalLabel: 'Total:',
         confirmOrder: 'Confirm Order',
+        confirmOrderMessage: 'Do you want to send the order to Table {{table}}?',
+        sendOrder: 'Send Order',
+        sendOrderTitle: 'Send Order - {{total}}',
         clearCart: 'Clear Cart',
         editItem: 'Edit Item',
         deleteItem: 'Remove Item',
@@ -225,6 +276,13 @@ export default {
         itemAdded: 'Item added to cart',
         itemUpdated: 'Item updated',
         itemRemoved: 'Item removed from cart',
+        userNotFound: 'User not found. Configure the user in the profile.',
+        orderSentSuccess: 'Order sent!',
+        changeTable: 'Change Table',
+        changeTableMessage: 'Do you want to change the selected table?',
+        change: 'Change',
+        user: 'User',
+        notAvailable: 'N/A',
     },
 
     // Settings
@@ -236,6 +294,16 @@ export default {
 
     // Common
     common: {
+        loading: 'Loading...',
+        error: 'An error occurred',
+        retry: 'Try again',
+        cancel: 'Cancel',
+        save: 'Save',
+        confirm: 'Confirm',
+        back: 'Back',
+        next: 'Next',
+        search: 'Search',
+        noResults: 'No results found',
         yes: 'Yes',
         no: 'No',
         ok: 'OK',
@@ -245,10 +313,6 @@ export default {
         remove: 'Remove',
         add: 'Add',
         update: 'Update',
-        total: 'Total',
-        subtotal: 'Subtotal',
-        quantity: 'Quantity',
-        item: 'Item',
-        items: 'Items',
+        success: 'Success',
     },
 };

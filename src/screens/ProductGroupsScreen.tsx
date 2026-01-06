@@ -16,6 +16,7 @@ import { Button } from '../components/ui/Button';
 import { useCart } from '../contexts/CartContext';
 import { formatCurrency } from '../utils/format';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { scale, scaleFont } from '../utils/responsive';
 
@@ -26,6 +27,7 @@ export default function ProductGroupsScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
 
   const styles = useMemo(
     () =>
@@ -133,7 +135,7 @@ export default function ProductGroupsScreen() {
         >
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Grupos de Produtos</Text>
+        <Text style={styles.headerTitle}>{t('productGroups.title')}</Text>
         <View style={styles.headerRight} />
       </View>
 

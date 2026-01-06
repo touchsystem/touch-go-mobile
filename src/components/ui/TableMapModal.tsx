@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useTables, Table } from '../../hooks/useTables';
 import { Card } from './Card';
 import { scale, scaleFont, scaleWidth, scaleHeight, widthPercentage } from '../../utils/responsive';
@@ -32,6 +33,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
   refreshKey,
 }) => {
   const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
   const { tables, loading, error, fetchTables } = useTables();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -255,7 +257,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.header}>
-              <Text style={styles.title}>Selecionar Mesa</Text>
+              <Text style={styles.title}>{t('orders.selectTable')}</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Ionicons name="close" size={scale(24)} color={colors.text} />
               </TouchableOpacity>
@@ -275,7 +277,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.header}>
-              <Text style={styles.title}>Selecionar Mesa</Text>
+              <Text style={styles.title}>{t('orders.selectTable')}</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Ionicons name="close" size={scale(24)} color={colors.text} />
               </TouchableOpacity>
@@ -300,7 +302,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
         <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
           <View style={styles.modalContent}>
               <View style={styles.header}>
-                <Text style={styles.title}>Selecionar Mesa</Text>
+                <Text style={styles.title}>{t('orders.selectTable')}</Text>
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                   <Ionicons name="close" size={scale(24)} color={colors.text} />
                 </TouchableOpacity>
@@ -327,7 +329,7 @@ export const TableMapModal: React.FC<TableMapModalProps> = ({
                 <View style={styles.emptyContainer}>
                   <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
                   <Text style={styles.emptyText}>
-                    {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
+                    {searchQuery ? t('bills.emptyTables') : t('bills.noTables')}
                   </Text>
                 </View>
               ) : (

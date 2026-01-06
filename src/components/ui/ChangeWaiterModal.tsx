@@ -12,6 +12,7 @@ import {
 import { Alert } from '../../utils/alert';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { Button } from './Button';
 import { storage, storageKeys } from '../../services/storage';
 import api from '../../services/api';
@@ -31,6 +32,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
   onConfirm,
 }) => {
   const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
   const [nick, setNick] = useState(currentNick);
   const [validating, setValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -173,7 +175,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
       }
       
       // Outros erros (rede, servidor, etc)
-      const errorMessage = error.response?.data?.erro || error.message || 'Erro ao validar usuário';
+      const errorMessage = error.response?.data?.erro || error.message || t('errors.unknown');
       setValidationError(errorMessage);
       return false;
     } finally {
@@ -183,7 +185,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
 
   const handleConfirm = async () => {
     if (!nick.trim()) {
-      Alert.alert('Erro', 'O usuário é obrigatório!');
+      Alert.alert(t('common.error'), t('errors.required'));
       return;
     }
 
@@ -216,14 +218,14 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
         <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
           <View style={styles.modalContent}>
             <View style={styles.header}>
-              <Text style={styles.title}>Trocar Usuário</Text>
+              <Text style={styles.title}>{t('profile.changeUser')}</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Ionicons name="close" size={scale(24)} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Usuário</Text>
+              <Text style={styles.label}>{t('profile.user')}</Text>
               <TextInput
                 style={styles.input}
                 value={nick}
@@ -252,13 +254,13 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
 
             <View style={styles.buttonsContainer}>
               <Button
-                title="Cancelar"
+                title={t('common.cancel')}
                 onPress={onClose}
                 variant="outline"
                 style={{ minWidth: 100 }}
               />
               <Button
-                title="Confirmar"
+                title={t('common.confirm')}
                 onPress={handleConfirm}
                 style={{ minWidth: 100 }}
                 disabled={validating || !!validationError}

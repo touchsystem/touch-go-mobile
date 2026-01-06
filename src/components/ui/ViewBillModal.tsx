@@ -12,6 +12,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTableContext } from '../../contexts/TableContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 import { storage, storageKeys } from '../../services/storage';
 import { Alert } from '../../utils/alert';
@@ -62,6 +63,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     const { colors, isDark } = useTheme();
     const { user } = useAuth();
     const { refreshTable } = useTableContext();
+    const { t } = useLanguage();
     const [data, setData] = useState<BillData | null>(null);
     const [loading, setLoading] = useState(true);
     const [printing, setPrinting] = useState(false);
@@ -80,8 +82,8 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         } catch (error: any) {
             console.error('Error fetching bill data:', error);
             Alert.alert(
-                'Erro',
-                error.response?.data?.erro || error.message || 'Erro ao carregar conta da mesa'
+                t('viewBill.error'),
+                error.response?.data?.erro || error.message || t('viewBill.errorLoadingBill')
             );
         } finally {
             setLoading(false);
@@ -99,7 +101,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             }
 
             if (!nickToUse) {
-                Alert.alert('Erro', 'Usuário não encontrado. Configure o usuário no perfil.');
+                Alert.alert(t('viewBill.error'), t('viewBill.userNotFound'));
                 setPrinting(false);
                 return;
             }
@@ -121,15 +123,15 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
 
             // Mostra alert de sucesso (sem botão OK, fecha automaticamente em 1s)
             setTimeout(() => {
-                Alert.alert('Sucesso', response.data?.mensagem || 'Conta enviada para impressão!');
+                Alert.alert(t('common.success'), response.data?.mensagem || t('viewBill.print'));
             }, 300);
         } catch (error: any) {
             console.error('Error printing bill:', error);
             setPrinting(false);
             // Em caso de erro, NÃO fecha o modal - mantém aberto para o usuário tentar novamente
             Alert.alert(
-                'Erro',
-                error.response?.data?.erro || error.message || 'Erro ao imprimir conta'
+                t('viewBill.error'),
+                error.response?.data?.erro || error.message || t('viewBill.errorLoadingBill')
             );
         }
     };
@@ -341,7 +343,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                     >
                         <View style={styles.modalContent} pointerEvents="box-only">
                             <View style={styles.header}>
-                                <Text style={styles.title}>Conta - Mesa {mesaCartao}</Text>
+                                <Text style={styles.title}>{t('viewBill.table')} - {mesaCartao}</Text>
                                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                                     <Ionicons name="close" size={scale(24)} color={colors.text} />
                                 </TouchableOpacity>
@@ -354,7 +356,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                             ) : !data?.vendas || data.vendas.length === 0 ? (
                                 <View style={styles.emptyContainer}>
                                     <Ionicons name="receipt-outline" size={scale(48)} color={colors.textSecondary} />
-                                    <Text style={styles.emptyText}>Nenhum item encontrado para esta mesa</Text>
+                                    <Text style={styles.emptyText}>{t('products.noResults')}</Text>
                                 </View>
                             ) : (
                                 <>
@@ -383,12 +385,12 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                     </ScrollView>
 
                                     <View style={styles.totalRow}>
-                                        <Text style={styles.totalLabel}>Total:</Text>
+                                        <Text style={styles.totalLabel}>{t('viewBill.total')}:</Text>
                                         <Text style={styles.totalValue}>{formatCurrency(total)}</Text>
                                     </View>
 
                                     <Button
-                                        title={printing ? 'Imprimindo...' : 'Imprimir Conta'}
+                                        title={printing ? t('common.loading') : t('viewBill.print')}
                                         onPress={handlePrint}
                                         disabled={printing}
                                         icon={

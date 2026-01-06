@@ -15,6 +15,7 @@ import { useProducts } from '../hooks/useProducts';
 import { ProductGroupCard } from '../components/ui/ProductGroupCard';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { ProductGroup } from '../types';
 import { scale, scaleFont } from '../utils/responsive';
 import { storage, storageKeys } from '../services/storage';
@@ -25,6 +26,7 @@ export default function MenuScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [profileNick, setProfileNick] = React.useState<string | null>(null);
 
   const styles = useMemo(
@@ -158,7 +160,7 @@ export default function MenuScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={{ width: scale(40) }} />
-          <Text style={styles.headerTitle}>Cardápio</Text>
+          <Text style={styles.headerTitle}>{t('menu.title')}</Text>
           <View style={styles.headerRight}>
             {profileNick && (
               <Text style={styles.headerNick}>{profileNick}</Text>
@@ -167,7 +169,7 @@ export default function MenuScreen() {
         </View>
         <View style={styles.emptyContainer}>
           <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
-          <Text style={styles.emptyText}>Nenhum grupo de produtos disponível</Text>
+          <Text style={styles.emptyText}>{t('menu.emptyGroupsMessage')}</Text>
         </View>
       </View>
     );
@@ -186,7 +188,7 @@ export default function MenuScreen() {
         >
           <Ionicons name="search-outline" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Cardápio</Text>
+        <Text style={styles.headerTitle}>{t('menu.title')}</Text>
         <View style={styles.headerRight}>
           {profileNick && (
             <Text style={styles.headerNick}>{profileNick}</Text>

@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useTableContext } from '../contexts/TableContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { Table as TableType } from '../hooks/useTables';
 import axiosInstance from '../services/api';
 import { storage, storageKeys } from '../services/storage';
@@ -69,6 +70,7 @@ export default function OrdersScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
 
   // Calcula altura disponível para a lista (tela - header - footer - outros elementos)
   const listHeight = SCREEN_HEIGHT - 320;
@@ -357,18 +359,18 @@ export default function OrdersScreen() {
       // Pequeno delay para fechar o modal antes de mostrar o alert
       setTimeout(() => {
         Alert.alert(
-          'Confirmar Pedido',
-          `Deseja enviar o pedido para a Mesa ${selectedTableData.numero}?`,
+          t('orders.confirmOrder'),
+          t('orders.confirmOrderMessage', { table: selectedTableData.numero }),
           [
             {
-              text: 'Cancelar',
+              text: t('common.cancel'),
               style: 'cancel',
               onPress: () => {
                 setSelectedTable(null);
               },
             },
             {
-              text: 'Confirmar',
+              text: t('common.confirm'),
               onPress: async () => {
                 sendOrderToTable(selectedTableData);
               },
@@ -665,7 +667,7 @@ export default function OrdersScreen() {
         >
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Vendas</Text>
+        <Text style={styles.headerTitle}>{t('orders.title')}</Text>
         <View style={styles.headerRight}>
           {profileNick && (
             <Text style={styles.headerNick}>{profileNick}</Text>
@@ -678,21 +680,21 @@ export default function OrdersScreen() {
           <Card style={styles.tableCard}>
             <View style={styles.infoRow}>
               <View style={styles.infoLeft}>
-                <Text style={styles.infoText}>Usuário: {user?.nome || 'N/A'}</Text>
-                <Text style={styles.infoText}>Mesa: #{selectedTable.numero}</Text>
+                <Text style={styles.infoText}>{t('orders.user')}: {user?.nome || t('orders.notAvailable')}</Text>
+                <Text style={styles.infoText}>{t('orders.table')}: #{selectedTable.numero}</Text>
               </View>
               <TouchableOpacity
                 onPress={() => {
                   Alert.alert(
-                    'Trocar Mesa',
-                    'Deseja trocar a mesa selecionada?',
+                    t('orders.changeTable'),
+                    t('orders.changeTableMessage'),
                     [
                       {
-                        text: 'Cancelar',
+                        text: t('common.cancel'),
                         style: 'cancel',
                       },
                       {
-                        text: 'Trocar',
+                        text: t('orders.change'),
                         onPress: () => {
                           setSelectedTable(null);
                           setIsTableMapVisible(true);
@@ -704,7 +706,7 @@ export default function OrdersScreen() {
                 style={styles.changeTableButton}
               >
                 <Ionicons name="swap-horizontal-outline" size={scale(20)} color={colors.primary} />
-                <Text style={[styles.changeTableText, { color: colors.primary }]}>Trocar</Text>
+                <Text style={[styles.changeTableText, { color: colors.primary }]}>{t('orders.change')}</Text>
               </TouchableOpacity>
             </View>
           </Card>
@@ -736,16 +738,16 @@ export default function OrdersScreen() {
 
         <View style={styles.orderSection}>
           <View style={styles.orderHeader}>
-            <Text style={styles.sectionTitle}>Pedido Atual</Text>
+            <Text style={styles.sectionTitle}>{t('orders.title')}</Text>
             <Text style={styles.itemsCount}>
-              {getTotalItems()} {getTotalItems() === 1 ? 'item' : 'itens'}
+              {getTotalItems()} {getTotalItems() === 1 ? t('orders.item') : t('orders.itemPlural')}
             </Text>
           </View>
 
           {cart.length === 0 ? (
             <View style={styles.emptyCart}>
               <Ionicons name="cart-outline" size={scale(48)} color={colors.textSecondary} />
-              <Text style={styles.emptyCartText}>Carrinho vazio</Text>
+              <Text style={styles.emptyCartText}>{t('orders.emptyCart')}</Text>
             </View>
           ) : (
             <FlatList
@@ -836,7 +838,7 @@ export default function OrdersScreen() {
             <View style={styles.totalSection}>
               <Card>
                 <View style={styles.totalCard}>
-                  <Text style={styles.totalLabel}>Total:</Text>
+                  <Text style={styles.totalLabel}>{t('orders.totalLabel')}</Text>
                   <Text style={styles.totalValue}>{formatCurrency(getTotal())}</Text>
                 </View>
               </Card>
@@ -848,7 +850,7 @@ export default function OrdersScreen() {
       {cart.length > 0 && (
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <Button
-            title={`Enviar Pedido - ${formatCurrency(getTotal())}`}
+            title={t('orders.sendOrderTitle', { total: formatCurrency(getTotal()) })}
             onPress={handleSendOrder}
             icon={<Ionicons name="paper-plane-outline" size={scale(20)} color="#fff" />}
           />

@@ -11,6 +11,7 @@ import {
 import { Alert } from '../../utils/alert';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { Button } from './Button';
 import { scale, scaleFont, scaleWidth, scaleHeight, widthPercentage } from '../../utils/responsive';
 
@@ -32,6 +33,7 @@ export const OrderItemModal: React.FC<OrderItemModalProps> = ({
   onSave,
 }) => {
   const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
   const [observation, setObservation] = useState(currentObservation);
   const [quantity, setQuantity] = useState(currentQuantity.toString());
 
@@ -167,7 +169,7 @@ export const OrderItemModal: React.FC<OrderItemModalProps> = ({
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Quantidade</Text>
+              <Text style={styles.label}>{t('orders.quantity')}</Text>
               <TextInput
                 style={styles.quantityInput}
                 value={quantity}
@@ -180,12 +182,12 @@ export const OrderItemModal: React.FC<OrderItemModalProps> = ({
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Observação</Text>
+              <Text style={styles.label}>{t('orders.observation')}</Text>
               <TextInput
                 style={styles.observationInput}
                 value={observation}
                 onChangeText={setObservation}
-                placeholder="Adicione uma observação..."
+                placeholder={t('orders.addObservation')}
                 placeholderTextColor={colors.textSecondary}
                 multiline
                 numberOfLines={4}
@@ -194,13 +196,13 @@ export const OrderItemModal: React.FC<OrderItemModalProps> = ({
 
             <View style={styles.buttonsContainer}>
               <Button
-                title="Cancelar"
+                title={t('common.cancel')}
                 onPress={onClose}
                 variant="outline"
                 style={{ minWidth: 100 }}
               />
               <Button
-                title="Salvar"
+                title={t('common.save')}
                 onPress={handleSave}
                 style={{ minWidth: 100 }}
               />

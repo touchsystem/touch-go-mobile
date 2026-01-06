@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTableContext, Table } from '../contexts/TableContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { Card } from '../components/ui/Card';
 import { ViewBillModal } from '../components/ui/ViewBillModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -28,6 +29,7 @@ export default function BillsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [profileNick, setProfileNick] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [isViewBillModalVisible, setIsViewBillModalVisible] = useState(false);
@@ -278,7 +280,7 @@ export default function BillsScreen() {
       setSelectedTable(table);
       setIsViewBillModalVisible(true);
     } else {
-      Alert.alert('Aviso', 'Esta mesa não possui pedidos. Apenas mesas ocupadas ou fechadas podem ter contas.');
+      Alert.alert(t('bills.warning'), t('bills.noOrdersMessage'));
     }
   };
 
@@ -318,7 +320,7 @@ export default function BillsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Contas</Text>
+          <Text style={styles.headerTitle}>{t('bills.title')}</Text>
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -331,7 +333,7 @@ export default function BillsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Contas</Text>
+          <Text style={styles.headerTitle}>{t('bills.title')}</Text>
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={scale(48)} color={colors.error} />
@@ -346,7 +348,7 @@ export default function BillsScreen() {
             }}
             onPress={fetchTables}
           >
-            <Text style={{ color: '#fff', fontWeight: '600' }}>Tentar novamente</Text>
+            <Text style={{ color: '#fff', fontWeight: '600' }}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -375,7 +377,7 @@ export default function BillsScreen() {
           <Ionicons name="search-outline" size={scale(20)} color={colors.textSecondary} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar mesa por número..."
+            placeholder={t('bills.searchPlaceholder')}
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -392,7 +394,7 @@ export default function BillsScreen() {
           <View style={styles.emptyContainer}>
             <Ionicons name="restaurant-outline" size={scale(48)} color={colors.textSecondary} />
             <Text style={styles.emptyText}>
-              {searchQuery ? 'Nenhuma mesa encontrada' : 'Nenhuma mesa disponível'}
+              {searchQuery ? t('bills.emptyTables') : t('bills.noTables')}
             </Text>
           </View>
         ) : (

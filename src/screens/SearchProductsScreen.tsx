@@ -19,6 +19,7 @@ import { useTableContext } from '../contexts/TableContext';
 import { formatCurrency, capitalizeFirstLetter } from '../utils/format';
 import { Product } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useRelationalGroups } from '../hooks/useRelationalGroups';
 import { scale, scaleFont } from '../utils/responsive';
 import { useAuth } from '../contexts/AuthContext';
@@ -33,6 +34,7 @@ export default function SearchProductsScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const { fetchRelationalGroups } = useRelationalGroups();
   const { user } = useAuth();
   const [profileNick, setProfileNick] = useState<string | null>(null);
@@ -369,7 +371,7 @@ export default function SearchProductsScreen() {
           >
             <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Pesquisar Produtos</Text>
+          <Text style={styles.headerTitle}>{t('searchProducts.title')}</Text>
           <View style={styles.headerRight}>
             {profileNick && (
               <Text style={styles.headerNick}>{profileNick}</Text>
@@ -394,7 +396,7 @@ export default function SearchProductsScreen() {
           >
             <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Pesquisar Produtos</Text>
+          <Text style={styles.headerTitle}>{t('searchProducts.title')}</Text>
           <View style={styles.headerRight}>
             {profileNick && (
               <Text style={styles.headerNick}>{profileNick}</Text>
@@ -437,7 +439,7 @@ export default function SearchProductsScreen() {
         <Ionicons name="search-outline" size={scale(22)} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Buscar produtos..."
+          placeholder={t('products.search')}
           placeholderTextColor={colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -468,7 +470,7 @@ export default function SearchProductsScreen() {
         <View style={styles.emptyContainer}>
           <Ionicons name="cube-outline" size={scale(48)} color={colors.textSecondary} />
           <Text style={styles.emptyText}>
-            {searchQuery ? 'Nenhum produto encontrado' : 'Nenhum produto disponível'}
+            {searchQuery ? t('products.noResults') : t('products.noProducts')}
           </Text>
           {searchQuery && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>

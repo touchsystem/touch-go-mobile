@@ -14,6 +14,7 @@ import { Card } from '../components/ui/Card';
 import { Switch } from '../components/ui/Switch';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { usePaymentMethods } from '../hooks/usePaymentMethods';
 import { scale, scaleFont } from '../utils/responsive';
 
@@ -21,6 +22,7 @@ export default function PaymentMethodsScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const { paymentMethods, updatePaymentMethod, loading } = usePaymentMethods();
   const insets = useSafeAreaInsets();
 
@@ -101,7 +103,7 @@ export default function PaymentMethodsScreen() {
         >
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Métodos de pagamentos</Text>
+        <Text style={styles.headerTitle}>{t('paymentMethods.title')}</Text>
         <View style={{ width: scale(40) }} />
       </View>
 

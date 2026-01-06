@@ -141,6 +141,8 @@ export default {
         table: 'Mesa',
         status: 'Status',
         items: 'Itens',
+        item: 'item',
+        itemPlural: 'itens',
         quantity: 'Quantidade',
         price: 'Preço',
         subtotal: 'Subtotal',
@@ -155,7 +157,11 @@ export default {
         emptyCart: 'Carrinho vazio',
         emptyCartMessage: 'Adicione produtos ao carrinho para continuar.',
         total: 'Total',
+        totalLabel: 'Total:',
         confirmOrder: 'Confirmar Pedido',
+        confirmOrderMessage: 'Deseja enviar o pedido para a Mesa {{table}}?',
+        sendOrder: 'Enviar Pedido',
+        sendOrderTitle: 'Enviar Pedido - {{total}}',
         clearCart: 'Limpar Carrinho',
         editItem: 'Editar Item',
         deleteItem: 'Remover Item',
@@ -164,6 +170,25 @@ export default {
         itemAdded: 'Item adicionado ao carrinho',
         itemUpdated: 'Item atualizado',
         itemRemoved: 'Item removido do carrinho',
+        userNotFound: 'Usuário não encontrado. Configure o usuário no perfil.',
+        orderSentSuccess: 'Pedido enviado!',
+        changeTable: 'Trocar Mesa',
+        changeTableMessage: 'Deseja trocar a mesa selecionada?',
+        change: 'Trocar',
+        user: 'Usuário',
+        table: 'Mesa',
+        notAvailable: 'N/A',
+    },
+
+    // ViewBillModal
+    viewBill: {
+        error: 'Erro',
+        errorLoadingBill: 'Erro ao carregar conta da mesa',
+        userNotFound: 'Usuário não encontrado. Configure o usuário no perfil.',
+        print: 'Imprimir',
+        close: 'Fechar',
+        table: 'Mesa',
+        total: 'Total',
     },
 
     // Products
@@ -174,6 +199,18 @@ export default {
         all: 'Todos',
         addToCart: 'Adicionar ao Carrinho',
         outOfStock: 'Fora de estoque',
+        noResults: 'Nenhum produto encontrado',
+        noProducts: 'Nenhum produto disponível',
+    },
+
+    // SearchProducts
+    searchProducts: {
+        title: 'Pesquisar Produtos',
+    },
+
+    // ProductGroups
+    productGroups: {
+        title: 'Grupos de Produtos',
     },
 
     // Errors
@@ -213,12 +250,21 @@ export default {
     // Bills
     bills: {
         title: 'Contas',
-        searchPlaceholder: 'Buscar mesa...',
+        searchPlaceholder: 'Buscar mesa por número...',
         emptyTables: 'Nenhuma mesa encontrada',
         table: 'Mesa',
         total: 'Total',
         viewBill: 'Ver Conta',
         noTables: 'Nenhuma mesa disponível',
+        warning: 'Aviso',
+        noOrdersMessage: 'Esta mesa não possui pedidos. Apenas mesas ocupadas ou fechadas podem ter contas.',
+        status: {
+            free: 'Livre',
+            occupied: 'Ocupada',
+            reserved: 'Reservada',
+            closed: 'Fechada',
+            inactive: 'Inativa',
+        },
     },
 
     // Menu
