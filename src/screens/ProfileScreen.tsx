@@ -17,6 +17,7 @@ import { ColorPicker } from '../components/ui/ColorPicker';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { scale, scaleFont } from '../utils/responsive';
 import { storage, storageKeys } from '../services/storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -26,6 +27,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { colors, theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [isChangeWaiterModalVisible, setIsChangeWaiterModalVisible] = useState(false);
   const [profileNick, setProfileNick] = useState<string | null>(null);
 
@@ -200,20 +202,20 @@ export default function ProfileScreen() {
     // O nick já foi salvo no storage pelo modal
     // Atualiza o nick exibido imediatamente
     setProfileNick(newNick);
-    Alert.alert('Sucesso', `Usuário alterado para: ${newNick}`);
+    Alert.alert(t('common.success'), t('success.userChanged', { nick: newNick }));
   };
 
   const handleLogout = () => {
     Alert.alert(
-      'Sair do Sistema',
-      'Deseja realmente sair? Você precisará fazer login novamente.',
+      t('profile.logout'),
+      t('profile.logoutConfirm'),
       [
         {
-          text: 'Cancelar',
+          text: t('profile.logoutCancel'),
           style: 'cancel',
         },
         {
-          text: 'Sair',
+          text: t('auth.logout'),
           style: 'destructive',
           onPress: async () => {
             await logout();
@@ -244,14 +246,14 @@ export default function ProfileScreen() {
     // Se não tiver nome, usa mapeamento padrão
     const level = user?.nivel || 0;
     const levelNames: Record<number, string> = {
-      1: 'Garçom',
-      2: 'Caixa',
-      3: 'Supervisor',
-      4: 'Gerente',
-      5: 'Administrador',
-      6: 'Suporte',
+      1: t('profile.levelNames.1'),
+      2: t('profile.levelNames.2'),
+      3: t('profile.levelNames.3'),
+      4: t('profile.levelNames.4'),
+      5: t('profile.levelNames.5'),
+      6: t('profile.levelNames.6'),
     };
-    return levelNames[level] || `Nível ${level}`;
+    return levelNames[level] || t('profile.level', { level });
   };
 
   return (
@@ -263,7 +265,7 @@ export default function ProfileScreen() {
         >
           <Ionicons name="arrow-back" size={scale(24)} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Perfil</Text>
+        <Text style={styles.headerTitle}>{t('profile.title')}</Text>
         <View style={styles.headerRight}>
           {profileNick && (
             <Text style={styles.headerNick}>{profileNick}</Text>
@@ -275,21 +277,21 @@ export default function ProfileScreen() {
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>
-              {getInitials(user?.nome || 'Usuário')}
+              {getInitials(user?.nome || t('profile.user'))}
             </Text>
           </View>
-          <Text style={styles.userName}>{user?.nome || 'Usuário'}</Text>
+          <Text style={styles.userName}>{user?.nome || t('profile.user')}</Text>
           <Text style={styles.userEmail}>{user?.email || ''}</Text>
         </View>
 
         <Card style={styles.themeSection}>
-          <Text style={styles.sectionTitle}>Aparência</Text>
+          <Text style={styles.sectionTitle}>{t('profile.appearance')}</Text>
 
           <View style={styles.themeRow}>
-            <Text style={styles.themeLabel}>Modo</Text>
+            <Text style={styles.themeLabel}>{t('profile.mode')}</Text>
             <View style={styles.themeToggleContainer}>
               <Text style={styles.themeModeText}>
-                {theme === 'system' ? 'Sistema' : theme === 'dark' ? 'Escuro' : 'Claro'}
+                {theme === 'system' ? t('profile.system') : theme === 'dark' ? t('profile.dark') : t('profile.light')}
               </Text>
               <ThemeToggle />
             </View>
@@ -301,7 +303,7 @@ export default function ProfileScreen() {
         </Card>
 
         <Button
-          title="Trocar Usuário"
+          title={t('profile.changeUser')}
           variant="outline"
           onPress={handleChangeWaiter}
           icon={<Ionicons name="person-outline" size={scale(20)} color={colors.text} />}
@@ -309,7 +311,7 @@ export default function ProfileScreen() {
         />
 
         <Button
-          title="Sair do Sistema"
+          title={t('profile.logout')}
           variant="outline"
           onPress={handleLogout}
           icon={<Ionicons name="log-out-outline" size={scale(20)} color={colors.error} />}

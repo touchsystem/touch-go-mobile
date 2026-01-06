@@ -154,5 +154,123 @@ export default {
         discount: 'Descuento',
         payment: 'Pago',
         confirm: 'Confirmar Pedido',
+        orderSent: 'Pedido enviado con éxito',
+        orderError: 'Error al enviar pedido',
+    },
+
+    // Success messages
+    success: {
+        saved: 'Configuración guardada correctamente',
+        orderSent: 'Pedido enviado con éxito',
+        userChanged: 'Usuario cambiado a: {{nick}}',
+        settingsSaved: 'Configuración guardada correctamente!',
+    },
+
+    // Errors
+    errors: {
+        connection: 'Error de conexión. Verifique su conexión con Internet.',
+        server: 'Error del servidor. Intente nuevamente más tarde.',
+        unknown: 'Ocurrió un error desconocido.',
+        required: 'Este campo es obligatorio',
+        invalid: 'Valor inválido',
+        fillEmailPassword: 'Complete el correo electrónico y la contraseña',
+        loginError: 'Error al iniciar sesión',
+        saveSettingsError: 'Error al guardar configuración',
+    },
+
+    // Login
+    login: {
+        email: 'Correo electrónico',
+        emailPlaceholder: 'tu@email.com',
+        password: 'Contraseña',
+        rememberMe: 'Recordarme',
+        forgotPassword: '¿Olvidaste la contraseña?',
+        welcome: 'Bienvenido',
+        subtitle: 'Ingrese sus credenciales',
+        support: 'Soporte',
+        help: 'Ayuda',
+    },
+
+    // Profile
+    profile: {
+        user: 'Usuario',
+        logout: 'Cerrar Sesión',
+        logoutConfirm: '¿Realmente desea cerrar sesión? Necesitará iniciar sesión nuevamente.',
+        logoutCancel: 'Cancelar',
+        mode: 'Modo',
+        system: 'Sistema',
+        dark: 'Oscuro',
+        light: 'Claro',
+        levelNames: {
+            1: 'Camarero',
+            2: 'Cajero',
+            3: 'Supervisor',
+            4: 'Gerente',
+            5: 'Administrador',
+            6: 'Soporte',
+        },
+        level: 'Nivel {{level}}',
+    },
+
+    // Bills
+    bills: {
+        title: 'Cuentas',
+        searchPlaceholder: 'Buscar mesa...',
+        emptyTables: 'No se encontraron mesas',
+        table: 'Mesa',
+        total: 'Total',
+        viewBill: 'Ver Cuenta',
+        noTables: 'No hay mesas disponibles',
+    },
+
+    // Menu
+    menu: {
+        title: 'Menú',
+        emptyGroups: 'No se encontraron grupos',
+        emptyGroupsMessage: 'No hay grupos de productos disponibles en este momento.',
+    },
+
+    // Orders
+    orders: {
+        selectTable: 'Seleccionar Mesa',
+        noTableSelected: 'Ninguna mesa seleccionada',
+        emptyCart: 'Carrito vacío',
+        emptyCartMessage: 'Agregue productos al carrito para continuar.',
+        total: 'Total',
+        items: 'Artículos',
+        confirmOrder: 'Confirmar Pedido',
+        clearCart: 'Vaciar Carrito',
+        editItem: 'Editar Artículo',
+        deleteItem: 'Eliminar Artículo',
+        addObservation: 'Agregar Observación',
+        observation: 'Observación',
+        itemAdded: 'Artículo agregado al carrito',
+        itemUpdated: 'Artículo actualizado',
+        itemRemoved: 'Artículo eliminado del carrito',
+    },
+
+    // Settings
+    settings: {
+        language: 'Idioma',
+        saveSuccess: 'Configuración guardada correctamente!',
+        saveError: 'Error al guardar configuración',
+    },
+
+    // Common
+    common: {
+        yes: 'Sí',
+        no: 'No',
+        ok: 'Aceptar',
+        close: 'Cerrar',
+        edit: 'Editar',
+        delete: 'Eliminar',
+        remove: 'Quitar',
+        add: 'Agregar',
+        update: 'Actualizar',
+        total: 'Total',
+        subtotal: 'Subtotal',
+        quantity: 'Cantidad',
+        item: 'Artículo',
+        items: 'Artículos',
     },
 };

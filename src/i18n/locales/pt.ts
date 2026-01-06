@@ -11,6 +11,16 @@ export default {
         next: 'Próximo',
         search: 'Pesquisar',
         noResults: 'Nenhum resultado encontrado',
+        yes: 'Sim',
+        no: 'Não',
+        ok: 'OK',
+        close: 'Fechar',
+        edit: 'Editar',
+        delete: 'Excluir',
+        remove: 'Remover',
+        add: 'Adicionar',
+        update: 'Atualizar',
+        success: 'Sucesso',
     },
 
     // Auth
@@ -41,6 +51,23 @@ export default {
         language: 'Idioma',
         about: 'Sobre',
         version: 'Versão',
+        user: 'Usuário',
+        logout: 'Sair do Sistema',
+        logoutConfirm: 'Deseja realmente sair? Você precisará fazer login novamente.',
+        logoutCancel: 'Cancelar',
+        mode: 'Modo',
+        system: 'Sistema',
+        dark: 'Escuro',
+        light: 'Claro',
+        levelNames: {
+            1: 'Garçom',
+            2: 'Caixa',
+            3: 'Supervisor',
+            4: 'Gerente',
+            5: 'Administrador',
+            6: 'Suporte',
+        },
+        level: 'Nível {{level}}',
     },
 
     // Settings
@@ -96,6 +123,9 @@ export default {
         // Actions
         paymentMethods: 'MÉTODOS DE PAGAMENTO',
         saveSettings: 'SALVAR',
+        language: 'Idioma',
+        saveSuccess: 'Configurações salvas com sucesso!',
+        saveError: 'Erro ao salvar configurações',
     },
 
     // Payment Methods
@@ -120,6 +150,20 @@ export default {
         cancel: 'Cancelar Pedido',
         orderSent: 'Pedido enviado com sucesso',
         orderError: 'Erro ao enviar pedido',
+        selectTable: 'Selecionar Mesa',
+        noTableSelected: 'Nenhuma mesa selecionada',
+        emptyCart: 'Carrinho vazio',
+        emptyCartMessage: 'Adicione produtos ao carrinho para continuar.',
+        total: 'Total',
+        confirmOrder: 'Confirmar Pedido',
+        clearCart: 'Limpar Carrinho',
+        editItem: 'Editar Item',
+        deleteItem: 'Remover Item',
+        addObservation: 'Adicionar Observação',
+        observation: 'Observação',
+        itemAdded: 'Item adicionado ao carrinho',
+        itemUpdated: 'Item atualizado',
+        itemRemoved: 'Item removido do carrinho',
     },
 
     // Products
@@ -139,11 +183,48 @@ export default {
         unknown: 'Ocorreu um erro desconhecido.',
         required: 'Este campo é obrigatório',
         invalid: 'Valor inválido',
+        fillEmailPassword: 'Preencha email e senha',
+        loginError: 'Erro ao fazer login',
+        saveSettingsError: 'Erro ao salvar configurações',
     },
 
     // Success messages
     success: {
         saved: 'Configurações salvas com sucesso',
         orderSent: 'Pedido enviado com sucesso',
+        userChanged: 'Usuário alterado para: {{nick}}',
+        settingsSaved: 'Configurações salvas com sucesso!',
+    },
+
+    // Login
+    login: {
+        email: 'Email',
+        emailPlaceholder: 'seu@email.com',
+        password: 'Senha',
+        rememberMe: 'Lembrar-me',
+        forgotPassword: 'Esqueceu a senha?',
+        welcome: 'Bem-vindo',
+        subtitle: 'Entre com suas credenciais',
+        support: 'Suporte',
+        help: 'Ajuda',
+    },
+
+
+    // Bills
+    bills: {
+        title: 'Contas',
+        searchPlaceholder: 'Buscar mesa...',
+        emptyTables: 'Nenhuma mesa encontrada',
+        table: 'Mesa',
+        total: 'Total',
+        viewBill: 'Ver Conta',
+        noTables: 'Nenhuma mesa disponível',
+    },
+
+    // Menu
+    menu: {
+        title: 'Cardápio',
+        emptyGroups: 'Nenhum grupo encontrado',
+        emptyGroupsMessage: 'Não há grupos de produtos disponíveis no momento.',
     },
 };

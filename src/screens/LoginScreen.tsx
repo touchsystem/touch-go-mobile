@@ -15,10 +15,12 @@ import { LoginForm } from '../components/login/LoginForm';
 import { ConfigButton } from '../components/login/ConfigButton';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { scale, scaleFont } from '../utils/responsive';
 
 export default function LoginScreen() {
   const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
 
   const themedStyles = StyleSheet.create({
     container: {
@@ -127,24 +129,24 @@ export default function LoginScreen() {
                     style={themedStyles.logo}
                   />
                 </View>
-                <Text style={themedStyles.welcomeText}>EatzGo Mobile</Text>
-                <Text style={themedStyles.subtitle}>Faça login para acessar o sistema</Text>
+                <Text style={themedStyles.welcomeText}>{t('login.welcome')}</Text>
+                <Text style={themedStyles.subtitle}>{t('login.subtitle')}</Text>
               </View>
 
               <LoginForm />
 
               <View style={themedStyles.supportSection}>
                 <Text style={themedStyles.supportText}>
-                  Problemas para acessar? Entre em contato com o administrador
+                  {t('login.subtitle')}
                 </Text>
                 <View style={themedStyles.supportButtons}>
                   <TouchableOpacity style={themedStyles.supportButton}>
                     <Ionicons name="call-outline" size={scale(18)} color={colors.icon} />
-                    <Text style={themedStyles.supportButtonText}>Suporte</Text>
+                    <Text style={themedStyles.supportButtonText}>{t('login.support')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={themedStyles.supportButton}>
                     <Ionicons name="help-circle-outline" size={scale(18)} color={colors.icon} />
-                    <Text style={themedStyles.supportButtonText}>Ajuda</Text>
+                    <Text style={themedStyles.supportButtonText}>{t('login.help')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

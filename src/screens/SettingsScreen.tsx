@@ -215,9 +215,9 @@ export default function SettingsScreen() {
         });
       }
 
-      Alert.alert('Sucesso', 'Configurações salvas com sucesso!');
+      Alert.alert(t('common.success'), t('settings.saveSuccess'));
     } catch (error) {
-      Alert.alert('Erro', 'Erro ao salvar configurações');
+      Alert.alert(t('common.error'), t('settings.saveError'));
     } finally {
       setSaving(false);
     }

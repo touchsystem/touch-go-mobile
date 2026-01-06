@@ -145,5 +145,110 @@ export default {
     success: {
         saved: 'Settings saved successfully',
         orderSent: 'Order sent successfully',
+        userChanged: 'User changed to: {{nick}}',
+        settingsSaved: 'Settings saved successfully!',
+    },
+
+    // Errors
+    errors: {
+        fillEmailPassword: 'Please fill email and password',
+        loginError: 'Error logging in',
+        saveSettingsError: 'Error saving settings',
+    },
+
+    // Login
+    login: {
+        email: 'Email',
+        emailPlaceholder: 'your@email.com',
+        password: 'Password',
+        rememberMe: 'Remember me',
+        forgotPassword: 'Forgot password?',
+        welcome: 'Welcome',
+        subtitle: 'Enter your credentials',
+        support: 'Support',
+        help: 'Help',
+    },
+
+    // Profile
+    profile: {
+        user: 'User',
+        logout: 'Logout',
+        logoutConfirm: 'Do you really want to logout? You will need to login again.',
+        logoutCancel: 'Cancel',
+        mode: 'Mode',
+        system: 'System',
+        dark: 'Dark',
+        light: 'Light',
+        levelNames: {
+            1: 'Waiter',
+            2: 'Cashier',
+            3: 'Supervisor',
+            4: 'Manager',
+            5: 'Administrator',
+            6: 'Support',
+        },
+        level: 'Level {{level}}',
+    },
+
+    // Bills
+    bills: {
+        title: 'Bills',
+        searchPlaceholder: 'Search table...',
+        emptyTables: 'No tables found',
+        table: 'Table',
+        total: 'Total',
+        viewBill: 'View Bill',
+        noTables: 'No tables available',
+    },
+
+    // Menu
+    menu: {
+        title: 'Menu',
+        emptyGroups: 'No groups found',
+        emptyGroupsMessage: 'No product groups available at the moment.',
+    },
+
+    // Orders
+    orders: {
+        selectTable: 'Select Table',
+        noTableSelected: 'No table selected',
+        emptyCart: 'Empty cart',
+        emptyCartMessage: 'Add products to cart to continue.',
+        total: 'Total',
+        items: 'Items',
+        confirmOrder: 'Confirm Order',
+        clearCart: 'Clear Cart',
+        editItem: 'Edit Item',
+        deleteItem: 'Remove Item',
+        addObservation: 'Add Observation',
+        observation: 'Observation',
+        itemAdded: 'Item added to cart',
+        itemUpdated: 'Item updated',
+        itemRemoved: 'Item removed from cart',
+    },
+
+    // Settings
+    settings: {
+        language: 'Language',
+        saveSuccess: 'Settings saved successfully!',
+        saveError: 'Error saving settings',
+    },
+
+    // Common
+    common: {
+        yes: 'Yes',
+        no: 'No',
+        ok: 'OK',
+        close: 'Close',
+        edit: 'Edit',
+        delete: 'Delete',
+        remove: 'Remove',
+        add: 'Add',
+        update: 'Update',
+        total: 'Total',
+        subtotal: 'Subtotal',
+        quantity: 'Quantity',
+        item: 'Item',
+        items: 'Items',
     },
 };

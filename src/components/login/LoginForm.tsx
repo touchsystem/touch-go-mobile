@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { storage, storageKeys } from '../../services/storage';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -20,6 +21,7 @@ export const LoginForm: React.FC = () => {
   const { login } = useAuth();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   // Carregar email salvo quando o componente monta
   useEffect(() => {
@@ -62,7 +64,7 @@ export const LoginForm: React.FC = () => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Erro', 'Preencha email e senha');
+      Alert.alert(t('common.error'), t('errors.fillEmailPassword'));
       return;
     }
 
@@ -78,7 +80,7 @@ export const LoginForm: React.FC = () => {
       await login({ email, password });
       router.replace('/(tabs)/menu');
     } catch (error: any) {
-      Alert.alert('Erro', error.message || 'Erro ao fazer login');
+      Alert.alert(t('common.error'), error.message || t('errors.loginError'));
     } finally {
       setLoading(false);
     }
@@ -87,8 +89,8 @@ export const LoginForm: React.FC = () => {
   return (
     <View style={styles.container}>
       <Input
-        label="Email"
-        placeholder="seu@email.com"
+        label={t('login.email')}
+        placeholder={t('login.emailPlaceholder')}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -99,8 +101,8 @@ export const LoginForm: React.FC = () => {
       />
 
       <Input
-        label="Senha"
-        placeholder="Digite sua senha"
+        label={t('login.password')}
+        placeholder={t('auth.password')}
         value={password}
         onChangeText={setPassword}
         secureTextEntry={!showPassword}
@@ -116,15 +118,15 @@ export const LoginForm: React.FC = () => {
 
       <View style={styles.optionsRow}>
         <Checkbox
-          label="Lembrar-me"
+          label={t('login.rememberMe')}
           checked={rememberMe}
           onToggle={() => setRememberMe(!rememberMe)}
         />
-        <Text style={styles.forgotPassword}>Esqueci a senha</Text>
+        <Text style={styles.forgotPassword}>{t('login.forgotPassword')}</Text>
       </View>
 
       <Button
-        title="Entrar"
+        title={t('auth.login')}
         onPress={handleLogin}
         loading={loading}
         style={styles.loginButton}
