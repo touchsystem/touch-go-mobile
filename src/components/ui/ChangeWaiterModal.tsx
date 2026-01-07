@@ -1,22 +1,21 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  Dimensions,
-  ActivityIndicator,
-} from 'react-native';
-import { Alert } from '../../utils/alert';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../contexts/ThemeContext';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Button } from './Button';
-import { storage, storageKeys } from '../../services/storage';
+import { useTheme } from '../../contexts/ThemeContext';
 import api from '../../services/api';
+import { storage, storageKeys } from '../../services/storage';
+import { Alert } from '../../utils/alert';
 import { scale, scaleFont, scaleWidth, widthPercentage } from '../../utils/responsive';
+import { Button } from './Button';
 
 interface ChangeWaiterModalProps {
   visible: boolean;
@@ -143,7 +142,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
       const response = await api.get('/usuarios', {
         params: { usuario: nickToValidate.trim() },
       });
-      
+
       // Verifica se retornou um array com pelo menos um usuário
       const users = response.data;
       if (Array.isArray(users) && users.length > 0) {
@@ -151,13 +150,13 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
         const foundUser = users.find(
           (user: any) => user.nick?.toLowerCase() === nickToValidate.trim().toLowerCase()
         );
-        
+
         if (foundUser && foundUser.id) {
           // Usuário encontrado
           return true;
         }
       }
-      
+
       // Usuário não encontrado
       setValidationError('Usuário não encontrado');
       return false;
@@ -167,13 +166,13 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
         setValidationError('Usuário não encontrado');
         return false;
       }
-      
+
       // Se retornar array vazio, usuário não existe
       if (error.response?.status === 200 && Array.isArray(error.response?.data) && error.response.data.length === 0) {
         setValidationError('Usuário não encontrado');
         return false;
       }
-      
+
       // Outros erros (rede, servidor, etc)
       const errorMessage = error.response?.data?.erro || error.message || t('errors.unknown');
       setValidationError(errorMessage);
@@ -191,7 +190,7 @@ export const ChangeWaiterModal: React.FC<ChangeWaiterModalProps> = ({
 
     // Valida se o nick existe
     const isValid = await validateNick(nick.trim());
-    
+
     if (!isValid) {
       // Erro já foi definido em validationError
       return;
