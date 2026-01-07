@@ -110,8 +110,8 @@ export default function LoginScreen() {
           style={{ flex: 1, backgroundColor: colors.background }}
         >
           <View style={themedStyles.header}>
-            <ConfigButton />
             <ThemeToggle />
+            <ConfigButton />
           </View>
           <ScrollView 
             contentContainerStyle={themedStyles.scrollContent}

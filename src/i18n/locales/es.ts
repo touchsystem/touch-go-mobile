@@ -131,7 +131,9 @@ export default {
         // Actions
         paymentMethods: 'MÉTODOS DE PAGO',
         saveSettings: 'GUARDAR',
-        saveSuccess: 'Configuración guardada correctamente',
+        save: 'Guardar',
+        language: 'Idioma',
+        saveSuccess: 'Configuración guardada correctamente!',
         saveError: 'Error al guardar la configuración',
     },
 
@@ -284,28 +286,4 @@ export default {
         notAvailable: 'N/A',
     },
 
-    // Settings
-    settings: {
-        language: 'Idioma',
-        saveSuccess: 'Configuración guardada correctamente!',
-        saveError: 'Error al guardar configuración',
-    },
-
-    // Common
-    common: {
-        yes: 'Sí',
-        no: 'No',
-        ok: 'Aceptar',
-        close: 'Cerrar',
-        edit: 'Editar',
-        delete: 'Eliminar',
-        remove: 'Quitar',
-        add: 'Agregar',
-        update: 'Actualizar',
-        total: 'Total',
-        subtotal: 'Subtotal',
-        quantity: 'Cantidad',
-        item: 'Artículo',
-        items: 'Artículos',
-    },
 };

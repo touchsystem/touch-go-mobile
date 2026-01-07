@@ -409,7 +409,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.toggleLabel}>Segunda Comanda Mesa</Text>
+            <Text style={styles.toggleLabel}>{t('settings.secondTableOrder')}</Text>
             <Switch
               value={settings.secondTableOrder}
               onValueChange={(value) => updateSetting('secondTableOrder', value)}
@@ -418,10 +418,10 @@ export default function SettingsScreen() {
         </Card>
 
         {/* Bloco: Cartões e Mesas */}
-        <Text style={styles.blockTitle}>Cartões e Mesas</Text>
+        <Text style={styles.blockTitle}>{t('settings.cards')}</Text>
         <Card style={styles.section}>
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Abertura Cartão</Text>
+            <Text style={styles.toggleLabel}>{t('settings.cardOpening')}</Text>
             <Switch
               value={settings.cardOpening}
               onValueChange={(value) => updateSetting('cardOpening', value)}
@@ -429,7 +429,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Campos Obrigatórios Abertura Cartão</Text>
+            <Text style={styles.toggleLabel}>{t('settings.mandatoryFieldsCardOpening')}</Text>
             <Switch
               value={settings.mandatoryFieldsCardOpening}
               onValueChange={(value) => updateSetting('mandatoryFieldsCardOpening', value)}
@@ -437,7 +437,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.toggleLabel}>Cartão NFC</Text>
+            <Text style={styles.toggleLabel}>{t('settings.nfcCard')}</Text>
             <Switch
               value={settings.nfcCard}
               onValueChange={(value) => updateSetting('nfcCard', value)}
@@ -446,10 +446,10 @@ export default function SettingsScreen() {
         </Card>
 
         {/* Bloco: Caixa e Contas */}
-        <Text style={styles.blockTitle}>Caixa e Contas</Text>
+        <Text style={styles.blockTitle}>{t('settings.cashier')}</Text>
         <Card style={styles.section}>
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Caixa</Text>
+            <Text style={styles.toggleLabel}>{t('settings.cashierSetting')}</Text>
             <Switch
               value={settings.cashier}
               onValueChange={(value) => updateSetting('cashier', value)}
@@ -457,7 +457,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Remover as Opções de Contas</Text>
+            <Text style={styles.toggleLabel}>{t('settings.removeAccountOptions')}</Text>
             <Switch
               value={settings.removeAccountOptions}
               onValueChange={(value) => updateSetting('removeAccountOptions', value)}
@@ -465,7 +465,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Remover Conta Caixa</Text>
+            <Text style={styles.toggleLabel}>{t('settings.removeCashierAccount')}</Text>
             <Switch
               value={settings.removeCashierAccount}
               onValueChange={(value) => updateSetting('removeCashierAccount', value)}
@@ -473,7 +473,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.toggleLabel}>Ocultar Antecipação</Text>
+            <Text style={styles.toggleLabel}>{t('settings.hideAnticipation')}</Text>
             <Switch
               value={settings.hideAnticipation}
               onValueChange={(value) => updateSetting('hideAnticipation', value)}
@@ -482,10 +482,10 @@ export default function SettingsScreen() {
         </Card>
 
         {/* Bloco: Equipamentos e Integrações */}
-        <Text style={styles.blockTitle}>Equipamentos e Integrações</Text>
+        <Text style={styles.blockTitle}>{t('settings.equipment')}</Text>
         <Card style={styles.section}>
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Balança</Text>
+            <Text style={styles.toggleLabel}>{t('settings.scale')}</Text>
             <Switch
               value={settings.scale}
               onValueChange={(value) => updateSetting('scale', value)}
@@ -493,7 +493,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Bar2</Text>
+            <Text style={styles.toggleLabel}>{t('settings.bar2')}</Text>
             <Switch
               value={settings.bar2}
               onValueChange={(value) => updateSetting('bar2', value)}
@@ -501,7 +501,7 @@ export default function SettingsScreen() {
           </View>
 
           <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.toggleLabel}>Emitir Nota Fiscal Webenefix</Text>
+            <Text style={styles.toggleLabel}>{t('settings.emitWebenefixInvoice')}</Text>
             <Switch
               value={settings.emitWebenefixInvoice}
               onValueChange={(value) => updateSetting('emitWebenefixInvoice', value)}

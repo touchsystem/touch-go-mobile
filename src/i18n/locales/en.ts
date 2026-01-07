@@ -11,6 +11,16 @@ export default {
         next: 'Next',
         search: 'Search',
         noResults: 'No results found',
+        yes: 'Yes',
+        no: 'No',
+        ok: 'OK',
+        close: 'Close',
+        edit: 'Edit',
+        delete: 'Delete',
+        remove: 'Remove',
+        add: 'Add',
+        update: 'Update',
+        success: 'Success',
     },
 
     // Auth
@@ -41,6 +51,23 @@ export default {
         language: 'Language',
         about: 'About',
         version: 'Version',
+        user: 'User',
+        logout: 'Logout',
+        logoutConfirm: 'Do you really want to logout? You will need to login again.',
+        logoutCancel: 'Cancel',
+        mode: 'Mode',
+        system: 'System',
+        dark: 'Dark',
+        light: 'Light',
+        levelNames: {
+            1: 'Waiter',
+            2: 'Cashier',
+            3: 'Supervisor',
+            4: 'Manager',
+            5: 'Administrator',
+            6: 'Support',
+        },
+        level: 'Level {{level}}',
     },
 
     // Settings
@@ -96,148 +123,16 @@ export default {
         // Actions
         paymentMethods: 'PAYMENT METHODS',
         saveSettings: 'SAVE',
+        save: 'Save',
+        language: 'Language',
+        saveSuccess: 'Settings saved successfully!',
+        saveError: 'Error saving settings',
     },
 
     // Payment Methods
     paymentMethods: {
         title: 'Payment Methods',
         enabledMethods: 'Enabled Payment Methods',
-    },
-
-    // Orders
-    orders: {
-        title: 'Orders',
-        newOrder: 'New Order',
-        table: 'Table',
-        status: 'Status',
-        items: 'Items',
-        quantity: 'Quantity',
-        price: 'Price',
-        subtotal: 'Subtotal',
-        discount: 'Discount',
-        payment: 'Payment',
-        confirm: 'Confirm Order',
-        cancel: 'Cancel Order',
-        orderSent: 'Order sent successfully',
-        orderError: 'Error sending order',
-    },
-
-    // Products
-    products: {
-        title: 'Products',
-        search: 'Search products...',
-        categories: 'Categories',
-        all: 'All',
-        addToCart: 'Add to Cart',
-        outOfStock: 'Out of stock',
-        noResults: 'No products found',
-        noProducts: 'No products available',
-    },
-
-    // SearchProducts
-    searchProducts: {
-        title: 'Search Products',
-    },
-
-    // ProductGroups
-    productGroups: {
-        title: 'Product Groups',
-    },
-
-    // ViewBillModal
-    viewBill: {
-        error: 'Error',
-        errorLoadingBill: 'Error loading table bill',
-        userNotFound: 'User not found. Configure the user in the profile.',
-        print: 'Print',
-        close: 'Close',
-        table: 'Table',
-        total: 'Total',
-    },
-
-    // Errors
-    errors: {
-        connection: 'Connection error. Please check your internet connection.',
-        server: 'Server error. Please try again later.',
-        unknown: 'An unknown error occurred.',
-        required: 'This field is required',
-        invalid: 'Invalid value',
-    },
-
-    // Success messages
-    success: {
-        saved: 'Settings saved successfully',
-        orderSent: 'Order sent successfully',
-        userChanged: 'User changed to: {{nick}}',
-        settingsSaved: 'Settings saved successfully!',
-    },
-
-    // Errors
-    errors: {
-        fillEmailPassword: 'Please fill email and password',
-        loginError: 'Error logging in',
-        saveSettingsError: 'Error saving settings',
-    },
-
-    // Login
-    login: {
-        email: 'Email',
-        emailPlaceholder: 'your@email.com',
-        password: 'Password',
-        rememberMe: 'Remember me',
-        forgotPassword: 'Forgot password?',
-        welcome: 'Welcome',
-        subtitle: 'Enter your credentials',
-        support: 'Support',
-        help: 'Help',
-    },
-
-    // Profile
-    profile: {
-        user: 'User',
-        logout: 'Logout',
-        logoutConfirm: 'Do you really want to logout? You will need to login again.',
-        logoutCancel: 'Cancel',
-        mode: 'Mode',
-        system: 'System',
-        dark: 'Dark',
-        light: 'Light',
-        levelNames: {
-            1: 'Waiter',
-            2: 'Cashier',
-            3: 'Supervisor',
-            4: 'Manager',
-            5: 'Administrator',
-            6: 'Support',
-        },
-        level: 'Level {{level}}',
-    },
-
-    // Bills
-    bills: {
-        title: 'Bills',
-        searchPlaceholder: 'Search table by number...',
-        emptyTables: 'No tables found',
-        table: 'Table',
-        total: 'Total',
-        viewBill: 'View Bill',
-        noTables: 'No tables available',
-        warning: 'Warning',
-        noOrdersMessage: 'This table has no orders. Only occupied or closed tables can have bills.',
-        status: {
-            free: 'Free',
-            occupied: 'Occupied',
-            reserved: 'Reserved',
-            closed: 'Closed',
-            inactive: 'Inactive',
-        },
-    },
-
-    // Menu
-    menu: {
-        title: 'Menu',
-        emptyGroups: 'No groups found',
-        emptyGroupsMessage: 'No product groups available at the moment.',
     },
 
     // Orders
@@ -285,34 +180,96 @@ export default {
         notAvailable: 'N/A',
     },
 
-    // Settings
-    settings: {
-        language: 'Language',
-        saveSuccess: 'Settings saved successfully!',
-        saveError: 'Error saving settings',
+    // Products
+    products: {
+        title: 'Products',
+        search: 'Search products...',
+        categories: 'Categories',
+        all: 'All',
+        addToCart: 'Add to Cart',
+        outOfStock: 'Out of stock',
+        noResults: 'No products found',
+        noProducts: 'No products available',
     },
 
-    // Common
-    common: {
-        loading: 'Loading...',
-        error: 'An error occurred',
-        retry: 'Try again',
-        cancel: 'Cancel',
-        save: 'Save',
-        confirm: 'Confirm',
-        back: 'Back',
-        next: 'Next',
-        search: 'Search',
-        noResults: 'No results found',
-        yes: 'Yes',
-        no: 'No',
-        ok: 'OK',
+    // SearchProducts
+    searchProducts: {
+        title: 'Search Products',
+    },
+
+    // ProductGroups
+    productGroups: {
+        title: 'Product Groups',
+    },
+
+    // ViewBillModal
+    viewBill: {
+        error: 'Error',
+        errorLoadingBill: 'Error loading table bill',
+        userNotFound: 'User not found. Configure the user in the profile.',
+        print: 'Print',
         close: 'Close',
-        edit: 'Edit',
-        delete: 'Delete',
-        remove: 'Remove',
-        add: 'Add',
-        update: 'Update',
-        success: 'Success',
+        table: 'Table',
+        total: 'Total',
+    },
+
+    // Errors
+    errors: {
+        connection: 'Connection error. Please check your internet connection.',
+        server: 'Server error. Please try again later.',
+        unknown: 'An unknown error occurred.',
+        required: 'This field is required',
+        invalid: 'Invalid value',
+        fillEmailPassword: 'Please fill email and password',
+        loginError: 'Error logging in',
+        saveSettingsError: 'Error saving settings',
+    },
+
+    // Success messages
+    success: {
+        saved: 'Settings saved successfully',
+        orderSent: 'Order sent successfully',
+        userChanged: 'User changed to: {{nick}}',
+        settingsSaved: 'Settings saved successfully!',
+    },
+
+    // Login
+    login: {
+        email: 'Email',
+        emailPlaceholder: 'your@email.com',
+        password: 'Password',
+        rememberMe: 'Remember me',
+        forgotPassword: 'Forgot password?',
+        welcome: 'Welcome',
+        subtitle: 'Enter your credentials',
+        support: 'Support',
+        help: 'Help',
+    },
+
+    // Bills
+    bills: {
+        title: 'Bills',
+        searchPlaceholder: 'Search table by number...',
+        emptyTables: 'No tables found',
+        table: 'Table',
+        total: 'Total',
+        viewBill: 'View Bill',
+        noTables: 'No tables available',
+        warning: 'Warning',
+        noOrdersMessage: 'This table has no orders. Only occupied or closed tables can have bills.',
+        status: {
+            free: 'Free',
+            occupied: 'Occupied',
+            reserved: 'Reserved',
+            closed: 'Closed',
+            inactive: 'Inactive',
+        },
+    },
+
+    // Menu
+    menu: {
+        title: 'Menu',
+        emptyGroups: 'No groups found',
+        emptyGroupsMessage: 'No product groups available at the moment.',
     },
 };

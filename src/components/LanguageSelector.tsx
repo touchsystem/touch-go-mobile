@@ -1,9 +1,52 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { scale, scaleFont } from '../utils/responsive';
+
+// Mapeamento de códigos de idioma para siglas
+const LANGUAGE_LABELS: Record<string, string> = {
+    'pt': 'PT',
+    'en': 'EN',
+    'es': 'ES',
+};
 
 const LanguageSelector: React.FC = () => {
     const { language, availableLanguages, changeLanguage } = useLanguage();
+    const { colors } = useTheme();
+
+    const styles = useMemo(
+        () =>
+            StyleSheet.create({
+                container: {
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    padding: scale(10),
+                    backgroundColor: colors.surface,
+                    borderRadius: scale(8),
+                    marginVertical: scale(10),
+                },
+                languageButton: {
+                    paddingHorizontal: scale(15),
+                    paddingVertical: scale(8),
+                    marginHorizontal: scale(5),
+                    borderRadius: scale(4),
+                    backgroundColor: colors.border,
+                },
+                selectedLanguage: {
+                    backgroundColor: '#007AFF',
+                },
+                languageText: {
+                    color: colors.textSecondary,
+                    fontSize: scaleFont(14),
+                },
+                selectedLanguageText: {
+                    color: '#fff',
+                    fontWeight: 'bold',
+                },
+            }),
+        [colors]
+    );
 
     return (
         <View style={styles.container}>
@@ -22,41 +65,12 @@ const LanguageSelector: React.FC = () => {
                             language === lang.code && styles.selectedLanguageText,
                         ]}
                     >
-                        {lang.name}
+                        {LANGUAGE_LABELS[lang.code] || lang.code.toUpperCase()}
                     </Text>
                 </TouchableOpacity>
             ))}
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        padding: 10,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 8,
-        marginVertical: 10,
-    },
-    languageButton: {
-        paddingHorizontal: 15,
-        paddingVertical: 8,
-        marginHorizontal: 5,
-        borderRadius: 4,
-        backgroundColor: '#e0e0e0',
-    },
-    selectedLanguage: {
-        backgroundColor: '#007AFF',
-    },
-    languageText: {
-        color: '#333',
-        fontSize: 14,
-    },
-    selectedLanguageText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-});
 
 export default LanguageSelector;

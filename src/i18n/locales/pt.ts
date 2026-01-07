@@ -123,6 +123,7 @@ export default {
         // Actions
         paymentMethods: 'MÉTODOS DE PAGAMENTO',
         saveSettings: 'SALVAR',
+        save: 'Salvar',
         language: 'Idioma',
         saveSuccess: 'Configurações salvas com sucesso!',
         saveError: 'Erro ao salvar configurações',
