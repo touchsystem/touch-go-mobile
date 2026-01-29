@@ -37,7 +37,7 @@ export interface SystemSettings {
 }
 
 const DEFAULT_SETTINGS: SystemSettings = {
-  serverIp: '192.168.0.234',
+  serverIp: '146.190.123.175',
   serverPort: '5001',
   cellphoneNumber: '',
   attendanceMethod: 'local',

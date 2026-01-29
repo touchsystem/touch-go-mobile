@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -7,6 +8,13 @@ export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children })
   const { user, loading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
+
+  // Esconder splash nativa assim que o auth terminar de carregar
+  useEffect(() => {
+    if (!loading) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [loading]);
 
   useEffect(() => {
     if (!loading) {

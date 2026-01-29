@@ -9,11 +9,11 @@ const getBaseURL = async (): Promise<string> => {
     return config.apiUrl;
   }
   // Fallback padrão
-  return 'http://192.168.0.234:5001';
+  return 'http://146.190.123.175:5001';
 };
 
 const axiosInstance = axios.create({
-  baseURL: 'http://192.168.0.234:5001', // Será atualizado dinamicamente
+  baseURL: 'http://146.190.123.175:5001', // Será atualizado dinamicamente
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

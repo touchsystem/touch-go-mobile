@@ -141,4 +141,3 @@ export const getVisualDeviceIdentifier = (deviceId: string | null): string => {
     const formatted = deviceId.toUpperCase().match(/.{1,4}/g)?.join('-') || deviceId;
     return formatted;
 };
-

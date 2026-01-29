@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 2,
       "package": "com.touchgo.mobile",
       "permissions": [
         "INTERNET",

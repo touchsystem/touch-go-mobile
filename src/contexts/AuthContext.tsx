@@ -26,7 +26,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuth();
   }, []);
 
+  const AUTH_CHECK_TIMEOUT_MS = 10_000;
+
   const checkAuth = async () => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
+      setLoading(false);
+    }, AUTH_CHECK_TIMEOUT_MS);
+
     try {
       const token = await storage.getItem<string>(storageKeys.TOKEN);
       const storedUser = await storage.getItem<User>(storageKeys.USER);
@@ -80,6 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error checking auth:', error);
       setUser(null);
     } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
       setLoading(false);
     }
   };

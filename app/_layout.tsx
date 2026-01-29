@@ -5,11 +5,15 @@ import { AppProviders } from '@/src/providers/AppProviders';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import * as NavigationBar from 'expo-navigation-bar';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { View, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
+
+// Manter splash nativa visível até o app estar pronto (auth verificado)
+SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
   anchor: '(tabs)',

@@ -38,18 +38,18 @@ export const ConfigButton: React.FC = () => {
       const match = url.match(/http:\/\/([^:]+):?(\d+)?/);
       if (match) {
         return {
-          ip: match[1] || '192.168.0.234',
+          ip: match[1] || '146.190.123.175',
           port: match[2] || '5001',
         };
       }
       return {
-        ip: '192.168.0.234',
-        port: ' 5001',
+        ip: '146.190.123.175',
+        port: '5001',
       };
     }
   };
 
-  const currentUrl = config.apiUrlLocal || config.apiUrl || 'http://192.168.0.234:5001';
+  const currentUrl = config.apiUrlLocal || config.apiUrl || 'http://146.190.123.175:5001';
   const { ip: currentIp, port: currentPort } = parseUrl(currentUrl);
   
   const [serverIp, setServerIp] = useState(currentIp);
@@ -288,7 +288,7 @@ export const ConfigButton: React.FC = () => {
           label="IP do Servidor"
           value={serverIp}
           onChangeText={setServerIp}
-          placeholder="192.168.0.234"
+          placeholder="146.190.123.175"
           editable={accessLevel !== 'none'}
         />
         
