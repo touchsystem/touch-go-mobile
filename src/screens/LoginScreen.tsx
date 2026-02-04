@@ -1,21 +1,21 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-  Image,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { LoginForm } from '../components/login/LoginForm';
 import { ConfigButton } from '../components/login/ConfigButton';
+import { LoginForm } from '../components/login/LoginForm';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
-import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { scale, scaleFont } from '../utils/responsive';
 
 export default function LoginScreen() {
@@ -101,8 +101,8 @@ export default function LoginScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <SafeAreaView 
-        style={[themedStyles.container, { backgroundColor: colors.background }]} 
+      <SafeAreaView
+        style={[themedStyles.container, { backgroundColor: colors.background }]}
         edges={['top', 'bottom']}
       >
         <KeyboardAvoidingView
@@ -113,7 +113,7 @@ export default function LoginScreen() {
             <ThemeToggle />
             <ConfigButton />
           </View>
-          <ScrollView 
+          <ScrollView
             contentContainerStyle={themedStyles.scrollContent}
             showsVerticalScrollIndicator={false}
             style={{ backgroundColor: colors.background }}
@@ -122,7 +122,7 @@ export default function LoginScreen() {
               <View style={themedStyles.iconContainer}>
                 <View style={themedStyles.logoContainer}>
                   <Image
-                    source={isDark 
+                    source={isDark
                       ? require('../../assets/images/logo_dark.png')
                       : require('../../assets/images/logo_light.png')
                     }

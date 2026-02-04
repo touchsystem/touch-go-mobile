@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { storage, storageKeys } from '../services/storage';
+import { useEffect, useState } from 'react';
+import { storage } from '../services/storage';
 
 export interface SystemSettings {
   // Servidor
   serverIp: string;
   serverPort: string;
   cellphoneNumber: string;
-  
+
   // Métodos
   attendanceMethod: 'local' | 'cloud';
   paymentMethod: 'local' | 'cloud';
-  
+
   // Configurações gerais
   landscapeScreen: boolean;
   directSale: boolean;

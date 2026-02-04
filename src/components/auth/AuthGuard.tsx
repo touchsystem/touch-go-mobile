@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
 import { useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -12,7 +12,7 @@ export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children })
   // Esconder splash nativa assim que o auth terminar de carregar
   useEffect(() => {
     if (!loading) {
-      SplashScreen.hideAsync().catch(() => {});
+      SplashScreen.hideAsync().catch(() => { });
     }
   }, [loading]);
 
@@ -21,7 +21,7 @@ export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children })
       const inAuthGroup = segments[0] === 'login' || segments.length === 0;
       const inTabs = segments[0] === '(tabs)';
       const isSettingsScreen = inTabs && (segments[1] === 'settings' || segments[1] === 'payment-methods');
-      
+
       if (!user) {
         // Usuário não autenticado
         if (!inAuthGroup && !inTabs) {

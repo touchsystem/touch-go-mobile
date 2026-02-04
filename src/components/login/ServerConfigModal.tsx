@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Alert } from '../../utils/alert';
-import { Modal } from '../ui/Modal';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
+import { StyleSheet, Text, View } from 'react-native';
 import { useServerConfig } from '../../hooks/useServerConfig';
+import { Alert } from '../../utils/alert';
 import { scale, scaleFont } from '../../utils/responsive';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Modal } from '../ui/Modal';
 
 interface ServerConfigModalProps {
   visible: boolean;

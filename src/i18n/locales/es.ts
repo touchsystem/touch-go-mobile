@@ -286,4 +286,37 @@ export default {
         notAvailable: 'N/A',
     },
 
+    // ViewBillModal
+    viewBill: {
+        error: 'Error',
+        errorLoadingBill: 'Error al cargar la cuenta de la mesa',
+        userNotFound: 'Usuario no encontrado. Configure el usuario en el perfil.',
+        print: 'Imprimir',
+        pay: 'Pagar',
+        close: 'Cerrar',
+        table: 'Mesa',
+        total: 'Total',
+        paymentSuccess: 'Pago realizado con éxito.',
+        paymentError: 'Error en el pago. Intente de nuevo.',
+        paymentTimeout: 'Se agotó el tiempo máximo estipulado para la operación. Por favor, intente de nuevo.',
+        paymentNotAvailable: 'Pago en terminal no disponible. Use la app en un dispositivo con PagSeguro Smart 2.',
+        awaitingCard: 'Esperando tarjeta...',
+        selectPaymentMethod: 'Seleccione el método de pago',
+        credit: 'Crédito',
+        debit: 'Débito',
+        pix: 'Pix',
+        closeFailedPrintHint: 'El sistema exige que la cuenta se imprima antes de cerrar. Imprima la cuenta en el ordenador de caja y cierre la mesa allí, o compruebe la impresora de red.',
+    },
+
+    // Products
+    products: {
+        title: 'Productos',
+        search: 'Buscar productos...',
+        categories: 'Categorías',
+        all: 'Todos',
+        addToCart: 'Añadir al carrito',
+        outOfStock: 'Sin stock',
+        noResults: 'Ningún producto encontrado',
+        noProducts: 'Ningún producto disponible',
+    },
 };

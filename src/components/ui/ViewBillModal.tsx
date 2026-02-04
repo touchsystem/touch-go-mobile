@@ -10,13 +10,14 @@ import {
     View
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useTableContext } from '../../contexts/TableContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../services/api';
 import { storage, storageKeys } from '../../services/storage';
 import { Alert } from '../../utils/alert';
 import { formatCurrency } from '../../utils/format';
+import { isPagSeguroModuleLoaded, payWithSmart2, type PagSeguroPaymentType } from '../../utils/pagseguroSmart2';
 import { scale, scaleFont, scaleHeight, scaleWidth, widthPercentage } from '../../utils/responsive';
 import { Button } from './Button';
 
@@ -62,11 +63,13 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
 }) => {
     const { colors, isDark } = useTheme();
     const { user } = useAuth();
-    const { refreshTable } = useTableContext();
+    const { refreshTable, fetchTables, updateTableStatus } = useTableContext();
     const { t } = useLanguage();
     const [data, setData] = useState<BillData | null>(null);
     const [loading, setLoading] = useState(true);
     const [printing, setPrinting] = useState(false);
+    const [paying, setPaying] = useState(false);
+    const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
 
     useEffect(() => {
         if (visible && mesaCartao && !printing) {
@@ -133,6 +136,139 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 t('viewBill.error'),
                 error.response?.data?.erro || error.message || t('viewBill.errorLoadingBill')
             );
+        }
+    };
+
+    const handlePay = () => {
+        if (!data?.vendas?.length || total <= 0) return;
+        if (!isPagSeguroModuleLoaded()) {
+            Alert.alert(t('viewBill.error'), t('viewBill.paymentNotAvailable'));
+            return;
+        }
+        // Mostra o modal de seleção de método de pagamento
+        setShowPaymentMethodModal(true);
+    };
+
+    /** Notifica o backend para fechar a mesa após pagamento no terminal (cartão/Pix). Payload alinhado ao touch-go desktop. */
+    const closeMesaOnBackend = async (paymentType: PagSeguroPaymentType) => {
+        if (!data?.vendas?.length) return;
+        // Nick para imprimir-conta (backend exige "imprimir conta" antes de fechar a mesa)
+        let nickToUse = await storage.getItem<string>(storageKeys.LAST_USED_NICK) || user?.nick || '';
+        if (!nickToUse) {
+            console.warn('[ViewBill] Nick não definido; fechamento pode falhar se o backend exige impressão.');
+        }
+        // Backend exige que a conta tenha sido "impressa" (imprimir-conta) antes de fechar
+        try {
+            await api.post(`/caixa/imprimir-conta?mesa=${mesaCartao}&nick=${encodeURIComponent(nickToUse)}`);
+        } catch (printErr: any) {
+            // Se imprimir-conta falhar (ex.: sem impressora), ainda tentamos fechar; o backend pode aceitar em alguns casos
+            console.warn('[ViewBill] imprimir-conta antes de fechar:', printErr?.response?.data ?? printErr);
+        }
+        // IDs de tipo de recebimento (mesmo do desktop: 2=Crédito, 3=Débito, 4=Pix)
+        const idTipoRec = paymentType === 'CREDITO' ? 2 : paymentType === 'DEBITO' ? 3 : 4;
+        // Estrutura de vendas igual ao desktop: principal + relacionais com id_venda e desconto numéricos
+        const vendas = data.vendas.flatMap((product) => {
+            const relacionais = product.itens_relacionais || product.relacionados || [];
+            const mainVenda = [{
+                id_venda: Number(product.id_venda),
+                desconto: Number(product.desconto ?? 0),
+            }];
+            const relVendas = relacionais.map((rel: Relacional) => ({
+                id_venda: Number(rel.id_venda),
+                desconto: Number((rel as any).desconto ?? 0),
+            }));
+            return [...mainVenda, ...relVendas];
+        });
+        // Arredondamento em 2 decimais (backend pode validar valor)
+        const roundedTotal = Math.round(total * 100) / 100;
+        const requestData = {
+            id_mesa: Number(mesaCartao),
+            taxa_servico: 'N',
+            vendas,
+            recebimentos: [
+                {
+                    id_tipo_rec: idTipoRec,
+                    vl_principal: roundedTotal,
+                    vl_extrangeiro: roundedTotal,
+                },
+            ],
+        };
+        try {
+            await api.post('/caixa/fechar-mesa', requestData);
+            updateTableStatus(mesaCartao, 'F');
+        } catch (err: any) {
+            console.error('[ViewBill] Erro ao fechar mesa no backend:', err?.response?.data ?? err);
+            (err as any).closeMesaError = err?.response?.data?.erro || err?.message;
+            throw err;
+        }
+    };
+
+    const processPayment = async (paymentType: PagSeguroPaymentType) => {
+        setShowPaymentMethodModal(false);
+
+        const amountInCents = Math.round(total * 100);
+        const reference = `mesa-${mesaCartao}`;
+
+        try {
+            setPaying(true);
+            console.log('[PagSeguro] Iniciando pagamento:', { amountInCents, reference, paymentType });
+
+            // Timeout de 2 minutos (120000ms) - tempo padrão do PagSeguro
+            const result = await payWithSmart2(amountInCents, reference, paymentType, 1, 120000);
+
+            console.log('[PagSeguro] Resultado:', result);
+
+            if (result.success) {
+                try {
+                    await closeMesaOnBackend(paymentType);
+                    Alert.alert(
+                        t('common.success'),
+                        t('viewBill.paymentSuccess') || `Pagamento aprovado! ID: ${result.transactionId}`
+                    );
+                    onClose();
+                    await fetchTables();
+                } catch (closeErr: any) {
+                    const backendMsg = closeErr?.closeMesaError || closeErr?.response?.data?.erro || closeErr?.message;
+                    const isPrintRelated =
+                        typeof backendMsg === 'string' &&
+                        (backendMsg.includes('sem imprimir') ||
+                            backendMsg.includes('imprimir') ||
+                            backendMsg.includes('impressão') ||
+                            backendMsg.includes('impressora'));
+                    const hint = isPrintRelated ? `\n\n${t('viewBill.closeFailedPrintHint')}` : '';
+                    Alert.alert(
+                        t('common.success'),
+                        (t('viewBill.paymentSuccess') || 'Pagamento aprovado!') +
+                            (backendMsg ? `\n\nAtenção: ${backendMsg}` : '\n\nNão foi possível fechar a mesa no sistema.') +
+                            hint
+                    );
+                    onClose();
+                    await fetchTables();
+                }
+            } else {
+                // Mensagem de erro específica baseada no código
+                let errorMessage = result.message || t('viewBill.paymentError');
+
+                if (result.code === 'TIMEOUT') {
+                    errorMessage = t('viewBill.paymentTimeout') || 'Tempo máximo estipulado para a operação expirou. Por favor, tente novamente.';
+                }
+
+                console.error('[PagSeguro] Erro no pagamento:', result);
+                Alert.alert(t('viewBill.error'), errorMessage);
+            }
+        } catch (e) {
+            console.error('[PagSeguro] Exceção ao processar pagamento:', e);
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            Alert.alert(
+                t('viewBill.error'),
+                errorMessage.includes('TIMEOUT')
+                    ? (t('viewBill.paymentTimeout') || 'Tempo máximo estipulado para a operação expirou. Por favor, tente novamente.')
+                    : t('viewBill.paymentError')
+            );
+        } finally {
+            // Garante que o loading seja sempre resetado
+            setPaying(false);
+            console.log('[PagSeguro] Estado de pagamento resetado');
         }
     };
 
@@ -229,6 +365,14 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                     fontWeight: 'bold',
                     color: colors.primary,
                 },
+                actionsRow: {
+                    flexDirection: 'row',
+                    gap: scale(12),
+                    marginTop: scale(20),
+                },
+                actionButton: {
+                    flex: 1,
+                },
                 loadingContainer: {
                     padding: scale(40),
                     alignItems: 'center',
@@ -322,93 +466,180 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     }, [data?.vendas]);
 
     return (
-        <Modal
-            visible={visible}
-            transparent
-            animationType="fade"
-            onRequestClose={onClose}
-            hardwareAccelerated={true}
-            statusBarTranslucent={true}
-        >
-            <View style={styles.modalOverlay} pointerEvents="box-none">
-                <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={onClose}
-                    style={StyleSheet.absoluteFill}
-                />
-                <View style={{ alignSelf: 'center' }} pointerEvents="box-only">
+        <>
+            <Modal
+                visible={visible}
+                transparent
+                animationType="fade"
+                onRequestClose={onClose}
+                hardwareAccelerated={true}
+                statusBarTranslucent={true}
+            >
+                <View style={styles.modalOverlay} pointerEvents="box-none">
                     <TouchableOpacity
                         activeOpacity={1}
-                        onPress={(e) => e.stopPropagation()}
-                    >
-                        <View style={styles.modalContent} pointerEvents="box-only">
-                            <View style={styles.header}>
-                                <Text style={styles.title}>{t('viewBill.table')} - {mesaCartao}</Text>
-                                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                                    <Ionicons name="close" size={scale(24)} color={colors.text} />
-                                </TouchableOpacity>
-                            </View>
-
-                            {loading ? (
-                                <View style={styles.loadingContainer}>
-                                    <ActivityIndicator size="large" color={colors.primary} />
+                        onPress={onClose}
+                        style={StyleSheet.absoluteFill}
+                    />
+                    <View style={{ alignSelf: 'center' }} pointerEvents="box-only">
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            onPress={(e) => e.stopPropagation()}
+                        >
+                            <View style={styles.modalContent} pointerEvents="box-only">
+                                <View style={styles.header}>
+                                    <Text style={styles.title}>{t('viewBill.table')} - {mesaCartao}</Text>
+                                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                                        <Ionicons name="close" size={scale(24)} color={colors.text} />
+                                    </TouchableOpacity>
                                 </View>
-                            ) : !data?.vendas || data.vendas.length === 0 ? (
-                                <View style={styles.emptyContainer}>
-                                    <Ionicons name="receipt-outline" size={scale(48)} color={colors.textSecondary} />
-                                    <Text style={styles.emptyText}>{t('products.noResults')}</Text>
-                                </View>
-                            ) : (
-                                <>
-                                    <ScrollView
-                                        key={`scroll-${data.vendas.length}`}
-                                        style={styles.scrollContent}
-                                        contentContainerStyle={styles.scrollContentContainer}
-                                        showsVerticalScrollIndicator={true}
-                                        nestedScrollEnabled={false}
-                                        keyboardShouldPersistTaps="handled"
-                                        bounces={true}
-                                        scrollEventThrottle={16}
-                                        decelerationRate="normal"
-                                        removeClippedSubviews={true}
-                                        overScrollMode="auto"
-                                    >
-                                        {data.vendas.map((item) => (
-                                            <BillItem
-                                                key={item.id_venda}
-                                                item={item}
-                                                styles={styles}
-                                                formatCurrency={formatCurrency}
-                                                calculateItemTotal={calculateItemTotal}
-                                            />
-                                        ))}
-                                    </ScrollView>
 
-                                    <View style={styles.totalRow}>
-                                        <Text style={styles.totalLabel}>{t('viewBill.total')}:</Text>
-                                        <Text style={styles.totalValue}>{formatCurrency(total)}</Text>
+                                {loading ? (
+                                    <View style={styles.loadingContainer}>
+                                        <ActivityIndicator size="large" color={colors.primary} />
                                     </View>
+                                ) : !data?.vendas || data.vendas.length === 0 ? (
+                                    <View style={styles.emptyContainer}>
+                                        <Ionicons name="receipt-outline" size={scale(48)} color={colors.textSecondary} />
+                                        <Text style={styles.emptyText}>{t('products.noResults')}</Text>
+                                    </View>
+                                ) : (
+                                    <>
+                                        <ScrollView
+                                            key={`scroll-${data.vendas.length}`}
+                                            style={styles.scrollContent}
+                                            contentContainerStyle={styles.scrollContentContainer}
+                                            showsVerticalScrollIndicator={true}
+                                            nestedScrollEnabled={false}
+                                            keyboardShouldPersistTaps="handled"
+                                            bounces={true}
+                                            scrollEventThrottle={16}
+                                            decelerationRate="normal"
+                                            removeClippedSubviews={true}
+                                            overScrollMode="auto"
+                                        >
+                                            {data.vendas.map((item) => (
+                                                <BillItem
+                                                    key={item.id_venda}
+                                                    item={item}
+                                                    styles={styles}
+                                                    formatCurrency={formatCurrency}
+                                                    calculateItemTotal={calculateItemTotal}
+                                                />
+                                            ))}
+                                        </ScrollView>
 
-                                    <Button
-                                        title={printing ? t('common.loading') : t('viewBill.print')}
-                                        onPress={handlePrint}
-                                        disabled={printing}
-                                        icon={
-                                            printing ? (
-                                                <ActivityIndicator size="small" color="#fff" />
-                                            ) : (
-                                                <Ionicons name="print-outline" size={scale(20)} color="#fff" />
-                                            )
-                                        }
-                                        style={{ marginTop: scale(20) }}
-                                    />
-                                </>
-                            )}
-                        </View>
-                    </TouchableOpacity>
+                                        <View style={styles.totalRow}>
+                                            <Text style={styles.totalLabel}>{t('viewBill.total')}:</Text>
+                                            <Text style={styles.totalValue}>{formatCurrency(total)}</Text>
+                                        </View>
+
+                                        <View style={styles.actionsRow}>
+                                            <Button
+                                                title={printing ? t('common.loading') : t('viewBill.print')}
+                                                onPress={handlePrint}
+                                                disabled={printing || paying}
+                                                icon={
+                                                    printing ? (
+                                                        <ActivityIndicator size="small" color="#fff" />
+                                                    ) : (
+                                                        <Ionicons name="print-outline" size={scale(20)} color="#fff" />
+                                                    )
+                                                }
+                                                style={styles.actionButton}
+                                            />
+                                            <Button
+                                                title={paying ? (t('viewBill.awaitingCard') || 'Aguardando cartão...') : t('viewBill.pay')}
+                                                onPress={handlePay}
+                                                disabled={paying || printing}
+                                                icon={
+                                                    paying ? (
+                                                        <ActivityIndicator size="small" color="#fff" />
+                                                    ) : (
+                                                        <Ionicons name="card-outline" size={scale(20)} color="#fff" />
+                                                    )
+                                                }
+                                                style={styles.actionButton}
+                                            />
+                                        </View>
+                                    </>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        </Modal>
+            </Modal>
+
+            {/* Modal de seleção de método de pagamento */}
+            <Modal
+                visible={showPaymentMethodModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowPaymentMethodModal(false)}
+                hardwareAccelerated={true}
+                statusBarTranslucent={true}
+            >
+                <View style={styles.modalOverlay} pointerEvents="box-none">
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => setShowPaymentMethodModal(false)}
+                        style={StyleSheet.absoluteFill}
+                    />
+                    <View style={{ alignSelf: 'center' }} pointerEvents="box-only">
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            onPress={(e) => e.stopPropagation()}
+                        >
+                            <View style={[styles.modalContent, { maxWidth: scaleWidth(400) }]} pointerEvents="box-only">
+                                <View style={styles.header}>
+                                    <Text style={styles.title}>{t('viewBill.selectPaymentMethod')}</Text>
+                                    <TouchableOpacity
+                                        onPress={() => setShowPaymentMethodModal(false)}
+                                        style={styles.closeButton}
+                                    >
+                                        <Ionicons name="close" size={scale(24)} color={colors.text} />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={{ gap: scale(12), marginTop: scale(20) }}>
+                                    <Button
+                                        title={t('viewBill.credit')}
+                                        onPress={() => processPayment('CREDITO')}
+                                        disabled={paying}
+                                        icon={<Ionicons name="card-outline" size={scale(20)} color="#fff" />}
+                                        style={{ width: '100%' }}
+                                    />
+                                    <Button
+                                        title={t('viewBill.debit')}
+                                        onPress={() => processPayment('DEBITO')}
+                                        disabled={paying}
+                                        icon={<Ionicons name="card-outline" size={scale(20)} color="#fff" />}
+                                        style={{ width: '100%' }}
+                                    />
+                                    <Button
+                                        title={t('viewBill.pix')}
+                                        onPress={() => processPayment('PIX')}
+                                        disabled={paying}
+                                        icon={<Ionicons name="qr-code-outline" size={scale(20)} color="#fff" />}
+                                        style={{ width: '100%' }}
+                                    />
+                                </View>
+
+                                <View style={{ marginTop: scale(20) }}>
+                                    <Button
+                                        title={t('common.cancel')}
+                                        onPress={() => setShowPaymentMethodModal(false)}
+                                        disabled={paying}
+                                        variant="outline"
+                                        style={{ width: '100%' }}
+                                    />
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        </>
     );
 };
 

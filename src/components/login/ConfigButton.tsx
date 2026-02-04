@@ -1,15 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Alert } from '../../utils/alert';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useServerConfig } from '../../hooks/useServerConfig';
+import { Alert } from '../../utils/alert';
+import { scale, scaleFont } from '../../utils/responsive';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
 import { NumericKeypad } from '../ui/NumericKeypad';
-import { scale, scaleFont } from '../../utils/responsive';
-import { useRouter } from 'expo-router';
 
 // Senhas de acesso
 const DEFAULT_PASSWORD = '123456'; // Senha padrão - permite modificar apenas IP
@@ -24,7 +24,7 @@ export const ConfigButton: React.FC = () => {
   const [code, setCode] = useState('');
   const [accessLevel, setAccessLevel] = useState<AccessLevel>('none');
   const { config, updateConfig } = useServerConfig();
-  
+
   // Extrair IP e porta da URL atual
   const parseUrl = (url: string) => {
     try {
@@ -51,12 +51,12 @@ export const ConfigButton: React.FC = () => {
 
   const currentUrl = config.apiUrlLocal || config.apiUrl || 'http://146.190.123.175:5001';
   const { ip: currentIp, port: currentPort } = parseUrl(currentUrl);
-  
+
   const [serverIp, setServerIp] = useState(currentIp);
   const [serverPort, setServerPort] = useState(currentPort);
   const [attendanceMethod, setAttendanceMethod] = useState('local'); // Exemplo: 'local' ou 'cloud'
   const [paymentMethod, setPaymentMethod] = useState('local'); // Exemplo: 'local' ou 'cloud'
-  
+
   const { colors } = useTheme();
 
   const styles = useMemo(
@@ -160,7 +160,7 @@ export const ConfigButton: React.FC = () => {
     if (code.length < 6) {
       const newCode = code + number;
       setCode(newCode);
-      
+
       // Se chegou a 6 dígitos, valida automaticamente
       if (newCode.length === 6) {
         setTimeout(() => {
@@ -180,7 +180,7 @@ export const ConfigButton: React.FC = () => {
     }
 
     let level: AccessLevel = 'none';
-    
+
     if (code === DEFAULT_PASSWORD) {
       level = 'default';
     } else if (code === MASTER_PASSWORD) {
@@ -194,19 +194,19 @@ export const ConfigButton: React.FC = () => {
     // Fecha o modal de código primeiro
     setShowCodeModal(false);
     setCode('');
-    
+
     // Se for senha master, navega para a tela de configurações completa
     if (level === 'master') {
       router.push('/(tabs)/settings');
       return;
     }
-    
+
     // Se for senha padrão, abre o modal simples para modificar apenas IP
     setAccessLevel(level);
     const { ip, port } = parseUrl(currentUrl);
     setServerIp(ip);
     setServerPort(port);
-    
+
     setTimeout(() => {
       setShowConfigModal(true);
     }, 100);
@@ -215,7 +215,7 @@ export const ConfigButton: React.FC = () => {
   const handleSaveConfig = async () => {
     // Constrói a URL com IP e porta
     const newUrl = `http://${serverIp}:${serverPort}`;
-    
+
     const success = await updateConfig({
       ...config,
       apiUrl: newUrl, // No mobile, usa a URL local como principal
@@ -282,7 +282,7 @@ export const ConfigButton: React.FC = () => {
         setAccessLevel('none');
       }}>
         <Text style={styles.modalTitle}>Configuração do Servidor</Text>
-        
+
         {/* Campo IP - sempre visível com senha padrão ou master */}
         <Input
           label="IP do Servidor"
@@ -291,7 +291,7 @@ export const ConfigButton: React.FC = () => {
           placeholder="146.190.123.175"
           editable={accessLevel !== 'none'}
         />
-        
+
         {/* Campo Porta - apenas com senha master */}
         {accessLevel === 'master' && (
           <Input
@@ -302,7 +302,7 @@ export const ConfigButton: React.FC = () => {
             keyboardType="numeric"
           />
         )}
-        
+
         {/* Método de Atendimento - apenas com senha master */}
         {accessLevel === 'master' && (
           <View style={styles.methodContainer}>
@@ -343,7 +343,7 @@ export const ConfigButton: React.FC = () => {
             </View>
           </View>
         )}
-        
+
         {/* Método de Recebimento - apenas com senha master */}
         {accessLevel === 'master' && (
           <View style={styles.methodContainer}>
@@ -384,15 +384,15 @@ export const ConfigButton: React.FC = () => {
             </View>
           </View>
         )}
-        
+
         <Text style={styles.helpText}>
-          {accessLevel === 'default' 
+          {accessLevel === 'default'
             ? 'Senha padrão: apenas IP pode ser modificado'
             : accessLevel === 'master'
-            ? 'Senha master: IP, porta e métodos podem ser modificados'
-            : ''}
+              ? 'Senha master: IP, porta e métodos podem ser modificados'
+              : ''}
         </Text>
-        
+
         <View style={styles.modalButtons}>
           <Button
             title="Cancelar"

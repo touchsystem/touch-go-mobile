@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
 import i18n, { i18n as I18nType, TFunction } from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import { initReactI18next, setI18n } from 'react-i18next';
 
 // Import translations
 import en from './locales/en';
@@ -36,9 +36,13 @@ export type I18n = I18nType & {
     t: TFunction;
 };
 
-let i18nInstance: I18n | null = null;
+/** True when running in Node/SSR (expo-router web) where AsyncStorage/localStorage is not available. */
+const isServerOrSSR = typeof window === 'undefined';
 
 export const getLanguage = async (): Promise<LanguageCode> => {
+    if (isServerOrSSR) {
+        return 'pt'; // Default during SSR; client will re-run and load saved language
+    }
     try {
         const savedLanguage = await AsyncStorage.getItem('user-language') as LanguageCode | null;
         if (savedLanguage && LANG_CODES.includes(savedLanguage)) {
@@ -46,8 +50,36 @@ export const getLanguage = async (): Promise<LanguageCode> => {
         }
 
         // Get device language without region code
-        const deviceLanguage = Localization.locale.split('-')[0] as LanguageCode;
-        return LANG_CODES.includes(deviceLanguage) ? deviceLanguage : 'pt';
+        // Safely get locale - it might be undefined in some environments (e.g., POS devices)
+        let locale: string | undefined;
+        try {
+            locale = Localization.locale;
+        } catch (e) {
+            // locale might not be available in some environments
+        }
+
+        // If locale is not available, try getLocales() as fallback
+        if (!locale || typeof locale !== 'string') {
+            try {
+                const locales = Localization.getLocales();
+                if (locales && locales.length > 0 && locales[0].languageCode) {
+                    locale = locales[0].languageCode;
+                }
+            } catch (e) {
+                // getLocales might also fail
+            }
+        }
+
+        // Extract language code from locale (e.g., 'pt-BR' -> 'pt')
+        if (locale && typeof locale === 'string' && locale.length > 0) {
+            const deviceLanguage = locale.split('-')[0].toLowerCase() as LanguageCode;
+            if (LANG_CODES.includes(deviceLanguage)) {
+                return deviceLanguage;
+            }
+        }
+
+        // Fallback to default if locale is not available or not supported
+        return 'pt';
     } catch (error) {
         console.error('Error getting language:', error);
         return 'pt'; // Default to Portuguese
@@ -55,15 +87,20 @@ export const getLanguage = async (): Promise<LanguageCode> => {
 };
 
 export const setLanguage = async (language: string): Promise<boolean> => {
-    try {
-        if (!LANG_CODES.includes(language as LanguageCode)) {
-            return false;
+    if (!LANG_CODES.includes(language as LanguageCode)) {
+        return false;
+    }
+    if (isServerOrSSR) {
+        if (i18n.isInitialized) {
+            await i18n.changeLanguage(language);
         }
-
+        return true;
+    }
+    try {
         await AsyncStorage.setItem('user-language', language);
 
-        if (i18nInstance) {
-            await i18nInstance.changeLanguage(language);
+        if (i18n.isInitialized) {
+            await i18n.changeLanguage(language);
         }
 
         return true;
@@ -73,32 +110,32 @@ export const setLanguage = async (language: string): Promise<boolean> => {
     }
 };
 
-// Initialize i18n
+const I18N_BASE_OPTIONS = {
+    resources: LANGUAGES,
+    fallbackLng: 'pt',
+    interpolation: { escapeValue: false },
+    // @ts-ignore - compatibilityJSON is a valid option for react-native-i18next
+    compatibilityJSON: 'v3',
+} as const;
+
+// Initialize i18n (use the default/global instance so useTranslation() finds it)
 export const initI18n = async (): Promise<I18n> => {
-    if (i18nInstance) {
-        return i18nInstance;
+    if (i18n.isInitialized) {
+        const language = await getLanguage();
+        if (i18n.language !== language) {
+            await i18n.changeLanguage(language);
+        }
+        return i18n as I18n;
     }
 
     const language = await getLanguage();
 
-    // Create a new i18n instance with proper typing
-    const instance = i18n.createInstance({
-        resources: LANGUAGES,
-        lng: language as string, // Explicitly cast to string
-        fallbackLng: 'pt',
-        interpolation: {
-            escapeValue: false, // React already escapes values
-        },
-        // @ts-ignore - compatibilityJSON is a valid option for react-native-i18next
-        compatibilityJSON: 'v3', // For Android compatibility
+    await i18n.use(initReactI18next).init({
+        ...I18N_BASE_OPTIONS,
+        lng: language as string,
     });
 
-    await instance.use(initReactI18next).init();
-
-    i18nInstance = instance as I18n;
-    i18nInstance.t = instance.t.bind(instance);
-
-    return i18nInstance;
+    return i18n as I18n;
 };
 
 export const getAvailableLanguages = (): Array<{ code: string; name: string }> => {
@@ -109,9 +146,17 @@ export const getAvailableLanguages = (): Array<{ code: string; name: string }> =
     ];
 };
 
-// Initialize i18n when this module is imported
+// Register the global instance immediately so useTranslation() / getI18n() find it
+// on first render (SSR). init() is async; setI18n() avoids NO_I18NEXT_INSTANCE warning.
+setI18n(i18n);
+
+// Init with default 'pt'; async initI18n() will then update language from storage/device.
+i18n.use(initReactI18next).init({
+    ...I18N_BASE_OPTIONS,
+    lng: 'pt',
+});
+
 const i18nPromise = initI18n();
 
-// Export the i18n instance
 export { i18n };
 export default i18n;

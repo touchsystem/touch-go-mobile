@@ -49,7 +49,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "./plugins/with-pagseguro-queries.js"
     ],
     "experiments": {
       "typedRoutes": true,

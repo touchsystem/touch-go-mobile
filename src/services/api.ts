@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { storage, storageKeys } from './storage';
 import { handleTokenExpiration } from './auth-manager';
+import { storage, storageKeys } from './storage';
 
 const getBaseURL = async (): Promise<string> => {
   const config = await storage.getItem<{ apiUrl: string; apiUrlLocal?: string }>(storageKeys.SERVER_CONFIG);
@@ -30,7 +30,7 @@ axiosInstance.interceptors.request.use(
     if (token) {
       // Remove espaços e quebras de linha do token
       const cleanToken = token.trim();
-      
+
       // Valida se o token tem formato válido (JWT tem 3 partes separadas por ponto)
       const tokenParts = cleanToken.split('.');
       if (tokenParts.length === 3 && cleanToken.length > 0) {
@@ -84,15 +84,15 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       const msg = error.response.data?.erro?.toLowerCase() || '';
       const errorMessage = error.message?.toLowerCase() || '';
-      
+
       // Verifica se é erro relacionado a token inválido/expirado
-      const isTokenError = 
-        msg.includes('token is expired') || 
-        msg.includes('token inválido') || 
+      const isTokenError =
+        msg.includes('token is expired') ||
+        msg.includes('token inválido') ||
         msg.includes('token expirado') ||
         msg.includes('invalid token') ||
         errorMessage.includes('token') && (errorMessage.includes('invalid') || errorMessage.includes('expired') || errorMessage.includes('segments'));
-      
+
       if (isTokenError) {
         // Chama a função de logout que atualiza o estado e redireciona
         await handleTokenExpiration();
