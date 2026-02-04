@@ -14,27 +14,27 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [currentLanguage, setCurrentLanguage] = useState('pt');
-    const [isReady, setIsReady] = useState(false);
     const { t: i18nT, i18n } = useTranslation();
 
-    // Initialize language and i18n
+    // i18n já está inicializado com 'pt' no carregamento do módulo (i18n.ts).
+    // Só restaura o idioma salvo em background – não bloqueia a árvore (evita travar no splash).
     useEffect(() => {
-        const initialize = async () => {
+        let cancelled = false;
+        const run = async () => {
             try {
-                // Initialize i18n if not already initialized
                 await initI18n();
-
-                // Set the current language from i18n
-                const lang = i18n.language || 'pt';
-                setCurrentLanguage(lang);
+                if (!cancelled) {
+                    const lang = i18n.language || 'pt';
+                    setCurrentLanguage(lang);
+                }
             } catch (error) {
                 console.error('Error initializing language:', error);
-            } finally {
-                setIsReady(true);
             }
         };
-
-        initialize();
+        run();
+        return () => {
+            cancelled = true;
+        };
     }, [i18n]);
 
     const changeLanguage = async (language: string): Promise<boolean> => {
@@ -54,10 +54,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return i18nT(key, options) as string;
     };
 
-    if (!isReady) {
-        return null; // Or a loading indicator
-    }
-
     return (
         <LanguageContext.Provider
             value={{
@@ -65,7 +61,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 availableLanguages: getAvailableLanguages(),
                 changeLanguage,
                 t,
-                isRTL: false, // Set to true for RTL languages if needed
+                isRTL: false,
             }}
         >
             {children}

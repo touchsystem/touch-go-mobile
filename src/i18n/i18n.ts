@@ -39,50 +39,64 @@ export type I18n = I18nType & {
 /** True when running in Node/SSR (expo-router web) where AsyncStorage/localStorage is not available. */
 const isServerOrSSR = typeof window === 'undefined';
 
+const GET_LANGUAGE_TIMEOUT_MS = 5000;
+
 export const getLanguage = async (): Promise<LanguageCode> => {
     if (isServerOrSSR) {
         return 'pt'; // Default during SSR; client will re-run and load saved language
     }
-    try {
-        const savedLanguage = await AsyncStorage.getItem('user-language') as LanguageCode | null;
-        if (savedLanguage && LANG_CODES.includes(savedLanguage)) {
-            return savedLanguage;
-        }
 
-        // Get device language without region code
-        // Safely get locale - it might be undefined in some environments (e.g., POS devices)
-        let locale: string | undefined;
+    const run = async (): Promise<LanguageCode> => {
         try {
-            locale = Localization.locale;
-        } catch (e) {
-            // locale might not be available in some environments
-        }
+            const savedLanguage = await AsyncStorage.getItem('user-language') as LanguageCode | null;
+            if (savedLanguage && LANG_CODES.includes(savedLanguage)) {
+                return savedLanguage;
+            }
 
-        // If locale is not available, try getLocales() as fallback
-        if (!locale || typeof locale !== 'string') {
+            let locale: string | undefined;
             try {
-                const locales = Localization.getLocales();
-                if (locales && locales.length > 0 && locales[0].languageCode) {
-                    locale = locales[0].languageCode;
-                }
+                locale = Localization.locale;
             } catch (e) {
-                // getLocales might also fail
+                // locale might not be available in some environments (e.g., POS)
             }
-        }
 
-        // Extract language code from locale (e.g., 'pt-BR' -> 'pt')
-        if (locale && typeof locale === 'string' && locale.length > 0) {
-            const deviceLanguage = locale.split('-')[0].toLowerCase() as LanguageCode;
-            if (LANG_CODES.includes(deviceLanguage)) {
-                return deviceLanguage;
+            if (!locale || typeof locale !== 'string') {
+                try {
+                    const locales = Localization.getLocales();
+                    if (locales && locales.length > 0 && locales[0].languageCode) {
+                        locale = locales[0].languageCode;
+                    }
+                } catch (e) {
+                    // getLocales might also fail
+                }
             }
-        }
 
-        // Fallback to default if locale is not available or not supported
+            if (locale && typeof locale === 'string' && locale.length > 0) {
+                const deviceLanguage = locale.split('-')[0].toLowerCase() as LanguageCode;
+                if (LANG_CODES.includes(deviceLanguage)) {
+                    return deviceLanguage;
+                }
+            }
+
+            return 'pt';
+        } catch (error) {
+            console.error('Error getting language:', error);
+            return 'pt';
+        }
+    };
+
+    try {
+        return await Promise.race([
+            run(),
+            new Promise<LanguageCode>((resolve) =>
+                setTimeout(() => {
+                    console.warn('[i18n] getLanguage timeout, using pt');
+                    resolve('pt');
+                }, GET_LANGUAGE_TIMEOUT_MS)
+            ),
+        ]);
+    } catch {
         return 'pt';
-    } catch (error) {
-        console.error('Error getting language:', error);
-        return 'pt'; // Default to Portuguese
     }
 };
 
