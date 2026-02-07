@@ -84,7 +84,7 @@ Para o touch-go-mobile, a **Opção A** é a mais direta: um módulo nativo no `
 | Item | Caminho |
 |------|--------|
 | Helper PlugPag (singleton) | `android/.../PagSeguroHelper.java` |
-| Módulo nativo | `android/.../PagSeguroSmart2Module.java` (initialize, pay, refund, isAvailable) |
+| Módulo nativo | `android/.../PagSeguroSmart2Module.java` (initialize, pay, refund, isAvailable, **print**) |
 | Package | `android/.../PagSeguroSmart2Package.java` |
 | Registro | `MainApplication.kt` → `add(PagSeguroSmart2Package())` |
 | Permissão | `AndroidManifest.xml` → `MANAGE_PAYMENTS` |
@@ -110,6 +110,8 @@ Bridge em `src/utils/pagseguroSmart2.ts`:
 - **payWithSmart2(amountInCents, reference, paymentType?, installments?)** – pagar (CREDITO | DEBITO | PIX).
 - **refundSmart2(transactionId, amountInCents)** – estorno (ainda stub no nativo).
 - **isSmart2Available()** – verifica se o serviço está disponível.
+- **printOnSmart2(text)** – imprime texto na **impressora térmica da Smart2** (a mesma do pagamento). Requer implementação no módulo nativo com TerminalLib/PlugPagPrinterData.
+- **isSmart2PrintSupported()** – verifica se o módulo nativo expõe o método de impressão.
 
 Exemplo de uso na tela de pagamento:
 
@@ -134,6 +136,29 @@ if (result.success) {
 ```
 
 Se o repositório Maven do SDK não resolver no build, use o mesmo repositório do projeto que já funciona (docs/App, docs/pagamento) em `android/build.gradle`.
+
+---
+
+## 6.1. Impressão na impressora térmica da Smart2
+
+A **impressora térmica da Smart2** (a mesma do pagamento) pode ser usada para imprimir a conta/recibo. O serviço **TerminalLib** no Smart2 fornece impressão livre; a classe **PlugPagPrinterData** do SDK representa os dados da impressão.
+
+**No módulo nativo Android (PagSeguroSmart2Module):**
+
+- Expor um método `print(String text)` que converte o texto em imagem (PNG), chama `plugPag.printFromFile(PlugPagPrinterData)` e retorna o resultado para o JS. **Código completo (Java) e passo a passo:** ver **[docs/SMART2-PRINT-NATIVE.md](SMART2-PRINT-NATIVE.md)**.
+
+**Teste de impressão no app:**
+
+- Em **Configurações** (Settings), na seção **Smart2 / Impressora térmica**, use o botão **Imprimir teste na Smart2**. Ele envia um texto fixo para `printOnSmart2()`. Assim você confere: (1) se o módulo está carregado; (2) se a impressão está implementada no nativo; (3) a mensagem de retorno do SDK. Quando o método `print()` estiver implementado no Android, o teste deve imprimir na térmica.
+
+**No app (já implementado):**
+
+- Em **ViewBillModal**, ao tocar em **Imprimir**: se `isSmart2PrintSupported()` for verdadeiro, o app monta o texto da conta (mesa, itens, total) com `buildBillTextForThermal()` e chama `printOnSmart2(text)`. Em seguida chama o backend `imprimir-conta` para registrar a impressão no servidor.
+- Se o módulo nativo não implementar `print`, `isSmart2PrintSupported()` retorna false e o app continua apenas com a impressão no servidor (comportamento anterior).
+
+Consulte a documentação PagBank (developer.pagbank.com.br) e o repositório PlugPagServiceWrapper para a assinatura exata da impressão (PlugPagPrinterData, método de envio ao terminal).
+
+**Alternativa para usar já hoje (sem alterar o módulo nativo):** o app usa a lib **react-native-pagseguro-plugpag**, que imprime por **arquivo de imagem** (PNG) na térmica da Smart2. Foi adicionada a dependência `react-native-pagseguro-plugpag` e `react-native-view-shot`. Ao tocar em **Imprimir**, se o módulo custom não tiver `print(text)`, o app captura o recibo em imagem e chama `PagseguroPlugpag.print(filePath)`. Para ativar: `npm install` e `npx expo prebuild -p android` (ou build Android com o plugin da lib). O plugin já está em `app.json`.
 
 ---
 
@@ -164,5 +189,6 @@ Se o repositório Maven do SDK não resolver no build, use o mesmo repositório 
 - [x] Bridge em `src/utils/pagseguroSmart2.ts` com initialize, pay (tipo + parcelas), refund, isAvailable.
 - [ ] Chamar `initializeSmart2(token)` ao ter o código PagSeguro (ex.: configurações do estabelecimento).
 - [ ] Na tela de pagamento, chamar `payWithSmart2(amountInCents, reference, paymentType, installments)` e tratar sucesso/erro.
+- [ ] **Impressão térmica:** no módulo nativo Android, implementar `print(String text)` usando TerminalLib/PlugPagPrinterData; no app, o botão Imprimir já usa `printOnSmart2()` quando disponível.
 
 Com isso, você tem o caminho claro para colocar o pagamento no Smart 2 direto nas maquinas, via SDK em Java/Android e uso a partir do touch-go-mobile.

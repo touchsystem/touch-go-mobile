@@ -1,6 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 
-const { PagSeguroSmart2 } = NativeModules;
+const { PagSeguroSmart2, Smart2Print, PagseguroPlugpag } = NativeModules;
 
 export type PagSeguroPaymentType = 'CREDITO' | 'DEBITO' | 'PIX';
 
@@ -32,6 +32,8 @@ export interface NativePagSeguroSmart2 {
   ): Promise<PagSeguroPayResult>;
   refund(transactionId: string, amountInCents: number): Promise<void>;
   isAvailable(): Promise<boolean>;
+  /** Imprime texto na impressora térmica da Smart2 (TerminalLib). Opcional no módulo nativo. */
+  print?(text: string): Promise<{ success: boolean; message?: string }>;
 }
 
 /**
@@ -223,10 +225,121 @@ export function isPagSeguroModuleLoaded(): boolean {
   return nativePagSeguro !== null;
 }
 
+/**
+ * Módulo Smart2Print: impressão térmica na Smart2 (injetado pelo plugin with-smart2-print).
+ * Usado quando PagSeguroSmart2 não implementa print(text).
+ */
+const nativeSmart2Print =
+  Platform.OS === 'android' && Smart2Print && typeof Smart2Print.print === 'function'
+    ? Smart2Print
+    : null;
+
+/**
+ * Imprime texto na impressora térmica da Smart2 (a mesma do pagamento).
+ * Usa PagSeguroSmart2.print se existir; senão usa o módulo Smart2Print (plugin with-smart2-print).
+ * Se nenhum estiver disponível, retorna success: false (permite fallback para impressão no servidor).
+ *
+ * @param text Conteúdo em texto puro, com quebras de linha (\n). Ideal ~32 caracteres por linha para térmica.
+ */
+export async function printOnSmart2(text: string): Promise<{ success: boolean; message?: string }> {
+  if (typeof nativePagSeguro?.print === 'function') {
+    try {
+      return await nativePagSeguro.print!(text);
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      return {
+        success: false,
+        message: err?.message ?? String(e),
+      };
+    }
+  }
+  if (nativeSmart2Print) {
+    try {
+      return await nativeSmart2Print.print(text);
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      return {
+        success: false,
+        message: err?.message ?? String(e),
+      };
+    }
+  }
+  return {
+    success: false,
+    message:
+      nativePagSeguro && !nativeSmart2Print
+        ? 'Impressão na Smart2 não implementada no módulo nativo'
+        : 'PagSeguro Smart 2 não disponível',
+  };
+}
+
+/** Verifica se o módulo nativo suporta impressão na térmica da Smart2 (texto). */
+export function isSmart2PrintSupported(): boolean {
+  return typeof nativePagSeguro?.print === 'function' || nativeSmart2Print !== null;
+}
+
+/**
+ * Imprime na Smart2 usando arquivo de imagem (PNG/JPEG).
+ * Usa o módulo PagseguroPlugpag quando disponível (react-native-pagseguro-plugpag).
+ * Útil quando o módulo custom não implementa print(text).
+ *
+ * @param filePath Caminho do arquivo de imagem (ex.: retorno de captureRef com result: 'tmpfile')
+ */
+export async function printOnSmart2FromFile(
+  filePath: string
+): Promise<{ success: boolean; message?: string }> {
+  const path = filePath?.replace?.('file://', '') ?? filePath;
+  if (!path) {
+    return { success: false, message: 'Caminho do arquivo inválido' };
+  }
+  const plugpag = Platform.OS === 'android' ? PagseguroPlugpag : null;
+  if (!plugpag || typeof plugpag.print !== 'function') {
+    return {
+      success: false,
+      message: 'Módulo de impressão PlugPag não disponível. Rode prebuild e use build Android.',
+    };
+  }
+  try {
+    const response = await plugpag.print(path);
+    const retCode = response?.retCode ?? response?.result;
+    if (retCode === 0 || retCode === '0') {
+      return { success: true };
+    }
+    return {
+      success: false,
+      message: response?.message ?? 'Erro ao imprimir',
+    };
+  } catch (e: unknown) {
+    const err = e as { message?: string };
+    return {
+      success: false,
+      message: err?.message ?? String(e),
+    };
+  }
+}
+
+/** Verifica se é possível imprimir por arquivo (lib react-native-pagseguro-plugpag). */
+export function isPlugPagPrintFromFileAvailable(): boolean {
+  return (
+    Platform.OS === 'android' &&
+    typeof (NativeModules.PagseguroPlugpag as any)?.print === 'function'
+  );
+}
+
+/** Retorna true se qualquer forma de impressão na Smart2 estiver disponível. */
+export function isSmart2PrintAvailable(): boolean {
+  return isSmart2PrintSupported() || isPlugPagPrintFromFileAvailable();
+}
+
 export default {
   initializeSmart2,
   payWithSmart2,
   refundSmart2,
   isSmart2Available,
   isPagSeguroModuleLoaded,
+  printOnSmart2,
+  printOnSmart2FromFile,
+  isSmart2PrintSupported,
+  isPlugPagPrintFromFileAvailable,
+  isSmart2PrintAvailable,
 };

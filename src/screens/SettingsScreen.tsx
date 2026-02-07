@@ -20,6 +20,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useServerConfig } from '../hooks/useServerConfig';
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import {
+  isPagSeguroModuleLoaded,
+  isSmart2PrintSupported,
+  printOnSmart2,
+} from '../utils/pagseguroSmart2';
 import { Alert } from '../utils/alert';
 import { scale, scaleFont } from '../utils/responsive';
 
@@ -31,6 +36,8 @@ export default function SettingsScreen() {
   const { settings, updateSetting, updateSettings, loading: settingsLoading } = useSystemSettings();
   const insets = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
+  const [printTestLoading, setPrintTestLoading] = useState(false);
+  const [printTestStatus, setPrintTestStatus] = useState<string | null>(null);
   const { t } = useTranslation();
 
   const styles = useMemo(
@@ -505,6 +512,51 @@ export default function SettingsScreen() {
             <Switch
               value={settings.emitWebenefixInvoice}
               onValueChange={(value) => updateSetting('emitWebenefixInvoice', value)}
+            />
+          </View>
+        </Card>
+
+        {/* Teste de impressão Smart2 */}
+        <Text style={styles.blockTitle}>Smart2 / Impressora térmica</Text>
+        <Card style={styles.section}>
+          <View style={{ paddingVertical: scale(8) }}>
+            <Text style={[styles.toggleLabel, { marginBottom: scale(4) }]}>
+              Módulo PagSeguro: {isPagSeguroModuleLoaded() ? 'carregado' : 'não disponível'}
+            </Text>
+            <Text style={[styles.toggleLabel, { marginBottom: scale(12) }]}>
+              Impressão térmica: {isSmart2PrintSupported() ? 'disponível' : 'não implementada no nativo'}
+            </Text>
+            {printTestStatus ? (
+              <Text style={[styles.toggleLabel, { marginBottom: scale(12), color: colors.textSecondary }]}>
+                Último teste: {printTestStatus}
+              </Text>
+            ) : null}
+            <Button
+              title={printTestLoading ? 'Imprimindo...' : 'Imprimir teste na Smart2'}
+              onPress={async () => {
+                setPrintTestLoading(true);
+                setPrintTestStatus(null);
+                const testText = [
+                  '--- TESTE SMART2 ---',
+                  '',
+                  'Data: ' + new Date().toLocaleString('pt-BR'),
+                  '',
+                  'Se esta linha saiu na',
+                  'impressora, o SDK esta OK.',
+                  '',
+                  '---------------------',
+                ].join('\n');
+                const result = await printOnSmart2(testText);
+                setPrintTestLoading(false);
+                setPrintTestStatus(result.success ? 'Sucesso' : (result.message || 'Erro'));
+                if (result.success) {
+                  Alert.alert('Teste', 'Impressão enviada. Verifique a térmica da Smart2.');
+                } else {
+                  Alert.alert('Teste de impressão', result.message || 'Falha ao imprimir.');
+                }
+              }}
+              disabled={printTestLoading || !isPagSeguroModuleLoaded()}
+              style={{ backgroundColor: '#5856D6', marginTop: scale(8) }}
             />
           </View>
         </Card>

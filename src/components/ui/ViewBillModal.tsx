@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Modal,
@@ -17,7 +17,13 @@ import api from '../../services/api';
 import { storage, storageKeys } from '../../services/storage';
 import { Alert } from '../../utils/alert';
 import { formatCurrency } from '../../utils/format';
-import { isPagSeguroModuleLoaded, payWithSmart2, type PagSeguroPaymentType } from '../../utils/pagseguroSmart2';
+import {
+    isPagSeguroModuleLoaded,
+    payWithSmart2,
+    printOnSmart2,
+    isSmart2PrintSupported,
+    type PagSeguroPaymentType,
+} from '../../utils/pagseguroSmart2';
 import { scale, scaleFont, scaleHeight, scaleWidth, widthPercentage } from '../../utils/responsive';
 import { Button } from './Button';
 
@@ -97,7 +103,21 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         try {
             setPrinting(true);
 
-            // Busca o nick salvo no storage ou usa o nick do usuário logado
+            // 1) Se o módulo custom tiver print(texto), imprime direto
+            if (isSmart2PrintSupported() && data?.vendas?.length) {
+                const billText = buildBillTextForThermal();
+                const smart2Result = await printOnSmart2(billText);
+                if (!smart2Result.success) {
+                    setPrinting(false);
+                    Alert.alert(
+                        t('viewBill.error'),
+                        smart2Result.message || t('viewBill.errorLoadingBill')
+                    );
+                    return;
+                }
+            }
+
+            // Registra impressão no backend (imprimir-conta) e opcionalmente imprime na impressora do servidor
             let nickToUse = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
             if (!nickToUse) {
                 nickToUse = user?.nick || '';
@@ -464,6 +484,29 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         if (!data?.vendas || data.vendas.length === 0) return 0;
         return data.vendas.reduce((sum, item) => sum + calculateItemTotal(item), 0);
     }, [data?.vendas]);
+
+    /** Monta o texto da conta para impressão térmica na Smart2 (~32 caracteres de largura). */
+    const buildBillTextForThermal = useCallback((): string => {
+        if (!data?.vendas?.length) return '';
+        const W = 32;
+        const line = (s: string) => s + '\n';
+        let out = '';
+        out += line('   ' + t('viewBill.table') + ' - ' + mesaCartao);
+        out += line('-'.repeat(W));
+        for (const item of data.vendas) {
+            const itemTotal = calculateItemTotal(item);
+            const nome = (item.produto || '').slice(0, 18);
+            const qtd = String(item.qtd ?? 1);
+            const valorStr = formatCurrency(itemTotal).replace(/\s/g, '');
+            const restante = W - nome.length - qtd.length - valorStr.length - 4; // " x  " entre qtd e valor
+            const espaco = restante > 0 ? ' '.repeat(restante) : ' ';
+            out += line(nome + ' x' + qtd + espaco + valorStr);
+        }
+        out += line('-'.repeat(W));
+        out += line('TOTAL: ' + formatCurrency(total));
+        out += line('');
+        return out;
+    }, [data?.vendas, mesaCartao, total, calculateItemTotal, formatCurrency, t]);
 
     return (
         <>
