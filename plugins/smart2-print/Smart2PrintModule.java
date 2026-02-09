@@ -2,6 +2,7 @@ package com.touchgo.mobile;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Environment;
@@ -30,10 +31,12 @@ import br.com.uol.pagseguro.plugpagservice.wrapper.PlugPagPrinterData;
  */
 public class Smart2PrintModule extends ReactContextBaseJavaModule {
 
-    private static final int PRINT_WIDTH_PX = 384;
+    // Largura útil da bobina 58mm. Conteúdo escalado para usar toda a largura; margens laterais mínimas.
+    private static final int PRINT_WIDTH_PX = 448;
     private static final int FONT_SIZE_PX = 24;
-    private static final int LINE_SPACING_PX = 8;
-    private static final int PADDING_PX = 16;
+    private static final int HEADER_FONT_SIZE_PX = 32;  // Fonte maior para a linha "Mesa - X"
+    private static final int LINE_SPACING_PX = 12;
+    private static final int PADDING_PX = 2;  // Margem lateral mínima para aproveitar o papel
 
     public Smart2PrintModule(ReactApplicationContext context) {
         super(context);
@@ -52,26 +55,66 @@ public class Smart2PrintModule extends ReactContextBaseJavaModule {
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(0xFF000000);
-        paint.setTextSize(FONT_SIZE_PX);
         paint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
+        paint.setFakeBoldText(true);  // Traço mais grosso = mais escuro no papel térmico
+
+        Paint headerPaint = new Paint(paint);
+        headerPaint.setTextSize(HEADER_FONT_SIZE_PX);
+
+        paint.setTextSize(FONT_SIZE_PX);
+
+        // Medir a largura real (linha 0 com fonte maior, demais com fonte normal)
+        float maxLineWidth = 0;
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            if (line != null && !line.isEmpty()) {
+                float w = (i == 0) ? headerPaint.measureText(line) : paint.measureText(line);
+                if (w > maxLineWidth) maxLineWidth = w;
+            }
+        }
+        if (maxLineWidth <= 0) return null;
 
         int lineHeight = FONT_SIZE_PX + LINE_SPACING_PX;
-        int bitmapHeight = PADDING_PX * 2 + lines.length * lineHeight;
-        Bitmap bitmap = Bitmap.createBitmap(PRINT_WIDTH_PX, bitmapHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(0xFFFFFFFF);
+        int headerLineHeight = HEADER_FONT_SIZE_PX + LINE_SPACING_PX;
+        int contentHeight = PADDING_PX * 2 + (lines.length > 0 ? headerLineHeight : 0) + (lines.length > 1 ? (lines.length - 1) * lineHeight : 0);
+        int contentWidth = (int) Math.ceil(maxLineWidth) + PADDING_PX * 2;
 
-        float y = PADDING_PX + FONT_SIZE_PX;
-        for (String line : lines) {
+        // Desenhar em bitmap do tamanho do conteúdo (primeira linha = Mesa com fonte maior)
+        Bitmap contentBitmap = Bitmap.createBitmap(contentWidth, contentHeight, Bitmap.Config.ARGB_8888);
+        Canvas contentCanvas = new Canvas(contentBitmap);
+        contentCanvas.drawColor(0xFFFFFFFF);
+
+        float y = PADDING_PX + HEADER_FONT_SIZE_PX;
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
             if (line != null && !line.isEmpty()) {
-                canvas.drawText(line, PADDING_PX, y, paint);
+                if (i == 0) {
+                    contentCanvas.drawText(line, PADDING_PX, y, headerPaint);
+                    y += headerLineHeight;
+                } else {
+                    contentCanvas.drawText(line, PADDING_PX, y, paint);
+                    y += lineHeight;
+                }
+            } else {
+                y += (i == 0) ? headerLineHeight : lineHeight;
             }
-            y += lineHeight;
         }
 
+        // Escalar para usar toda a largura do papel: evita corte e aproveita o espaço
+        float scale = (float) PRINT_WIDTH_PX / contentWidth;
+        int outWidth = PRINT_WIDTH_PX;
+        int outHeight = (int) Math.ceil(contentHeight * scale);
+        Bitmap outBitmap = Bitmap.createBitmap(outWidth, outHeight, Bitmap.Config.ARGB_8888);
+        Canvas outCanvas = new Canvas(outBitmap);
+        outCanvas.drawColor(0xFFFFFFFF);
+        Matrix matrix = new Matrix();
+        matrix.setScale(scale, scale);
+        outCanvas.setMatrix(matrix);
+        outCanvas.drawBitmap(contentBitmap, 0, 0, new Paint(Paint.FILTER_BITMAP_FLAG));
+        outCanvas.setMatrix(new Matrix());
+        contentBitmap.recycle();
+
         // O PlugPag TerminalLib roda em outro processo e não acessa o cache privado do app.
-        // Android 11+ bloqueia criação de pastas customizadas na raiz (/sdcard/smart2_print).
-        // Usar Download/smart2_print (dentro de diretório público padrão).
         File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         File dir = new File(downloadsDir, "smart2_print");
         if (!dir.exists()) {
@@ -79,13 +122,13 @@ public class Smart2PrintModule extends ReactContextBaseJavaModule {
         }
         File file = new File(dir, "smart2_print_" + System.currentTimeMillis() + ".png");
         try (FileOutputStream fos = new FileOutputStream(file)) {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            outBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
             return file.getAbsolutePath();
         } catch (IOException e) {
             Log.e("Smart2Print", "Erro ao gerar PNG para impressão", e);
             return null;
         } finally {
-            bitmap.recycle();
+            outBitmap.recycle();
         }
     }
 

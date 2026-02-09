@@ -54,8 +54,17 @@ interface Venda {
     totalItem?: number;
 }
 
+interface Antecipacao {
+    tipo_rec_nome?: string;
+    vl_moeda_prin: number;
+    cambio?: number;
+    ft_conv?: string;
+}
+
 interface BillData {
     vendas: Venda[];
+    taxa_servico?: number;
+    antecipacoes?: Antecipacao[];
     mesa?: {
         mesa_numero: number;
         qtd_pessoas?: number;
@@ -485,28 +494,65 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         return data.vendas.reduce((sum, item) => sum + calculateItemTotal(item), 0);
     }, [data?.vendas]);
 
-    /** Monta o texto da conta para impressão térmica na Smart2 (~32 caracteres de largura). */
+    /** Monta o texto da conta para impressão térmica na Smart2. Largura 40 para caber na bobina com fonte 18px; o módulo nativo escala para usar toda a largura do papel. */
     const buildBillTextForThermal = useCallback((): string => {
         if (!data?.vendas?.length) return '';
-        const W = 32;
+        const W = 40;
         const line = (s: string) => s + '\n';
+        const padNum = (n: number, width: number): string => {
+            const s = n.toFixed(2).replace('.', ',');
+            return s.length >= width ? s.slice(-width) : ' '.repeat(width - s.length) + s;
+        };
         let out = '';
         out += line('   ' + t('viewBill.table') + ' - ' + mesaCartao);
         out += line('-'.repeat(W));
+        const numWidth = 8;
+        const qtyWidth = 3;
+        const nameWidth = W - qtyWidth - 1 - 1 - numWidth - numWidth;
         for (const item of data.vendas) {
             const itemTotal = calculateItemTotal(item);
-            const nome = (item.produto || '').slice(0, 18);
-            const qtd = String(item.qtd ?? 1);
-            const valorStr = formatCurrency(itemTotal).replace(/\s/g, '');
-            const restante = W - nome.length - qtd.length - valorStr.length - 4; // " x  " entre qtd e valor
-            const espaco = restante > 0 ? ' '.repeat(restante) : ' ';
-            out += line(nome + ' x' + qtd + espaco + valorStr);
+            const qtyNum = parseFraction(
+                (item as any).fractionQty ?? item.qtd ?? (item as any)._qty ?? (item as any).quantity ?? 1
+            );
+            const qtyStr = qtyNum % 1 === 0 ? String(Math.round(qtyNum)) : String(qtyNum);
+            const unitPrice = item.pv ?? (qtyNum !== 0 ? itemTotal / qtyNum : 0);
+            const nome = (item.produto || '').trim().slice(0, nameWidth);
+            const unitStr = padNum(unitPrice, numWidth);
+            const totalStr = padNum(itemTotal, numWidth);
+            out += line(
+                qtyStr.padStart(qtyWidth) + ' ' + nome.padEnd(nameWidth) + ' ' + unitStr + totalStr
+            );
         }
         out += line('-'.repeat(W));
-        out += line('TOTAL: ' + formatCurrency(total));
+        const taxaServico = Number(data.taxa_servico ?? 0);
+        const totalComTaxa = total + taxaServico;
+        const labelSoma = 'Soma :';
+        out += line(labelSoma + ' '.repeat(W - labelSoma.length - numWidth) + padNum(total, numWidth));
+        if (taxaServico > 0) {
+            const labelTaxa = 'Taxa de Serviço :';
+            out += line(labelTaxa + ' '.repeat(W - labelTaxa.length - numWidth) + padNum(taxaServico, numWidth));
+        }
+        out += line('TOTAL :' + ' '.repeat(W - 7 - numWidth) + padNum(totalComTaxa, numWidth));
+        out += line('-'.repeat(W));
+        const antecipacoes = data.antecipacoes ?? [];
+        if (antecipacoes.length > 0) {
+            out += line('RECEBIMENTOS DESCONTOS:');
+            const descWidth = W - numWidth;
+            for (const a of antecipacoes) {
+                const label = (a.tipo_rec_nome || '').trim().slice(0, descWidth);
+                out += line(label + ' '.repeat(W - label.length - numWidth) + padNum(a.vl_moeda_prin, numWidth));
+            }
+            const totalDescontos = antecipacoes.reduce((s, a) => s + a.vl_moeda_prin, 0);
+            const totalAPagar = totalComTaxa - totalDescontos;
+            const labelPagar = 'TOTAL A PAGAR:';
+            out += line(labelPagar + ' '.repeat(W - labelPagar.length - numWidth) + padNum(totalAPagar, numWidth));
+        }
+        out += line('');
+        out += line('ESTE DOCUMENTO NÃO POSSUI VALIDADE FISCAL');
+        out += line('www.EatzGo.com');
         out += line('');
         return out;
-    }, [data?.vendas, mesaCartao, total, calculateItemTotal, formatCurrency, t]);
+    }, [data?.vendas, data?.taxa_servico, data?.antecipacoes, mesaCartao, total, calculateItemTotal, parseFraction, t]);
 
     return (
         <>
