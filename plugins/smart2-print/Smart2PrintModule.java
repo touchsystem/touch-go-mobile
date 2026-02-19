@@ -31,12 +31,13 @@ import br.com.uol.pagseguro.plugpagservice.wrapper.PlugPagPrinterData;
  */
 public class Smart2PrintModule extends ReactContextBaseJavaModule {
 
-    // Largura útil da bobina 58mm. Conteúdo escalado para usar toda a largura; margens laterais mínimas.
+    // Largura útil da bobina 58mm. Render 2x (traço nítido) + downscale com filtro = mais qualidade.
     private static final int PRINT_WIDTH_PX = 448;
-    private static final int FONT_SIZE_PX = 24;
-    private static final int HEADER_FONT_SIZE_PX = 32;  // Fonte maior para a linha "Mesa - X"
-    private static final int LINE_SPACING_PX = 12;
-    private static final int PADDING_PX = 2;  // Margem lateral mínima para aproveitar o papel
+    private static final int RENDER_SCALE = 4;
+    private static final int FONT_SIZE_PX = 28;
+    private static final int HEADER_FONT_SIZE_PX = 36;
+    private static final int LINE_SPACING_PX = 22;
+    private static final int PADDING_PX = 2;
 
     public Smart2PrintModule(ReactApplicationContext context) {
         super(context);
@@ -53,17 +54,22 @@ public class Smart2PrintModule extends ReactContextBaseJavaModule {
         String[] lines = text.split("\n");
         if (lines.length == 0) return null;
 
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        // Desenho em 2x com texto nítido (sem antialiasing); depois downscale com filtro
+        int fs = FONT_SIZE_PX * RENDER_SCALE;
+        int hfs = HEADER_FONT_SIZE_PX * RENDER_SCALE;
+        int lsp = LINE_SPACING_PX * RENDER_SCALE;
+        int pad = PADDING_PX * RENDER_SCALE;
+
+        Paint paint = new Paint();
         paint.setColor(0xFF000000);
-        paint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
-        paint.setFakeBoldText(true);  // Traço mais grosso = mais escuro no papel térmico
+        paint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
+        paint.setFakeBoldText(true);
+        paint.setSubpixelText(false);
 
         Paint headerPaint = new Paint(paint);
-        headerPaint.setTextSize(HEADER_FONT_SIZE_PX);
+        headerPaint.setTextSize(hfs);
+        paint.setTextSize(fs);
 
-        paint.setTextSize(FONT_SIZE_PX);
-
-        // Medir a largura real (linha 0 com fonte maior, demais com fonte normal)
         float maxLineWidth = 0;
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
@@ -74,25 +80,28 @@ public class Smart2PrintModule extends ReactContextBaseJavaModule {
         }
         if (maxLineWidth <= 0) return null;
 
-        int lineHeight = FONT_SIZE_PX + LINE_SPACING_PX;
-        int headerLineHeight = HEADER_FONT_SIZE_PX + LINE_SPACING_PX;
-        int contentHeight = PADDING_PX * 2 + (lines.length > 0 ? headerLineHeight : 0) + (lines.length > 1 ? (lines.length - 1) * lineHeight : 0);
-        int contentWidth = (int) Math.ceil(maxLineWidth) + PADDING_PX * 2;
+        int lineHeight = fs + lsp;
+        int headerLineHeight = hfs + lsp;
+        int contentHeight = pad * 2 + (lines.length > 0 ? headerLineHeight : 0) + (lines.length > 1 ? (lines.length - 1) * lineHeight : 0);
+        int contentWidth = (int) Math.ceil(maxLineWidth) + pad * 2;
 
-        // Desenhar em bitmap do tamanho do conteúdo (primeira linha = Mesa com fonte maior)
         Bitmap contentBitmap = Bitmap.createBitmap(contentWidth, contentHeight, Bitmap.Config.ARGB_8888);
         Canvas contentCanvas = new Canvas(contentBitmap);
         contentCanvas.drawColor(0xFFFFFFFF);
 
-        float y = PADDING_PX + HEADER_FONT_SIZE_PX;
+        // Desenho duplicado com 1px de deslocamento = texto mais grosso/escuro no térmico
+        final float boldOffset = 1f;
+        float y = pad + hfs;
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (line != null && !line.isEmpty()) {
                 if (i == 0) {
-                    contentCanvas.drawText(line, PADDING_PX, y, headerPaint);
+                    contentCanvas.drawText(line, pad, y, headerPaint);
+                    contentCanvas.drawText(line, pad + boldOffset, y, headerPaint);
                     y += headerLineHeight;
                 } else {
-                    contentCanvas.drawText(line, PADDING_PX, y, paint);
+                    contentCanvas.drawText(line, pad, y, paint);
+                    contentCanvas.drawText(line, pad + boldOffset, y, paint);
                     y += lineHeight;
                 }
             } else {
@@ -100,7 +109,7 @@ public class Smart2PrintModule extends ReactContextBaseJavaModule {
             }
         }
 
-        // Escalar para usar toda a largura do papel: evita corte e aproveita o espaço
+        // Downscale com filtro: mais detalhe (2x) + redução suave = melhor qualidade
         float scale = (float) PRINT_WIDTH_PX / contentWidth;
         int outWidth = PRINT_WIDTH_PX;
         int outHeight = (int) Math.ceil(contentHeight * scale);
@@ -110,7 +119,8 @@ public class Smart2PrintModule extends ReactContextBaseJavaModule {
         Matrix matrix = new Matrix();
         matrix.setScale(scale, scale);
         outCanvas.setMatrix(matrix);
-        outCanvas.drawBitmap(contentBitmap, 0, 0, new Paint(Paint.FILTER_BITMAP_FLAG));
+        Paint scalePaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+        outCanvas.drawBitmap(contentBitmap, 0, 0, scalePaint);
         outCanvas.setMatrix(new Matrix());
         contentBitmap.recycle();
 

@@ -494,7 +494,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         return data.vendas.reduce((sum, item) => sum + calculateItemTotal(item), 0);
     }, [data?.vendas]);
 
-    /** Monta o texto da conta para impressão térmica na Smart2. Largura 40 para caber na bobina com fonte 18px; o módulo nativo escala para usar toda a largura do papel. */
+    /** Monta o texto da conta para impressão térmica na Smart2. Itens principais + relacionais (ex.: PIZZA GRANDE com sabores) como no recibo. */
     const buildBillTextForThermal = useCallback((): string => {
         if (!data?.vendas?.length) return '';
         const W = 40;
@@ -509,19 +509,48 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         const numWidth = 8;
         const qtyWidth = 3;
         const nameWidth = W - qtyWidth - 1 - 1 - numWidth - numWidth;
+        const indentRel = '   ';
+        const relNameWidth = W - indentRel.length - 1 - qtyWidth - numWidth - numWidth;
+
         for (const item of data.vendas) {
-            const itemTotal = calculateItemTotal(item);
-            const qtyNum = parseFraction(
-                (item as any).fractionQty ?? item.qtd ?? (item as any)._qty ?? (item as any).quantity ?? 1
-            );
-            const qtyStr = qtyNum % 1 === 0 ? String(Math.round(qtyNum)) : String(qtyNum);
-            const unitPrice = item.pv ?? (qtyNum !== 0 ? itemTotal / qtyNum : 0);
-            const nome = (item.produto || '').trim().slice(0, nameWidth);
-            const unitStr = padNum(unitPrice, numWidth);
-            const totalStr = padNum(itemTotal, numWidth);
-            out += line(
-                qtyStr.padStart(qtyWidth) + ' ' + nome.padEnd(nameWidth) + ' ' + unitStr + totalStr
-            );
+            const relacionais =
+                (item.itens_relacionais && item.itens_relacionais.length > 0)
+                    ? item.itens_relacionais
+                    : (item.relacionados && item.relacionados.length > 0)
+                        ? item.relacionados
+                        : [];
+
+            if (relacionais.length > 0) {
+                // Item principal com relacionais: linha só com qtd e nome (sem PU/TOTAL)
+                const qtyPrincipal = (item as any).fractionQty ?? item.qtd ?? (item as any)._qty ?? (item as any).quantity ?? 1;
+                const qtyStrPrincipal = typeof qtyPrincipal === 'string' ? qtyPrincipal : (qtyPrincipal % 1 === 0 ? String(Math.round(qtyPrincipal)) : String(qtyPrincipal));
+                const nomePrincipal = (item.produto || '').trim().slice(0, nameWidth);
+                out += line((qtyStrPrincipal + ' ' + nomePrincipal).padEnd(W));
+                // Relacionais: recuo + nome + QTD + PU + TOTAL
+                for (const rel of relacionais) {
+                    const relQty = (rel as any).fractionQty ?? rel.qtd ?? (rel as any)._qty ?? (rel as any).quantity ?? 1;
+                    const relQtyStr = typeof relQty === 'string' ? relQty : (relQty % 1 === 0 ? String(Math.round(relQty)) : String(relQty));
+                    const relUnit = rel.precoVenda ?? rel.pv ?? 0;
+                    const relTotal = Number(rel.totalItem ?? relUnit * (typeof relQty === 'number' ? relQty : parseFraction(relQty)));
+                    const relNome = (rel.produto || '').trim().slice(0, relNameWidth);
+                    out += line(
+                        indentRel + relNome.padEnd(relNameWidth) + ' ' + relQtyStr.padStart(qtyWidth) + padNum(relUnit, numWidth) + padNum(relTotal, numWidth)
+                    );
+                }
+                out += line('');  // Linha em branco após o grupo para separar do próximo item
+            } else {
+                // Item sem relacionais: uma linha com qtd, nome, PU, TOTAL
+                const itemTotal = calculateItemTotal(item);
+                const qtyNum = parseFraction(
+                    (item as any).fractionQty ?? item.qtd ?? (item as any)._qty ?? (item as any).quantity ?? 1
+                );
+                const qtyStr = qtyNum % 1 === 0 ? String(Math.round(qtyNum)) : String(qtyNum);
+                const unitPrice = item.pv ?? (qtyNum !== 0 ? itemTotal / qtyNum : 0);
+                const nome = (item.produto || '').trim().slice(0, nameWidth);
+                out += line(
+                    qtyStr.padStart(qtyWidth) + ' ' + nome.padEnd(nameWidth) + ' ' + padNum(unitPrice, numWidth) + padNum(itemTotal, numWidth)
+                );
+            }
         }
         out += line('-'.repeat(W));
         const taxaServico = Number(data.taxa_servico ?? 0);
