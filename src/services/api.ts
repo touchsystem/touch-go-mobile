@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { handleTokenExpiration } from './auth-manager';
+import { getMockLoginResponse, getMockResponse, isMockUser } from './mock-api-data';
 import { storage, storageKeys } from './storage';
 
 const getBaseURL = async (): Promise<string> => {
@@ -20,11 +21,51 @@ const axiosInstance = axios.create({
   },
 });
 
-// Interceptor para atualizar baseURL dinamicamente
+// Adapter padrão do axios (para delegar quando não for mock)
+const getDefaultAdapter = () => axios.defaults.adapter;
+
+// Interceptor para atualizar baseURL dinamicamente e injetar mock só para teste@eatzgo.com
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const baseURL = await getBaseURL();
     config.baseURL = baseURL;
+
+    const isLoginRequest = (config.url ?? '').includes('login');
+    const loginEmail = isLoginRequest ? String(config.data?.email ?? '').trim().toLowerCase() : '';
+    const storedUser = await storage.getItem<{ email?: string }>(storageKeys.USER);
+    const useMockAdapter =
+      (isLoginRequest && isMockUser(loginEmail)) ||
+      (!isLoginRequest && storedUser != null && isMockUser(storedUser.email));
+
+    // Mock 100% fake: para teste@eatzgo.com NUNCA chama o servidor real (192.168.0.100 etc)
+    if (useMockAdapter) {
+      config.adapter = async (adapterConfig: InternalAxiosRequestConfig) => {
+        const urlForMock =
+          adapterConfig.baseURL && adapterConfig.url && !adapterConfig.url.startsWith('http')
+            ? `${adapterConfig.baseURL.replace(/\/$/, '')}/${adapterConfig.url.replace(/^\//, '')}`
+            : adapterConfig.url ?? '';
+        const email = isLoginRequest
+          ? String(adapterConfig.data?.email ?? '').trim().toLowerCase()
+          : (await storage.getItem<{ email?: string }>(storageKeys.USER))?.email;
+        let mock = await getMockResponse(
+          adapterConfig.method ?? 'get',
+          urlForMock,
+          adapterConfig.data,
+          email
+        );
+        // Este adapter só existe para teste@eatzgo.com; em login sem mock (ex.: email vazio em adapterConfig), devolve login fake
+        if (!mock && isLoginRequest) {
+          mock = getMockLoginResponse();
+        }
+        if (mock) {
+          return { ...mock, request: adapterConfig } as any;
+        }
+        // Em modo mock não chamar o servidor real; rejeitar se não houver mock para esta rota
+        return Promise.reject(
+          new Error('Mock não disponível para esta requisição. Use apenas fluxo mock (teste@eatzgo.com).')
+        );
+      };
+    }
 
     const token = await storage.getItem<string>(storageKeys.TOKEN);
     if (token) {
@@ -36,13 +77,18 @@ axiosInstance.interceptors.request.use(
       if (tokenParts.length === 3 && cleanToken.length > 0) {
         config.headers.Authorization = `Bearer ${cleanToken}`;
       } else {
-        // Token inválido, remove e redireciona
+        // Token inválido: em requisição de login deixa a requisição seguir (mock/relogin); senão faz logout
         console.log('[API] Token inválido detectado, removendo...');
-        await handleTokenExpiration();
-        // Retorna um erro especial que pode ser ignorado pelos componentes
-        const silentError = new Error('TOKEN_EXPIRED_SILENT');
-        (silentError as any).isTokenError = true;
-        return Promise.reject(silentError);
+        if (isLoginRequest) {
+          await storage.removeItem(storageKeys.TOKEN);
+          await storage.removeItem(storageKeys.USER);
+          // Não rejeita: segue sem Authorization para o login ser atendido (ex.: mock teste@eatzgo.com)
+        } else {
+          await handleTokenExpiration();
+          const silentError = new Error('TOKEN_EXPIRED_SILENT');
+          (silentError as any).isTokenError = true;
+          return Promise.reject(silentError);
+        }
       }
     }
 

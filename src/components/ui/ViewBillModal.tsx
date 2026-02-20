@@ -15,6 +15,7 @@ import { useTableContext } from '../../contexts/TableContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import api from '../../services/api';
 import { storage, storageKeys } from '../../services/storage';
+import { closeMesa as closeMesaSync } from '../../services/transaction-sync';
 import { Alert } from '../../utils/alert';
 import { formatCurrency } from '../../utils/format';
 import {
@@ -222,14 +223,11 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 },
             ],
         };
-        try {
-            await api.post('/caixa/fechar-mesa', requestData);
+        const result = await closeMesaSync(requestData);
+        if (result.synced) {
             updateTableStatus(mesaCartao, 'F');
-        } catch (err: any) {
-            console.error('[ViewBill] Erro ao fechar mesa no backend:', err?.response?.data ?? err);
-            (err as any).closeMesaError = err?.response?.data?.erro || err?.message;
-            throw err;
         }
+        return result;
     };
 
     const processPayment = async (paymentType: PagSeguroPaymentType) => {
@@ -242,18 +240,26 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             setPaying(true);
             console.log('[PagSeguro] Iniciando pagamento:', { amountInCents, reference, paymentType });
 
-            // Timeout de 2 minutos (120000ms) - tempo padrão do PagSeguro
+            // Timeout de 2 minutos (120000ms) - tempo padrão do PagSeguro; cartão de debug deve ser aproximado nesse tempo
             const result = await payWithSmart2(amountInCents, reference, paymentType, 1, 120000);
 
             console.log('[PagSeguro] Resultado:', result);
 
             if (result.success) {
                 try {
-                    await closeMesaOnBackend(paymentType);
-                    Alert.alert(
-                        t('common.success'),
-                        t('viewBill.paymentSuccess') || `Pagamento aprovado! ID: ${result.transactionId}`
-                    );
+                    const closeResult = await closeMesaOnBackend(paymentType);
+                    if (closeResult.synced) {
+                        Alert.alert(
+                            t('common.success'),
+                            t('viewBill.paymentSuccess') || `Pagamento aprovado! ID: ${result.transactionId}`
+                        );
+                    } else {
+                        Alert.alert(
+                            t('common.success'),
+                            (t('viewBill.paymentSuccess') || 'Pagamento aprovado!') +
+                                '\n\nDados salvos no dispositivo; a mesa será fechada no sistema quando houver conexão.'
+                        );
+                    }
                     onClose();
                     await fetchTables();
                 } catch (closeErr: any) {

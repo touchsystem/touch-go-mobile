@@ -21,8 +21,8 @@ import { useTableContext } from '../contexts/TableContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Table as TableType } from '../hooks/useTables';
-import axiosInstance from '../services/api';
 import { storage, storageKeys } from '../services/storage';
+import { submitOrder } from '../services/transaction-sync';
 import { Table } from '../types';
 import { capitalizeFirstLetter, formatCurrency } from '../utils/format';
 import { scale, scaleFont } from '../utils/responsive';
@@ -473,9 +473,16 @@ export default function OrdersScreen() {
         itens,
       };
 
-      await axiosInstance.post('/vendas', orderData);
+      const result = await submitOrder(orderData);
 
-      Alert.alert('Sucesso', 'Pedido enviado!');
+      if (result.synced) {
+        Alert.alert('Sucesso', 'Pedido enviado!');
+      } else {
+        Alert.alert(
+          'Sucesso',
+          'Pedido salvo no dispositivo e será enviado quando houver conexão.'
+        );
+      }
       clearCart();
       setSelectedTable(null);
 
@@ -641,9 +648,16 @@ export default function OrdersScreen() {
         itens,
       };
 
-      await axiosInstance.post('/vendas', orderData);
+      const result = await submitOrder(orderData);
 
-      Alert.alert('Sucesso', 'Pedido enviado!');
+      if (result.synced) {
+        Alert.alert('Sucesso', 'Pedido enviado!');
+      } else {
+        Alert.alert(
+          'Sucesso',
+          'Pedido salvo no dispositivo e será enviado quando houver conexão.'
+        );
+      }
       clearCart();
       setSelectedTable(null); // Limpa a mesa selecionada após enviar
 

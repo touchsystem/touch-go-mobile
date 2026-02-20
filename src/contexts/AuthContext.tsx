@@ -255,25 +255,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(async (): Promise<void> => {
     try {
-      await api.post('/logout').catch(() => { }); // Ignora erro se não conseguir fazer logout no servidor
+      await api.post('/logout').catch(() => { });
     } catch (error) {
       console.error('Error logging out:', error);
     } finally {
-      // Salva a configuração do servidor antes de limpar
-      const serverConfig = await storage.getItem(storageKeys.SERVER_CONFIG);
-
-      // Remove apenas dados de autenticação, mantendo a configuração do servidor
+      // Remove apenas dados de autenticação; SERVER_CONFIG não é removido
       await storage.removeItem(storageKeys.TOKEN);
       await storage.removeItem(storageKeys.USER);
       await storage.removeItem(storageKeys.EMPRESA);
       await storage.removeItem(storageKeys.TABLE);
       await storage.removeItem(storageKeys.CART);
       await storage.removeItem(storageKeys.LAST_USED_NICK);
-
-      // Restaura a configuração do servidor se existir
-      if (serverConfig) {
-        await storage.setItem(storageKeys.SERVER_CONFIG, serverConfig);
-      }
 
       setUser(null);
       console.log('[AuthContext] Logout completed, server config preserved');
