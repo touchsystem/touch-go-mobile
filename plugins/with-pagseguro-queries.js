@@ -1,4 +1,4 @@
-const { withAndroidManifest } = require('@expo/config-plugins');
+const { withAndroidManifest, AndroidConfig } = require('@expo/config-plugins');
 
 /**
  * Expo config plugin para adicionar queries Android necessárias para comunicação
@@ -83,4 +83,44 @@ const withPagSeguroQueries = (config) => {
   });
 };
 
-module.exports = withPagSeguroQueries;
+/**
+ * Adiciona um provider placeholder para evitar o aviso do manifest merger
+ * "FileSystemFileProvider@android:authorities was tagged to replace but no other declaration present".
+ * O expo-file-system usa tools:replace="android:authorities" - ao declararmos o provider no app,
+ * há algo para substituir.
+ */
+const withFileSystemProviderPlaceholder = (config) => {
+  return withAndroidManifest(config, (config) => {
+    const manifest = config.modResults.manifest;
+    if (!manifest?.application) return config;
+
+    const mainApp = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults);
+    const providers = mainApp.provider || [];
+    const providerList = Array.isArray(providers) ? providers : [providers];
+    const hasFileSystemProvider = providerList.some(
+      (p) => p.$?.['android:name']?.includes('FileSystemFileProvider') || p.$?.['android:name'] === 'expo.modules.filesystem.FileSystemFileProvider'
+    );
+    if (hasFileSystemProvider) return config;
+
+    // O expo-file-system declara .FileSystemFileProvider com authorities="${applicationId}.FileSystemFileProvider"
+    // Adicionar um provider com authorities que será substituído pelo expo-file-system
+    providerList.push({
+      $: {
+        'android:name': 'expo.modules.filesystem.FileSystemFileProvider',
+        'android:authorities': '${applicationId}.FileSystemFileProvider',
+        'android:exported': 'false',
+        'android:grantUriPermissions': 'true',
+      },
+    });
+    mainApp.provider = providerList;
+    return config;
+  });
+};
+
+const withPagSeguroQueriesAndManifestFixes = (config) => {
+  config = withPagSeguroQueries(config);
+  config = withFileSystemProviderPlaceholder(config);
+  return config;
+};
+
+module.exports = withPagSeguroQueriesAndManifestFixes;

@@ -4,6 +4,8 @@ const {
   withDangerousMod,
   withMainApplication,
   withAndroidManifest,
+  withProjectBuildGradle,
+  withAppBuildGradle,
 } = require('@expo/config-plugins');
 
 const PACKAGE_NAME = 'com.touchgo.mobile';
@@ -12,17 +14,18 @@ const STORAGE_PERMISSIONS = [
   'android.permission.READ_EXTERNAL_STORAGE',
 ];
 const PLUGIN_DIR = path.join(__dirname, 'smart2-print');
+const PLUGPAG_MAVEN_URL = 'https://github.com/pagseguro/PlugPagServiceWrapper/raw/master';
+const PLUGPAG_DEPENDENCY = "implementation 'br.com.uol.pagseguro.plugpagservice.wrapper:wrapper:1.33.0'";
 
 /**
  * Expo config plugin que injeta o módulo nativo Smart2Print no Android:
+ * - Adiciona repositório Maven e dependência do PlugPag SDK
  * - Adiciona permissões de armazenamento (para PNG acessível pelo PlugPag)
  * - Copia Smart2PrintModule.java e Smart2PrintPackage.java para android/app/src/main/java/com/touchgo/mobile/
  * - Registra Smart2PrintPackage no MainApplication (Kotlin/Java)
  *
  * Uso: adicione "./plugins/with-smart2-print.js" ao array "plugins" no app.json.
  * Depois rode: npx expo prebuild -p android
- *
- * A dependência do PlugPag já deve existir no app (ex.: via PagSeguro Smart 2).
  */
 function withSmart2Print(config) {
   // 0) Adicionar permissões de armazenamento (PNG em /sdcard/smart2_print/ para o PlugPag ler)
@@ -41,7 +44,36 @@ function withSmart2Print(config) {
     return config;
   });
 
-  // 1) Copiar os dois arquivos Java para o projeto Android
+  // 1) Adicionar repositório Maven do PlugPag no build.gradle raiz (allprojects.repositories)
+  config = withProjectBuildGradle(config, (config) => {
+    let contents = config.modResults.contents;
+    if (typeof contents !== 'string') return config;
+    const mavenBlock = `maven { url '${PLUGPAG_MAVEN_URL}' }`;
+    if (contents.includes(PLUGPAG_MAVEN_URL)) return config;
+    // Inserir em allprojects.repositories (após mavenCentral, antes do jitpack)
+    contents = contents.replace(
+      /(allprojects\s*\{\s*repositories\s*\{[\s\S]*?)mavenCentral\(\)\s*\n(\s*maven\s*\{\s*url\s*'https:\/\/www\.jitpack\.io'\s*\})/,
+      `$1mavenCentral()\n        ${mavenBlock}\n        $2`
+    );
+    config.modResults.contents = contents;
+    return config;
+  });
+
+  // 2) Adicionar dependência do PlugPag no app/build.gradle
+  config = withAppBuildGradle(config, (config) => {
+    let contents = config.modResults.contents;
+    if (typeof contents !== 'string') return config;
+    if (contents.includes('plugpagservice.wrapper')) return config;
+    // Inserir após implementation("com.facebook.react:react-android")
+    contents = contents.replace(
+      /implementation\("com\.facebook\.react:react-android"\)\s*\n/,
+      `implementation("com.facebook.react:react-android")\n    ${PLUGPAG_DEPENDENCY}\n`
+    );
+    config.modResults.contents = contents;
+    return config;
+  });
+
+  // 3) Copiar os dois arquivos Java para o projeto Android
   config = withDangerousMod(config, [
     'android',
     async (config) => {
@@ -76,7 +108,7 @@ function withSmart2Print(config) {
     },
   ]);
 
-  // 2) Registrar Smart2PrintPackage no MainApplication
+  // 4) Registrar Smart2PrintPackage no MainApplication
   config = withMainApplication(config, (config) => {
     let content = config.modResults.contents;
     if (typeof content !== 'string') {

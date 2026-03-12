@@ -42,15 +42,21 @@ export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children })
     }
   }, [user, loading, segments, router]);
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#333" />
-      </View>
-    );
-  }
-
-  return <>{children}</>;
+  // IMPORTANTE: Sempre renderizar children (Stack) no primeiro render.
+  // O expo-router exige que o Root Layout renderize um navigator imediatamente.
+  // Mostramos loading como overlay quando necessário.
+  return (
+    <>
+      {children}
+      {loading && (
+        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#333" />
+          </View>
+        </View>
+      )}
+    </>
+  );
 };
 
 const styles = StyleSheet.create({
