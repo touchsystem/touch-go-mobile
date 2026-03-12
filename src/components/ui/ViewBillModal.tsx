@@ -599,18 +599,18 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 hardwareAccelerated={true}
                 statusBarTranslucent={true}
             >
-                <View style={styles.modalOverlay} pointerEvents="box-none">
+                <View style={[styles.modalOverlay, { pointerEvents: 'box-none' }]}>
                     <TouchableOpacity
                         activeOpacity={1}
                         onPress={onClose}
                         style={StyleSheet.absoluteFill}
                     />
-                    <View style={{ alignSelf: 'center' }} pointerEvents="box-only">
+                    <View style={{ alignSelf: 'center', pointerEvents: 'box-only' }}>
                         <TouchableOpacity
                             activeOpacity={1}
                             onPress={(e) => e.stopPropagation()}
                         >
-                            <View style={styles.modalContent} pointerEvents="box-only">
+                            <View style={[styles.modalContent, { pointerEvents: 'box-only' }]}>
                                 <View style={styles.header}>
                                     <Text style={styles.title}>{t('viewBill.table')} - {mesaCartao}</Text>
                                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -703,18 +703,18 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 hardwareAccelerated={true}
                 statusBarTranslucent={true}
             >
-                <View style={styles.modalOverlay} pointerEvents="box-none">
+                <View style={[styles.modalOverlay, { pointerEvents: 'box-none' }]}>
                     <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => setShowPaymentMethodModal(false)}
                         style={StyleSheet.absoluteFill}
                     />
-                    <View style={{ alignSelf: 'center' }} pointerEvents="box-only">
+                    <View style={{ alignSelf: 'center', pointerEvents: 'box-only' }}>
                         <TouchableOpacity
                             activeOpacity={1}
                             onPress={(e) => e.stopPropagation()}
                         >
-                            <View style={[styles.modalContent, { maxWidth: scaleWidth(400) }]} pointerEvents="box-only">
+                            <View style={[styles.modalContent, { maxWidth: scaleWidth(400), pointerEvents: 'box-only' }]}>
                                 <View style={styles.header}>
                                     <Text style={styles.title}>{t('viewBill.selectPaymentMethod')}</Text>
                                     <TouchableOpacity

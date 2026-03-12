@@ -356,7 +356,7 @@ export default function BillsScreen() {
   }
 
   return (
-    <View style={styles.container} pointerEvents={isViewBillModalVisible ? 'none' : 'auto'}>
+    <View style={[styles.container, { pointerEvents: isViewBillModalVisible ? 'none' : 'auto' }]}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}

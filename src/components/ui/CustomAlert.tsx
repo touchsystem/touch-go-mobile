@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, Modal as RNModal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, Pressable, Modal as RNModal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { scale, scaleFont } from '../../utils/responsive';
 
@@ -104,11 +104,9 @@ export const CustomAlert: React.FC = () => {
                     backgroundColor: colors.surface,
                     borderRadius: scale(16),
                     padding: scale(20),
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.25,
-                    shadowRadius: 8,
-                    elevation: 5,
+                    ...(Platform.OS === 'web'
+                        ? { boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }
+                        : { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 5 }),
                 },
                 titleContainer: {
                     flexDirection: 'row',

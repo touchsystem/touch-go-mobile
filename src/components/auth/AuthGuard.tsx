@@ -49,7 +49,7 @@ export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children })
     <>
       {children}
       {loading && (
-        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+        <View style={[StyleSheet.absoluteFill, { pointerEvents: 'box-none' }]}>
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#333" />
           </View>
