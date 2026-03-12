@@ -193,9 +193,9 @@ export async function getPendingTransactions(): Promise<PendingTransactionRow[]>
   const b = await ensureBackend();
   if (b === 'memory') return getPendingTransactionsMemory();
   const db = sqliteDb!;
-  return db.getAllAsync<PendingTransactionRow>(
+  return db.getAllAsync(
     'SELECT id, type, payload, created_at, synced_at, last_error, retry_count FROM pending_transactions WHERE synced_at IS NULL ORDER BY created_at ASC'
-  );
+  ) as Promise<PendingTransactionRow[]>;
 }
 
 /**
