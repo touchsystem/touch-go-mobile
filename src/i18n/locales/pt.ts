@@ -45,6 +45,7 @@ export default {
     // Profile
     profile: {
         title: 'Perfil',
+        settings: 'Configurações',
         changeUser: 'Trocar Usuário',
         appearance: 'Aparência',
         theme: 'Tema',
@@ -193,7 +194,8 @@ export default {
         paymentSuccess: 'Pagamento realizado com sucesso.',
         paymentError: 'Falha no pagamento. Tente novamente.',
         paymentTimeout: 'Tempo máximo estipulado para a operação expirou. Por favor, tente novamente.',
-        paymentNotAvailable: 'Pagamento no terminal não disponível. Use o app em um dispositivo com PagSeguro Smart 2.',
+        paymentNotAvailable: 'Pagamento no terminal só funciona no build nativo Android (dispositivo com PagSeguro Smart 2). Faça: npx expo prebuild -p android e npx expo run:android.',
+        paymentHint: 'Pagamento (cartão/Pix) disponível apenas no app Android instalado no dispositivo Smart 2.',
         awaitingCard: 'Aguardando cartão...',
         selectPaymentMethod: 'Selecione o método de pagamento',
         credit: 'Crédito',

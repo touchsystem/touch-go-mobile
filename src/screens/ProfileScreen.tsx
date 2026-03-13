@@ -303,6 +303,14 @@ export default function ProfileScreen() {
         </Card>
 
         <Button
+          title={t('profile.settings')}
+          variant="outline"
+          onPress={() => router.push('/(tabs)/settings')}
+          icon={<Ionicons name="settings-outline" size={scale(20)} color={colors.text} />}
+          style={styles.logoutButton}
+        />
+
+        <Button
           title={t('profile.changeUser')}
           variant="outline"
           onPress={handleChangeWaiter}

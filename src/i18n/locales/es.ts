@@ -69,6 +69,7 @@ export default {
     // Profile
     profile: {
         title: 'Perfil',
+        settings: 'Configuración',
         changeUser: 'Cambiar usuario',
         appearance: 'Apariencia',
         theme: 'Tema',
@@ -300,6 +301,7 @@ export default {
         paymentError: 'Error en el pago. Intente de nuevo.',
         paymentTimeout: 'Se agotó el tiempo máximo estipulado para la operación. Por favor, intente de nuevo.',
         paymentNotAvailable: 'Pago en terminal no disponible. Use la app en un dispositivo con PagSeguro Smart 2.',
+        paymentHint: 'Pago (tarjeta/Pix) solo disponible en la app Android instalada en el dispositivo Smart 2.',
         awaitingCard: 'Esperando tarjeta...',
         selectPaymentMethod: 'Seleccione el método de pago',
         credit: 'Crédito',

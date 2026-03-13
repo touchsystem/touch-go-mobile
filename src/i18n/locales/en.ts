@@ -45,6 +45,7 @@ export default {
     // Profile
     profile: {
         title: 'Profile',
+        settings: 'Settings',
         changeUser: 'Change User',
         appearance: 'Appearance',
         theme: 'Theme',
@@ -216,6 +217,7 @@ export default {
         paymentError: 'Payment failed. Please try again.',
         paymentTimeout: 'Maximum time stipulated for the operation has expired. Please try again.',
         paymentNotAvailable: 'Terminal payment not available. Use the app on a device with PagSeguro Smart 2.',
+        paymentHint: 'Payment (card/Pix) only available on Android app installed on Smart 2 device.',
         awaitingCard: 'Awaiting card...',
         selectPaymentMethod: 'Select payment method',
         credit: 'Credit',

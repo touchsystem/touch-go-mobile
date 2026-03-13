@@ -3,13 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useSegments } from 'expo-router';
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useSystemSettings } from '@/src/hooks/useSystemSettings';
 import { useCart } from '@/src/contexts/CartContext';
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const segments = useSegments();
-  const { settings } = useSystemSettings();
   const { cart, getTotalItems } = useCart();
   const totalItems = useMemo(() => getTotalItems(), [cart]);
 
@@ -25,14 +23,13 @@ export default function TabLayout() {
     [colors, isSettingsScreen]
   );
 
-  // Opções da aba de Contas baseadas na configuração
+  // Aba Contas: sempre visível (impressão de conta na Smart2 e pagamento cartão/Pix)
   const billsScreenOptions = useMemo(
     () => ({
       title: 'Contas',
       tabBarIcon: ({ color }: { color: string }) => <Ionicons name="document-text-outline" size={24} color={color} />,
-      href: settings.printAccounts ? undefined : null, // Mostra/esconde baseado na configuração
     }),
-    [settings.printAccounts]
+    []
   );
 
   // Opções da aba de Pedidos com badge de quantidade
@@ -82,8 +79,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          href: null, // Hide from tabs
-          tabBarStyle: { display: 'none' }, // Hide bottom navigation
+          title: 'Configurações',
+          tabBarIcon: ({ color }) => <Ionicons name="settings-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

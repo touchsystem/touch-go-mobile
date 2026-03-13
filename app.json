@@ -60,6 +60,7 @@
         }
       ],
       "./plugins/with-pagseguro-queries.js",
+      "./plugins/with-pagseguro-smart2.js",
       "./plugins/with-smart2-print.js"
     ],
     "experiments": {

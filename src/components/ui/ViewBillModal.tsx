@@ -408,6 +408,12 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 actionButton: {
                     flex: 1,
                 },
+                paymentHint: {
+                    marginTop: scale(8),
+                    fontSize: scaleFont(11),
+                    color: colors.textSecondary,
+                    textAlign: 'center',
+                },
                 loadingContainer: {
                     padding: scale(40),
                     alignItems: 'center',
@@ -686,6 +692,11 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                                 style={styles.actionButton}
                                             />
                                         </View>
+                                        {!isPagSeguroModuleLoaded() && (
+                                            <Text style={styles.paymentHint}>
+                                                {t('viewBill.paymentHint')}
+                                            </Text>
+                                        )}
                                     </>
                                 )}
                             </View>
