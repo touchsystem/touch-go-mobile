@@ -4,10 +4,12 @@ import { Tabs, useSegments } from 'expo-router';
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useCart } from '@/src/contexts/CartContext';
+import { useSystemSettings } from '@/src/hooks/useSystemSettings';
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const segments = useSegments();
+  const { settings } = useSystemSettings();
   const { cart, getTotalItems } = useCart();
   const totalItems = useMemo(() => getTotalItems(), [cart]);
 
@@ -23,13 +25,14 @@ export default function TabLayout() {
     [colors, isSettingsScreen]
   );
 
-  // Aba Contas: sempre visível (impressão de conta na Smart2 e pagamento cartão/Pix)
+  // Aba Contas: visível apenas quando "Impressão de Contas" está ativada nas configurações
   const billsScreenOptions = useMemo(
     () => ({
       title: 'Contas',
       tabBarIcon: ({ color }: { color: string }) => <Ionicons name="document-text-outline" size={24} color={color} />,
+      href: settings.printAccounts ? undefined : null,
     }),
-    []
+    [settings.printAccounts]
   );
 
   // Opções da aba de Pedidos com badge de quantidade

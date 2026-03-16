@@ -86,6 +86,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     const [printing, setPrinting] = useState(false);
     const [paying, setPaying] = useState(false);
     const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+    const [showPrintOptionsModal, setShowPrintOptionsModal] = useState(false);
 
     useEffect(() => {
         if (visible && mesaCartao && !printing) {
@@ -109,59 +110,54 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         }
     };
 
-    const handlePrint = async () => {
+    const openPrintOptions = () => {
+        setShowPrintOptionsModal(true);
+    };
+
+    /** Imprime apenas no local (impressora térmica Smart2). */
+    const handlePrintLocal = async () => {
+        setShowPrintOptionsModal(false);
+        if (!data?.vendas?.length) return;
+        if (!isSmart2PrintSupported()) {
+            Alert.alert(t('viewBill.error'), t('viewBill.printLocalNotAvailable'));
+            return;
+        }
         try {
             setPrinting(true);
-
-            // 1) Se o módulo custom tiver print(texto), imprime direto
-            if (isSmart2PrintSupported() && data?.vendas?.length) {
-                const billText = buildBillTextForThermal();
-                const smart2Result = await printOnSmart2(billText);
-                if (!smart2Result.success) {
-                    setPrinting(false);
-                    Alert.alert(
-                        t('viewBill.error'),
-                        smart2Result.message || t('viewBill.errorLoadingBill')
-                    );
-                    return;
-                }
+            const billText = buildBillTextForThermal();
+            const smart2Result = await printOnSmart2(billText);
+            if (smart2Result.success) {
+                setTimeout(() => Alert.alert(t('common.success'), t('viewBill.printLocalSuccess')), 300);
+            } else {
+                Alert.alert(t('viewBill.error'), smart2Result.message || t('viewBill.errorLoadingBill'));
             }
+        } catch (error: any) {
+            Alert.alert(t('viewBill.error'), error?.message || t('viewBill.errorLoadingBill'));
+        } finally {
+            setPrinting(false);
+        }
+    };
 
-            // Registra impressão no backend (imprimir-conta) e opcionalmente imprime na impressora do servidor
-            let nickToUse = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
-            if (!nickToUse) {
-                nickToUse = user?.nick || '';
-            }
-
-            if (!nickToUse) {
-                Alert.alert(t('viewBill.error'), t('viewBill.userNotFound'));
-                setPrinting(false);
-                return;
-            }
-
+    /** Imprime apenas no servidor (API imprimir-conta / impressora do servidor). */
+    const handlePrintServer = async () => {
+        setShowPrintOptionsModal(false);
+        let nickToUse = await storage.getItem<string>(storageKeys.LAST_USED_NICK);
+        if (!nickToUse) nickToUse = user?.nick || '';
+        if (!nickToUse) {
+            Alert.alert(t('viewBill.error'), t('viewBill.userNotFound'));
+            return;
+        }
+        try {
+            setPrinting(true);
             const response = await api.post(
                 `/caixa/imprimir-conta?mesa=${mesaCartao}&nick=${nickToUse}`
             );
-
-            // Reseta o estado de impressão ANTES de atualizar a mesa para evitar loop
             setPrinting(false);
-
-            // Fecha o modal imediatamente após sucesso
             onClose();
-
-            // Atualiza apenas a mesa específica após imprimir (sem reload completo)
-            refreshTable(mesaCartao).catch(err => {
-                console.error('Erro ao atualizar mesa:', err);
-            });
-
-            // Mostra alert de sucesso (sem botão OK, fecha automaticamente em 1s)
-            setTimeout(() => {
-                Alert.alert(t('common.success'), response.data?.mensagem || t('viewBill.print'));
-            }, 300);
+            refreshTable(mesaCartao).catch(err => console.error('Erro ao atualizar mesa:', err));
+            setTimeout(() => Alert.alert(t('common.success'), response.data?.mensagem || t('viewBill.print')), 300);
         } catch (error: any) {
-            console.error('Error printing bill:', error);
             setPrinting(false);
-            // Em caso de erro, NÃO fecha o modal - mantém aberto para o usuário tentar novamente
             Alert.alert(
                 t('viewBill.error'),
                 error.response?.data?.erro || error.message || t('viewBill.errorLoadingBill')
@@ -231,8 +227,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     };
 
     const processPayment = async (paymentType: PagSeguroPaymentType) => {
-        setShowPaymentMethodModal(false);
-
+        // Mantém o modal aberto para mostrar "Aproxime o cartão"
         const amountInCents = Math.round(total * 100);
         const reference = `mesa-${mesaCartao}`;
 
@@ -301,7 +296,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                     : t('viewBill.paymentError')
             );
         } finally {
-            // Garante que o loading seja sempre resetado
+            setShowPaymentMethodModal(false);
             setPaying(false);
             console.log('[PagSeguro] Estado de pagamento resetado');
         }
@@ -667,7 +662,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                         <View style={styles.actionsRow}>
                                             <Button
                                                 title={printing ? t('common.loading') : t('viewBill.print')}
-                                                onPress={handlePrint}
+                                                onPress={openPrintOptions}
                                                 disabled={printing || paying}
                                                 icon={
                                                     printing ? (
@@ -705,70 +700,121 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                 </View>
             </Modal>
 
-            {/* Modal de seleção de método de pagamento */}
+            {/* Modal: escolher onde imprimir (local ou servidor) */}
             <Modal
-                visible={showPaymentMethodModal}
+                visible={showPrintOptionsModal}
                 transparent
                 animationType="fade"
-                onRequestClose={() => setShowPaymentMethodModal(false)}
+                onRequestClose={() => setShowPrintOptionsModal(false)}
                 hardwareAccelerated={true}
                 statusBarTranslucent={true}
             >
                 <View style={[styles.modalOverlay, { pointerEvents: 'box-none' }]}>
                     <TouchableOpacity
                         activeOpacity={1}
-                        onPress={() => setShowPaymentMethodModal(false)}
+                        onPress={() => setShowPrintOptionsModal(false)}
                         style={StyleSheet.absoluteFill}
                     />
                     <View style={{ alignSelf: 'center', pointerEvents: 'box-only' }}>
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            onPress={(e) => e.stopPropagation()}
-                        >
+                        <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
                             <View style={[styles.modalContent, { maxWidth: scaleWidth(400), pointerEvents: 'box-only' }]}>
                                 <View style={styles.header}>
-                                    <Text style={styles.title}>{t('viewBill.selectPaymentMethod')}</Text>
-                                    <TouchableOpacity
-                                        onPress={() => setShowPaymentMethodModal(false)}
-                                        style={styles.closeButton}
-                                    >
+                                    <Text style={styles.title}>{t('viewBill.printOptionsTitle')}</Text>
+                                    <TouchableOpacity onPress={() => setShowPrintOptionsModal(false)} style={styles.closeButton}>
                                         <Ionicons name="close" size={scale(24)} color={colors.text} />
                                     </TouchableOpacity>
                                 </View>
-
                                 <View style={{ gap: scale(12), marginTop: scale(20) }}>
                                     <Button
-                                        title={t('viewBill.credit')}
-                                        onPress={() => processPayment('CREDITO')}
-                                        disabled={paying}
-                                        icon={<Ionicons name="card-outline" size={scale(20)} color="#fff" />}
+                                        title={t('viewBill.printLocal')}
+                                        onPress={handlePrintLocal}
+                                        disabled={!isSmart2PrintSupported()}
+                                        icon={<Ionicons name="print-outline" size={scale(20)} color="#fff" />}
                                         style={{ width: '100%' }}
                                     />
                                     <Button
-                                        title={t('viewBill.debit')}
-                                        onPress={() => processPayment('DEBITO')}
-                                        disabled={paying}
-                                        icon={<Ionicons name="card-outline" size={scale(20)} color="#fff" />}
-                                        style={{ width: '100%' }}
-                                    />
-                                    <Button
-                                        title={t('viewBill.pix')}
-                                        onPress={() => processPayment('PIX')}
-                                        disabled={paying}
-                                        icon={<Ionicons name="qr-code-outline" size={scale(20)} color="#fff" />}
+                                        title={t('viewBill.printServer')}
+                                        onPress={handlePrintServer}
+                                        icon={<Ionicons name="cloud-outline" size={scale(20)} color="#fff" />}
                                         style={{ width: '100%' }}
                                     />
                                 </View>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
 
-                                <View style={{ marginTop: scale(20) }}>
-                                    <Button
-                                        title={t('common.cancel')}
-                                        onPress={() => setShowPaymentMethodModal(false)}
-                                        disabled={paying}
-                                        variant="outline"
-                                        style={{ width: '100%' }}
-                                    />
-                                </View>
+            {/* Modal de seleção de método de pagamento: tela maior, botões quadrados centralizados; após escolher mostra "Aproxime o cartão" */}
+            <Modal
+                visible={showPaymentMethodModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => !paying && setShowPaymentMethodModal(false)}
+                hardwareAccelerated={true}
+                statusBarTranslucent={true}
+            >
+                <View style={[styles.modalOverlay, { pointerEvents: 'box-none', justifyContent: 'center', alignItems: 'center' }]}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => !paying && setShowPaymentMethodModal(false)}
+                        style={StyleSheet.absoluteFill}
+                    />
+                    <View style={{ width: widthPercentage(92), maxWidth: scaleWidth(420), pointerEvents: 'box-only' }}>
+                        <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+                            <View style={[styles.modalContent, { padding: scale(28), minHeight: scaleHeight(380), justifyContent: 'center', alignItems: 'center' }]}>
+                                {paying ? (
+                                    <>
+                                        <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: scale(40) }}>
+                                            <Ionicons name="card" size={scale(64)} color={colors.primary} style={{ marginBottom: scale(24) }} />
+                                            <Text style={[styles.title, { fontSize: scaleFont(22), textAlign: 'center', marginBottom: scale(8) }]}>
+                                                {t('viewBill.approachCard')}
+                                            </Text>
+                                            <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: scale(16) }} />
+                                        </View>
+                                    </>
+                                ) : (
+                                    <>
+                                        <View style={styles.header}>
+                                            <Text style={styles.title}>{t('viewBill.selectPaymentMethod')}</Text>
+                                            <TouchableOpacity onPress={() => setShowPaymentMethodModal(false)} style={styles.closeButton}>
+                                                <Ionicons name="close" size={scale(28)} color={colors.text} />
+                                            </TouchableOpacity>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: scale(24), marginTop: scale(28) }}>
+                                            <TouchableOpacity
+                                                onPress={() => processPayment('CREDITO')}
+                                                style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
+                                                activeOpacity={0.8}
+                                            >
+                                                <Ionicons name="card-outline" size={scale(40)} color="#fff" />
+                                                <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.credit')}</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => processPayment('DEBITO')}
+                                                style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
+                                                activeOpacity={0.8}
+                                            >
+                                                <Ionicons name="card-outline" size={scale(40)} color="#fff" />
+                                                <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.debit')}</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => processPayment('PIX')}
+                                                style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
+                                                activeOpacity={0.8}
+                                            >
+                                                <Ionicons name="qr-code-outline" size={scale(40)} color="#fff" />
+                                                <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.pix')}</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        <TouchableOpacity
+                                            onPress={() => setShowPaymentMethodModal(false)}
+                                            style={{ marginTop: scale(28), paddingVertical: scale(12), paddingHorizontal: scale(24), borderWidth: 1, borderColor: colors.border, borderRadius: scale(10) }}
+                                        >
+                                            <Text style={{ fontSize: scaleFont(16), fontWeight: '600', color: colors.text }}>{t('common.cancel')}</Text>
+                                        </TouchableOpacity>
+                                    </>
+                                )}
                             </View>
                         </TouchableOpacity>
                     </View>
