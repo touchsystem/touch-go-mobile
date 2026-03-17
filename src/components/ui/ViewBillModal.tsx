@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useSystemSettingsContext } from '../../contexts/SystemSettingsContext';
 import { useTableContext } from '../../contexts/TableContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { usePaymentMethods } from '../../hooks/usePaymentMethods';
@@ -83,12 +84,14 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     const { refreshTable, fetchTables, updateTableStatus } = useTableContext();
     const { t } = useLanguage();
     const { paymentMethods } = usePaymentMethods();
+    const { settings } = useSystemSettingsContext();
     const [data, setData] = useState<BillData | null>(null);
     const [loading, setLoading] = useState(true);
     const [printing, setPrinting] = useState(false);
     const [paying, setPaying] = useState(false);
     const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
     const [showPrintOptionsModal, setShowPrintOptionsModal] = useState(false);
+    const [parameters, setParameters] = useState<any[]>([]);
 
     useEffect(() => {
         if (visible && mesaCartao && !printing) {
@@ -107,8 +110,14 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     const fetchBillData = async () => {
         try {
             setLoading(true);
-            const response = await api.get<BillData>(`/caixa/vendas/${mesaCartao}`);
-            setData(response.data);
+            const [billResponse, paramsResponse] = await Promise.all([
+                api.get<BillData>(`/caixa/vendas/${mesaCartao}`),
+                api.get('/parametros')
+            ]);
+            console.log('[ViewBill] Dados completos da API:', billResponse.data);
+            console.log('[ViewBill] Parâmetros:', paramsResponse.data);
+            setData(billResponse.data);
+            setParameters(paramsResponse.data || []);
         } catch (error: any) {
             console.error('Error fetching bill data:', error);
             Alert.alert(
@@ -428,14 +437,61 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                     alignItems: 'center',
                 },
                 emptyContainer: {
-                    padding: scale(40),
+                    flex: 1,
+                    justifyContent: 'center',
                     alignItems: 'center',
+                    padding: scale(40),
                 },
                 emptyText: {
-                    fontSize: scaleFont(14),
+                    fontSize: scaleFont(16),
                     color: colors.textSecondary,
                     textAlign: 'center',
+                    marginTop: scale(20),
+                },
+                // Estilos para antecipações
+                anticipationsSection: {
                     marginTop: scale(12),
+                    paddingTop: scale(12),
+                    borderTopWidth: 1,
+                    borderTopColor: colors.border,
+                },
+                anticipationsTitle: {
+                    fontSize: scaleFont(14),
+                    fontWeight: '600',
+                    color: colors.text,
+                    marginBottom: scale(8),
+                },
+                anticipationRow: {
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingVertical: scale(4),
+                },
+                anticipationLabel: {
+                    fontSize: scaleFont(13),
+                    color: colors.textSecondary,
+                    flex: 1,
+                },
+                anticipationValue: {
+                    fontSize: scaleFont(13),
+                    fontWeight: '500',
+                    color: colors.text,
+                },
+                totalToPayRow: {
+                    marginTop: scale(8),
+                    paddingTop: scale(8),
+                    borderTopWidth: 1,
+                    borderTopColor: colors.border,
+                },
+                totalToPayLabel: {
+                    fontSize: scaleFont(16),
+                    fontWeight: '600',
+                    color: colors.text,
+                },
+                totalToPayValue: {
+                    fontSize: scaleFont(16),
+                    fontWeight: 'bold',
+                    color: '#34C759',
                 },
             }),
         [colors, isDark]
@@ -509,11 +565,20 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         return itemTotal;
     }, [parseFraction]);
 
-    // Memoiza o cálculo do total para evitar recálculos desnecessários
+    // Memoiza o cálculo do total (depende de calculateItemTotal)
     const total = useMemo(() => {
         if (!data?.vendas || data.vendas.length === 0) return 0;
         return data.vendas.reduce((sum, item) => sum + calculateItemTotal(item), 0);
-    }, [data?.vendas]);
+    }, [data?.vendas, calculateItemTotal]);
+
+    const getServiceTax = useCallback(() => {
+        const taxParam = parameters.find(p => p.id === 2);
+        if (taxParam && taxParam.status === 'S' && taxParam.limite) {
+            const percentage = Number(taxParam.limite) || 0;
+            return (total * percentage) / 100;
+        }
+        return 0;
+    }, [parameters, total]);
 
     /** Monta o texto da conta para impressão térmica na Smart2. Itens principais + relacionais (ex.: PIZZA GRANDE com sabores) como no recibo. */
     const buildBillTextForThermal = useCallback((): string => {
@@ -673,6 +738,34 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                             <Text style={styles.totalValue}>{formatCurrency(total)}</Text>
                                         </View>
 
+                                        {/* Exibir antecipações se hideAnticipation for false (switch desativado) */}
+                                        {(() => {
+                                            console.log('[ViewBill] Debug - settings.hideAnticipation:', settings.hideAnticipation, 'data.antecipacoes:', data?.antecipacoes);
+                                            return !settings.hideAnticipation && data?.antecipacoes && data.antecipacoes.length > 0;
+                                        })() && (
+                                                <View style={styles.anticipationsSection}>
+                                                    <Text style={styles.anticipationsTitle}>RECEBIMENTOS DESCONTOS:</Text>
+                                                    {data.antecipacoes?.map((anticipation, index) => (
+                                                        <View key={index} style={styles.anticipationRow}>
+                                                            <Text style={styles.anticipationLabel}>
+                                                                {anticipation.tipo_rec_nome || 'Recebimento'}
+                                                            </Text>
+                                                            <Text style={styles.anticipationValue}>
+                                                                {formatCurrency(anticipation.vl_moeda_prin)}
+                                                            </Text>
+                                                        </View>
+                                                    ))}
+                                                    <View style={[styles.totalRow, styles.totalToPayRow]}>
+                                                        <Text style={styles.totalToPayLabel}>TOTAL A PAGAR:</Text>
+                                                        <Text style={styles.totalToPayValue}>
+                                                            {formatCurrency(
+                                                                total - (data.antecipacoes?.reduce((sum, a) => sum + a.vl_moeda_prin, 0) || 0)
+                                                            )}
+                                                        </Text>
+                                                    </View>
+                                                </View>
+                                            )}
+
                                         <View style={styles.actionsRow}>
                                             <Button
                                                 title={printing ? t('common.loading') : t('viewBill.print')}
@@ -715,7 +808,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             </Modal>
 
             {/* Modal: escolher onde imprimir (local ou servidor) */}
-            <Modal
+            < Modal
                 visible={showPrintOptionsModal}
                 transparent
                 animationType="fade"
@@ -757,10 +850,10 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                         </TouchableOpacity>
                     </View>
                 </View>
-            </Modal>
+            </Modal >
 
             {/* Modal de seleção de método de pagamento: tela maior, botões quadrados centralizados; após escolher mostra "Aproxime o cartão" */}
-            <Modal
+            < Modal
                 visible={showPaymentMethodModal}
                 transparent
                 animationType="fade"
@@ -839,7 +932,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                         </TouchableOpacity>
                     </View>
                 </View>
-            </Modal>
+            </Modal >
         </>
     );
 };
