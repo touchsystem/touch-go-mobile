@@ -92,6 +92,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
     const [showPrintOptionsModal, setShowPrintOptionsModal] = useState(false);
     const [parameters, setParameters] = useState<any[]>([]);
+    const [includeServiceTax, setIncludeServiceTax] = useState(true);
 
     useEffect(() => {
         if (visible && mesaCartao && !printing) {
@@ -185,7 +186,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     };
 
     const handlePay = () => {
-        if (!data?.vendas?.length || total <= 0) return;
+        if (!data?.vendas?.length || finalTotal <= 0) return;
         if (!isPagSeguroModuleLoaded()) {
             Alert.alert(t('viewBill.error'), t('viewBill.paymentNotAvailable'));
             return;
@@ -229,7 +230,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             return [...mainVenda, ...relVendas];
         });
         // Arredondamento em 2 decimais (backend pode validar valor)
-        const roundedTotal = Math.round(total * 100) / 100;
+        const roundedTotal = Math.round(finalTotal * 100) / 100;
         const requestData = {
             id_mesa: Number(mesaCartao),
             taxa_servico: 'N',
@@ -251,7 +252,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
 
     const processPayment = async (paymentType: PagSeguroPaymentType) => {
         // Mantém o modal aberto para mostrar "Aproxime o cartão"
-        const amountInCents = Math.round(total * 100);
+        const amountInCents = Math.round(finalTotal * 100);
         const reference = `mesa-${mesaCartao}`;
 
         try {
@@ -493,6 +494,87 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                     fontWeight: 'bold',
                     color: '#34C759',
                 },
+                // Estilos para taxa de serviço
+                serviceTaxSection: {
+                    marginTop: scale(8),
+                },
+                serviceTaxRow: {
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingVertical: scale(6),
+                },
+                totalWithTaxRow: {
+                    paddingTop: scale(8),
+                    borderTopWidth: 1,
+                    borderTopColor: colors.border,
+                },
+                totalWithTaxLabel: {
+                    fontSize: scaleFont(16),
+                    fontWeight: '600',
+                    color: colors.text,
+                },
+                totalWithTaxValue: {
+                    fontSize: scaleFont(16),
+                    fontWeight: 'bold',
+                    color: colors.primary,
+                },
+                // Estilos para checkbox de taxa de serviço
+                serviceTaxOptionRow: {
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: scale(8),
+                    paddingHorizontal: scale(16),
+                    marginTop: scale(8),
+                },
+                checkboxContainer: {
+                    marginRight: scale(12),
+                },
+                checkbox: {
+                    width: scale(20),
+                    height: scale(20),
+                    borderRadius: scale(4),
+                    borderWidth: 2,
+                    borderColor: colors.border,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                },
+                checkboxChecked: {
+                    backgroundColor: colors.primary,
+                    borderColor: colors.primary,
+                },
+                checkboxCheck: {
+                    color: '#fff',
+                    fontSize: scaleFont(14),
+                    fontWeight: 'bold',
+                    lineHeight: scale(18),
+                },
+                serviceTaxLabel: {
+                    fontSize: scaleFont(14),
+                    fontWeight: '500',
+                    color: colors.text,
+                    flex: 1,
+                },
+                serviceTaxValue: {
+                    fontSize: scaleFont(14),
+                    fontWeight: '500',
+                    color: colors.text,
+                    marginLeft: scale(8),
+                },
+                finalTotalRow: {
+                    marginTop: scale(12),
+                    paddingTop: scale(12),
+                },
+                finalTotalLabel: {
+                    fontSize: scaleFont(18),
+                    fontWeight: '600',
+                    color: colors.text,
+                },
+                finalTotalValue: {
+                    fontSize: scaleFont(18),
+                    fontWeight: 'bold',
+                    color: colors.primary,
+                },
             }),
         [colors, isDark]
     );
@@ -571,6 +653,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         return data.vendas.reduce((sum, item) => sum + calculateItemTotal(item), 0);
     }, [data?.vendas, calculateItemTotal]);
 
+    // Calcula taxa de serviço baseada no parâmetro ID 2
     const getServiceTax = useCallback(() => {
         const taxParam = parameters.find(p => p.id === 2);
         if (taxParam && taxParam.status === 'S' && taxParam.limite) {
@@ -579,6 +662,12 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         }
         return 0;
     }, [parameters, total]);
+
+    // Total final considerando se o cliente quer pagar a taxa de serviço
+    const finalTotal = useMemo(() => {
+        const serviceTax = includeServiceTax ? getServiceTax() : 0;
+        return total + serviceTax;
+    }, [total, getServiceTax, includeServiceTax]);
 
     /** Monta o texto da conta para impressão térmica na Smart2. Itens principais + relacionais (ex.: PIZZA GRANDE com sabores) como no recibo. */
     const buildBillTextForThermal = useCallback((): string => {
@@ -736,6 +825,39 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                         <View style={styles.totalRow}>
                                             <Text style={styles.totalLabel}>{t('viewBill.total')}:</Text>
                                             <Text style={styles.totalValue}>{formatCurrency(total)}</Text>
+                                        </View>
+
+                                        {/* Checkbox para taxa de serviço */}
+                                        {(() => {
+                                            const serviceTax = getServiceTax();
+                                            const taxParam = parameters.find(p => p.id === 2);
+                                            if (serviceTax > 0 && taxParam?.status === 'S') {
+                                                return (
+                                                    <View style={styles.serviceTaxOptionRow}>
+                                                        <TouchableOpacity
+                                                            style={styles.checkboxContainer}
+                                                            onPress={() => setIncludeServiceTax(!includeServiceTax)}
+                                                        >
+                                                            <View style={[styles.checkbox, includeServiceTax && styles.checkboxChecked]}>
+                                                                {includeServiceTax && <Text style={styles.checkboxCheck}>✓</Text>}
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                        <Text style={styles.serviceTaxLabel}>
+                                                            Taxa de serviço
+                                                        </Text>
+                                                        <Text style={styles.serviceTaxValue}>
+                                                            {formatCurrency(includeServiceTax ? serviceTax : 0)}
+                                                        </Text>
+                                                    </View>
+                                                );
+                                            }
+                                            return null;
+                                        })()}
+
+                                        {/* Total final - sempre aparece */}
+                                        <View style={[styles.totalRow, styles.finalTotalRow]}>
+                                            <Text style={styles.finalTotalLabel}>TOTAL:</Text>
+                                            <Text style={styles.finalTotalValue}>{formatCurrency(finalTotal)}</Text>
                                         </View>
 
                                         {/* Exibir antecipações se hideAnticipation for false (switch desativado) */}
