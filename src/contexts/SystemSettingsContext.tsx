@@ -31,6 +31,7 @@ export interface SystemSettings {
   removeCashierAccount: boolean;
   hideAnticipation: boolean;
   printAccounts: boolean;
+  showSettingsTab: boolean;
 }
 
 const DEFAULT_SETTINGS: SystemSettings = {
@@ -61,6 +62,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
   removeCashierAccount: false,
   hideAnticipation: false,
   printAccounts: true,
+  showSettingsTab: true,
 };
 
 export type SystemSettingsContextValue = {

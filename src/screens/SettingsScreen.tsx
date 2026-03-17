@@ -20,12 +20,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useServerConfig } from '../hooks/useServerConfig';
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import { Alert } from '../utils/alert';
 import {
   isPagSeguroModuleLoaded,
   isSmart2PrintSupported,
   printOnSmart2,
 } from '../utils/pagseguroSmart2';
-import { Alert } from '../utils/alert';
 import { scale, scaleFont } from '../utils/responsive';
 
 export default function SettingsScreen() {
@@ -344,6 +344,15 @@ export default function SettingsScreen() {
             />
           </View>
           <Text style={styles.infoText}>{t('settings.printAccountsHelp')}</Text>
+
+          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.toggleLabel}>Exibir aba Configurações</Text>
+            <Switch
+              value={settings.showSettingsTab}
+              onValueChange={(value) => updateSetting('showSettingsTab', value)}
+            />
+          </View>
+          <Text style={styles.infoText}>Controla se a aba Configurações aparece no menu inferior</Text>
         </Card>
 
         {/* Parâmetros do sistema */}

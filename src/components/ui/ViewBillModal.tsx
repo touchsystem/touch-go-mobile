@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     Modal,
@@ -13,6 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTableContext } from '../../contexts/TableContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePaymentMethods } from '../../hooks/usePaymentMethods';
 import api from '../../services/api';
 import { storage, storageKeys } from '../../services/storage';
 import { closeMesa as closeMesaSync } from '../../services/transaction-sync';
@@ -20,9 +21,9 @@ import { Alert } from '../../utils/alert';
 import { formatCurrency } from '../../utils/format';
 import {
     isPagSeguroModuleLoaded,
+    isSmart2PrintSupported,
     payWithSmart2,
     printOnSmart2,
-    isSmart2PrintSupported,
     type PagSeguroPaymentType,
 } from '../../utils/pagseguroSmart2';
 import { scale, scaleFont, scaleHeight, scaleWidth, widthPercentage } from '../../utils/responsive';
@@ -81,6 +82,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     const { user } = useAuth();
     const { refreshTable, fetchTables, updateTableStatus } = useTableContext();
     const { t } = useLanguage();
+    const { paymentMethods } = usePaymentMethods();
     const [data, setData] = useState<BillData | null>(null);
     const [loading, setLoading] = useState(true);
     const [printing, setPrinting] = useState(false);
@@ -93,6 +95,14 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             fetchBillData();
         }
     }, [visible, mesaCartao, printing]);
+
+    // Filtra os métodos de pagamento habilitados
+    const enabledPaymentMethods = useMemo(() => {
+        return paymentMethods.filter(method => method.enabled);
+    }, [paymentMethods]);
+
+    // Verifica se algum método de pagamento está habilitado
+    const hasEnabledPaymentMethods = enabledPaymentMethods.length > 0;
 
     const fetchBillData = async () => {
         try {
@@ -171,6 +181,10 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             Alert.alert(t('viewBill.error'), t('viewBill.paymentNotAvailable'));
             return;
         }
+        if (!hasEnabledPaymentMethods) {
+            Alert.alert(t('viewBill.error'), 'Nenhum método de pagamento habilitado. Configure os métodos de pagamento nas configurações.');
+            return;
+        }
         // Mostra o modal de seleção de método de pagamento
         setShowPaymentMethodModal(true);
     };
@@ -243,7 +257,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             if (result.success) {
                 try {
                     const closeResult = await closeMesaOnBackend(paymentType);
-                    if (closeResult.synced) {
+                    if (closeResult?.synced) {
                         Alert.alert(
                             t('common.success'),
                             t('viewBill.paymentSuccess') || `Pagamento aprovado! ID: ${result.transactionId}`
@@ -252,7 +266,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                         Alert.alert(
                             t('common.success'),
                             (t('viewBill.paymentSuccess') || 'Pagamento aprovado!') +
-                                '\n\nDados salvos no dispositivo; a mesa será fechada no sistema quando houver conexão.'
+                            '\n\nDados salvos no dispositivo; a mesa será fechada no sistema quando houver conexão.'
                         );
                     }
                     onClose();
@@ -269,8 +283,8 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                     Alert.alert(
                         t('common.success'),
                         (t('viewBill.paymentSuccess') || 'Pagamento aprovado!') +
-                            (backendMsg ? `\n\nAtenção: ${backendMsg}` : '\n\nNão foi possível fechar a mesa no sistema.') +
-                            hint
+                        (backendMsg ? `\n\nAtenção: ${backendMsg}` : '\n\nNão foi possível fechar a mesa no sistema.') +
+                        hint
                     );
                     onClose();
                     await fetchTables();
@@ -782,30 +796,36 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                             </TouchableOpacity>
                                         </View>
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: scale(24), marginTop: scale(28) }}>
-                                            <TouchableOpacity
-                                                onPress={() => processPayment('CREDITO')}
-                                                style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
-                                                activeOpacity={0.8}
-                                            >
-                                                <Ionicons name="card-outline" size={scale(40)} color="#fff" />
-                                                <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.credit')}</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                onPress={() => processPayment('DEBITO')}
-                                                style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
-                                                activeOpacity={0.8}
-                                            >
-                                                <Ionicons name="card-outline" size={scale(40)} color="#fff" />
-                                                <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.debit')}</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                onPress={() => processPayment('PIX')}
-                                                style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
-                                                activeOpacity={0.8}
-                                            >
-                                                <Ionicons name="qr-code-outline" size={scale(40)} color="#fff" />
-                                                <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.pix')}</Text>
-                                            </TouchableOpacity>
+                                            {enabledPaymentMethods.some(m => m.id === 'credito') && (
+                                                <TouchableOpacity
+                                                    onPress={() => processPayment('CREDITO')}
+                                                    style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
+                                                    activeOpacity={0.8}
+                                                >
+                                                    <Ionicons name="card-outline" size={scale(40)} color="#fff" />
+                                                    <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.credit')}</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                            {enabledPaymentMethods.some(m => m.id === 'debito') && (
+                                                <TouchableOpacity
+                                                    onPress={() => processPayment('DEBITO')}
+                                                    style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
+                                                    activeOpacity={0.8}
+                                                >
+                                                    <Ionicons name="card-outline" size={scale(40)} color="#fff" />
+                                                    <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.debit')}</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                            {enabledPaymentMethods.some(m => m.id === 'pix') && (
+                                                <TouchableOpacity
+                                                    onPress={() => processPayment('PIX')}
+                                                    style={{ width: scale(110), height: scale(110), backgroundColor: colors.primary, borderRadius: scale(14), justifyContent: 'center', alignItems: 'center', padding: scale(10) }}
+                                                    activeOpacity={0.8}
+                                                >
+                                                    <Ionicons name="qr-code-outline" size={scale(40)} color="#fff" />
+                                                    <Text style={{ color: '#fff', fontSize: scaleFont(14), fontWeight: '600', marginTop: scale(8), textAlign: 'center' }}>{t('viewBill.pix')}</Text>
+                                                </TouchableOpacity>
+                                            )}
                                         </View>
                                         <TouchableOpacity
                                             onPress={() => setShowPaymentMethodModal(false)}

@@ -1,10 +1,10 @@
+import { useCart } from '@/src/contexts/CartContext';
 import { useTheme } from '@/src/contexts/ThemeContext';
+import { useSystemSettings } from '@/src/hooks/useSystemSettings';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useSegments } from 'expo-router';
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useCart } from '@/src/contexts/CartContext';
-import { useSystemSettings } from '@/src/hooks/useSystemSettings';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function TabLayout() {
   const { colors } = useTheme();
@@ -14,13 +14,13 @@ export default function TabLayout() {
   const totalItems = useMemo(() => getTotalItems(), [cart]);
 
   // Verifica se está na tela de settings ou payment-methods
-  const isSettingsScreen = segments.includes('settings') || segments.includes('payment-methods');
+  const isSettingsScreen = segments.some(segment => segment === 'settings' || segment === 'payment-methods');
 
   const screenOptions = useMemo(
     () => ({
       tabBarActiveTintColor: colors?.primary || '#2563EB',
       headerShown: false,
-      tabBarStyle: isSettingsScreen ? { display: 'none' } : undefined,
+      tabBarStyle: isSettingsScreen ? { display: 'none' as const } : undefined,
     }),
     [colors, isSettingsScreen]
   );
@@ -84,6 +84,7 @@ export default function TabLayout() {
         options={{
           title: 'Configurações',
           tabBarIcon: ({ color }) => <Ionicons name="settings-outline" size={24} color={color} />,
+          href: settings.showSettingsTab ? undefined : null,
         }}
       />
       <Tabs.Screen

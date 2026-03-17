@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -8,7 +9,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { Alert } from '../utils/alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -16,11 +16,11 @@ import { ChangeWaiterModal } from '../components/ui/ChangeWaiterModal';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { scale, scaleFont } from '../utils/responsive';
+import { useTheme } from '../contexts/ThemeContext';
 import { storage, storageKeys } from '../services/storage';
-import { useFocusEffect } from '@react-navigation/native';
+import { Alert } from '../utils/alert';
+import { scale, scaleFont } from '../utils/responsive';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
@@ -301,14 +301,6 @@ export default function ProfileScreen() {
         <Card style={styles.themeSection}>
           <ColorPicker />
         </Card>
-
-        <Button
-          title={t('profile.settings')}
-          variant="outline"
-          onPress={() => router.push('/(tabs)/settings')}
-          icon={<Ionicons name="settings-outline" size={scale(20)} color={colors.text} />}
-          style={styles.logoutButton}
-        />
 
         <Button
           title={t('profile.changeUser')}
