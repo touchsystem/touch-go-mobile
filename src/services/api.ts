@@ -109,6 +109,12 @@ axiosInstance.interceptors.request.use(
       config.headers['X-Device-ID'] = deviceId;
     }
 
+    // Número do equipamento (configurações): enviado ao servidor para identificar o terminal
+    const systemSettings = await storage.getItem<{ cellphoneNumber?: string }>('systemSettings');
+    if (systemSettings?.cellphoneNumber?.trim()) {
+      config.headers['X-Equipment-Number'] = systemSettings.cellphoneNumber.trim();
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

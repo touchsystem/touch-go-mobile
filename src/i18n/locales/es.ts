@@ -81,7 +81,14 @@ export default {
     // Settings
     settings: {
         title: 'Configuración',
+        activeInApp: 'Activas en esta app',
+        activeInAppDesc: 'Estas opciones cambian el comportamiento de la app en este dispositivo.',
+        systemParams: 'Parámetros del sistema',
+        systemParamsDesc: 'Usados por el servidor/backoffice cuando esté disponible. Se guardan y envían en las peticiones.',
         serverAndConnection: 'Servidor y Conexión',
+        equipmentNumberHelp: 'Se envía en las cabeceras de las peticiones (X-Equipment-Number).',
+        printAccountsHelp: 'Controla la visibilidad de la pestaña "Cuentas" en el menú inferior.',
+        showBorderHelp: 'Muestra borde en las tarjetas del menú y listas.',
         interface: 'Interfaz y Visualización',
         sales: 'Ventas y Pedidos',
         commands: 'Comandas e Impresión',

@@ -74,7 +74,14 @@ export default {
     // Settings
     settings: {
         title: 'Settings',
+        activeInApp: 'Active in this app',
+        activeInAppDesc: 'These options change how the app behaves on this device.',
+        systemParams: 'System parameters',
+        systemParamsDesc: 'Used by server/backoffice when available. Saved and sent in requests.',
         serverAndConnection: 'Server and Connection',
+        equipmentNumberHelp: 'Sent in request headers (X-Equipment-Number).',
+        printAccountsHelp: 'Controls visibility of the "Bills" tab in the bottom menu.',
+        showBorderHelp: 'Shows border on menu and list cards.',
         interface: 'Interface and Display',
         sales: 'Sales and Orders',
         commands: 'Orders and Printing',

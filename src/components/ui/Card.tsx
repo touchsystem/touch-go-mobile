@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { useSystemSettings } from '../../hooks/useSystemSettings';
 import { useTheme } from '../../contexts/ThemeContext';
 import { scale } from '../../utils/responsive';
 
@@ -11,6 +12,8 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ children, onPress, style }) => {
   const { colors, isDark } = useTheme();
+  const { settings } = useSystemSettings();
+  const borderWidth = settings.showBorder ? 2 : (isDark ? 1 : 0);
 
   const styles = useMemo(
     () =>
@@ -19,7 +22,7 @@ export const Card: React.FC<CardProps> = ({ children, onPress, style }) => {
           backgroundColor: colors.card,
           borderRadius: scale(12),
           padding: scale(16),
-          borderWidth: isDark ? 1 : 0,
+          borderWidth,
           borderColor: colors.border,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: scale(2) },
@@ -28,7 +31,7 @@ export const Card: React.FC<CardProps> = ({ children, onPress, style }) => {
           elevation: 3,
         },
       }),
-    [colors, isDark]
+    [colors, isDark, borderWidth]
   );
 
   if (onPress) {

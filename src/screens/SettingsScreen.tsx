@@ -271,8 +271,11 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Server and Connection */}
-        <Text style={styles.blockTitle}>{t('settings.serverAndConnection')}</Text>
+        {/* Funcionam neste app */}
+        <Text style={styles.blockTitle}>{t('settings.activeInApp')}</Text>
+        <Text style={styles.infoText}>{t('settings.activeInAppDesc')}</Text>
+
+        <Text style={[styles.blockTitle, { marginTop: scale(8) }]}>{t('settings.serverAndConnection')}</Text>
         <Card style={styles.section}>
           <View style={{ marginBottom: scale(16) }}>
             <Text style={styles.inputLabel}>{t('settings.serverIp')}</Text>
@@ -308,11 +311,47 @@ export default function SettingsScreen() {
               placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
             />
+            <Text style={styles.infoText}>{t('settings.equipmentNumberHelp')}</Text>
           </View>
         </Card>
 
-        {/* Interface and Display */}
+        {/* Interface: opções que afetam o app */}
         <Text style={styles.blockTitle}>{t('settings.interface')}</Text>
+        <Card style={styles.section}>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>{t('settings.showBorder')}</Text>
+            <Switch
+              value={settings.showBorder}
+              onValueChange={(value) => updateSetting('showBorder', value)}
+            />
+          </View>
+          <Text style={styles.infoText}>{t('settings.showBorderHelp')}</Text>
+
+          <View style={[styles.toggleRow, { borderBottomWidth: 0, paddingVertical: 16 }]}>
+            <Text style={styles.toggleLabel}>{t('settings.language')}</Text>
+            <LanguageSelector />
+          </View>
+        </Card>
+
+        {/* Comandas: apenas a que controla a aba Contas */}
+        <Text style={styles.blockTitle}>{t('settings.commands')}</Text>
+        <Card style={styles.section}>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>{t('settings.printAccounts')}</Text>
+            <Switch
+              value={settings.printAccounts}
+              onValueChange={(value) => updateSetting('printAccounts', value)}
+            />
+          </View>
+          <Text style={styles.infoText}>{t('settings.printAccountsHelp')}</Text>
+        </Card>
+
+        {/* Parâmetros do sistema */}
+        <Text style={[styles.blockTitle, { marginTop: scale(16) }]}>{t('settings.systemParams')}</Text>
+        <Text style={styles.infoText}>{t('settings.systemParamsDesc')}</Text>
+
+        {/* Interface (resto): landscape, showTourist */}
+        <Text style={[styles.blockTitle, { marginTop: scale(8) }]}>{t('settings.interface')}</Text>
         <Card style={styles.section}>
           <View style={styles.toggleRow}>
             <Text style={styles.toggleLabel}>{t('settings.landscapeScreen')}</Text>
@@ -321,26 +360,45 @@ export default function SettingsScreen() {
               onValueChange={(value) => updateSetting('landscapeScreen', value)}
             />
           </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>{t('settings.showBorder')}</Text>
-            <Switch
-              value={settings.showBorder}
-              onValueChange={(value) => updateSetting('showBorder', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
+          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
             <Text style={styles.toggleLabel}>{t('settings.showTourist')}</Text>
             <Switch
               value={settings.showTourist}
               onValueChange={(value) => updateSetting('showTourist', value)}
             />
           </View>
+        </Card>
 
-          <View style={[styles.toggleRow, { borderBottomWidth: 0, paddingVertical: 16 }]}>
-            <Text style={styles.toggleLabel}>{t('settings.language')}</Text>
-            <LanguageSelector />
+        {/* Comandas e Impressão (parâmetros) */}
+        <Text style={styles.blockTitle}>{t('settings.commands')}</Text>
+        <Card style={styles.section}>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>{t('settings.secondCopyOrder')}</Text>
+            <Switch
+              value={settings.secondCopyOrder}
+              onValueChange={(value) => updateSetting('secondCopyOrder', value)}
+            />
+          </View>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>{t('settings.summarizedOrder')}</Text>
+            <Switch
+              value={settings.summarizedOrder}
+              onValueChange={(value) => updateSetting('summarizedOrder', value)}
+            />
+          </View>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>{t('settings.secondCopyDetailedBill')}</Text>
+            <Switch
+              value={settings.secondCopyDetailedBill}
+              onValueChange={(value) => updateSetting('secondCopyDetailedBill', value)}
+            />
+          </View>
+          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.toggleLabel}>{t('settings.secondTableOrder')}</Text>
+            <Switch
+              value={settings.secondTableOrder}
+              onValueChange={(value) => updateSetting('secondTableOrder', value)}
+            />
           </View>
         </Card>
 
@@ -376,50 +434,6 @@ export default function SettingsScreen() {
             <Switch
               value={settings.groupQuantityInOrder}
               onValueChange={(value) => updateSetting('groupQuantityInOrder', value)}
-            />
-          </View>
-        </Card>
-
-        {/* Commands and Printing */}
-        <Text style={styles.blockTitle}>{t('settings.commands')}</Text>
-        <Card style={styles.section}>
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>{t('settings.secondCopyOrder')}</Text>
-            <Switch
-              value={settings.secondCopyOrder}
-              onValueChange={(value) => updateSetting('secondCopyOrder', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>{t('settings.summarizedOrder')}</Text>
-            <Switch
-              value={settings.summarizedOrder}
-              onValueChange={(value) => updateSetting('summarizedOrder', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>{t('settings.secondCopyDetailedBill')}</Text>
-            <Switch
-              value={settings.secondCopyDetailedBill}
-              onValueChange={(value) => updateSetting('secondCopyDetailedBill', value)}
-            />
-          </View>
-
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>{t('settings.printAccounts')}</Text>
-            <Switch
-              value={settings.printAccounts}
-              onValueChange={(value) => updateSetting('printAccounts', value)}
-            />
-          </View>
-
-          <View style={[styles.toggleRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.toggleLabel}>{t('settings.secondTableOrder')}</Text>
-            <Switch
-              value={settings.secondTableOrder}
-              onValueChange={(value) => updateSetting('secondTableOrder', value)}
             />
           </View>
         </Card>
