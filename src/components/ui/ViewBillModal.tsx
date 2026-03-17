@@ -728,13 +728,13 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             }
         }
         out += line('-'.repeat(W));
-        const taxaServico = Number(data.taxa_servico ?? 0);
-        const totalComTaxa = total + taxaServico;
+        const serviceTax = includeServiceTax ? getServiceTax() : 0;
+        const totalComTaxa = total + serviceTax;
         const labelSoma = 'Soma :';
         out += line(labelSoma + ' '.repeat(W - labelSoma.length - numWidth) + padNum(total, numWidth));
-        if (taxaServico > 0) {
+        if (serviceTax > 0) {
             const labelTaxa = 'Taxa de Serviço :';
-            out += line(labelTaxa + ' '.repeat(W - labelTaxa.length - numWidth) + padNum(taxaServico, numWidth));
+            out += line(labelTaxa + ' '.repeat(W - labelTaxa.length - numWidth) + padNum(serviceTax, numWidth));
         }
         out += line('TOTAL :' + ' '.repeat(W - 7 - numWidth) + padNum(totalComTaxa, numWidth));
         out += line('-'.repeat(W));
@@ -748,6 +748,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             }
             const totalDescontos = antecipacoes.reduce((s, a) => s + a.vl_moeda_prin, 0);
             const totalAPagar = totalComTaxa - totalDescontos;
+            out += line('-'.repeat(W));  // Linha separadora antes do TOTAL A PAGAR
             const labelPagar = 'TOTAL A PAGAR:';
             out += line(labelPagar + ' '.repeat(W - labelPagar.length - numWidth) + padNum(totalAPagar, numWidth));
         }
@@ -756,7 +757,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         out += line('www.EatzGo.com');
         out += line('');
         return out;
-    }, [data?.vendas, data?.taxa_servico, data?.antecipacoes, mesaCartao, total, calculateItemTotal, parseFraction, t]);
+    }, [data?.vendas, data?.antecipacoes, mesaCartao, total, calculateItemTotal, parseFraction, t, includeServiceTax, getServiceTax]);
 
     return (
         <>
