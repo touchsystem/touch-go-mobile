@@ -93,6 +93,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     const [showPrintOptionsModal, setShowPrintOptionsModal] = useState(false);
     const [parameters, setParameters] = useState<any[]>([]);
     const [includeServiceTax, setIncludeServiceTax] = useState(true);
+    const [selectedPaymentType, setSelectedPaymentType] = useState<PagSeguroPaymentType | null>(null);
 
     useEffect(() => {
         if (visible && mesaCartao && !printing) {
@@ -251,7 +252,11 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
     };
 
     const processPayment = async (paymentType: PagSeguroPaymentType) => {
-        // Mantém o modal aberto para mostrar "Aproxime o cartão"
+        // Armazenar o tipo de pagamento selecionado
+        setSelectedPaymentType(paymentType);
+
+        // Mensagem específica para cada tipo de pagamento
+        const paymentMessage = paymentType === 'PIX' ? 'Gerando QR Code PIX...' : 'Aproxime o cartão...';
         const amountInCents = Math.round(finalTotal * 100);
         const reference = `mesa-${mesaCartao}`;
 
@@ -259,7 +264,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
             setPaying(true);
             console.log('[PagSeguro] Iniciando pagamento:', { amountInCents, reference, paymentType });
 
-            // Timeout de 2 minutos (120000ms) - tempo padrão do PagSeguro; cartão de debug deve ser aproximado nesse tempo
+            // Timeout de 2 minutos (120000ms) - tempo padrão do PagSeguro; PIX gera QR Code, cartão deve ser aproximado nesse tempo
             const result = await payWithSmart2(amountInCents, reference, paymentType, 1, 120000);
 
             console.log('[PagSeguro] Resultado:', result);
@@ -322,6 +327,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         } finally {
             setShowPaymentMethodModal(false);
             setPaying(false);
+            setSelectedPaymentType(null);
             console.log('[PagSeguro] Estado de pagamento resetado');
         }
     };
@@ -904,7 +910,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                                 style={styles.actionButton}
                                             />
                                             <Button
-                                                title={paying ? (t('viewBill.awaitingCard') || 'Aguardando cartão...') : t('viewBill.pay')}
+                                                title={paying ? (selectedPaymentType === 'PIX' ? 'Gerando QR Code PIX...' : (t('viewBill.awaitingCard') || 'Aguardando cartão...')) : t('viewBill.pay')}
                                                 onPress={handlePay}
                                                 disabled={paying || printing}
                                                 icon={
@@ -996,9 +1002,9 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                                 {paying ? (
                                     <>
                                         <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: scale(40) }}>
-                                            <Ionicons name="card" size={scale(64)} color={colors.primary} style={{ marginBottom: scale(24) }} />
+                                            <Ionicons name={selectedPaymentType === 'PIX' ? 'qr-code-outline' : 'card'} size={scale(64)} color={colors.primary} style={{ marginBottom: scale(24) }} />
                                             <Text style={[styles.title, { fontSize: scaleFont(22), textAlign: 'center', marginBottom: scale(8) }]}>
-                                                {t('viewBill.approachCard')}
+                                                {selectedPaymentType === 'PIX' ? 'Gerando QR Code PIX...' : (t('viewBill.approachCard') || 'Aproxime o cartão...')}
                                             </Text>
                                             <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: scale(16) }} />
                                         </View>
