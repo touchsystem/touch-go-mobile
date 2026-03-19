@@ -1,4 +1,4 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules, NativeModulesStatic, Platform } from 'react-native';
 
 const { PagSeguroSmart2, Smart2Print, PagseguroPlugpag } = NativeModules;
 
@@ -22,19 +22,29 @@ export interface PagSeguroPayError {
 
 export type PagSeguroPayResponse = PagSeguroPayResult | PagSeguroPayError;
 
-export interface NativePagSeguroSmart2 {
+export interface PagSeguroDeviceInfo {
+  serialNumber: string;
+  logicalNumber: string;
+  version: string;
+  date: string;
+  time: string;
+}
+
+export interface PagSeguroNativeModule {
   initialize(token: string): Promise<boolean>;
-  pay(
-    amountInCents: number,
-    reference: string,
-    paymentType: string,
-    installments: number
-  ): Promise<PagSeguroPayResult>;
+  pay(amountInCents: number, reference: string, paymentType: PagSeguroPaymentType, installments: number): Promise<PagSeguroPayResult>;
   refund(transactionId: string, amountInCents: number): Promise<void>;
   isAvailable(): Promise<boolean>;
+  getDeviceInfo(): Promise<PagSeguroDeviceInfo>;
   /** Imprime texto na impressora térmica da Smart2 (TerminalLib). Opcional no módulo nativo. */
   print?(text: string): Promise<{ success: boolean; message?: string }>;
 }
+
+interface NativeModulesStaticType extends NativeModulesStatic {
+  PagSeguroSmart2?: PagSeguroNativeModule;
+}
+
+type NativePagSeguroSmart2 = NonNullable<NativeModulesStaticType['PagSeguroSmart2']>;
 
 /**
  * Módulo nativo PagSeguro Smart 2 (PlugPag).
@@ -93,7 +103,7 @@ function isTimeoutError(e: unknown): boolean {
 async function attemptPay(
   amountInCents: number,
   reference: string,
-  paymentType: string,
+  paymentType: PagSeguroPaymentType,
   installments: number,
   timeoutMs: number,
   startTime: number
@@ -119,7 +129,7 @@ async function attemptPay(
     if (timeoutId) clearTimeout(timeoutId);
     const elapsed = Date.now() - startTime;
     console.log(`[PagSeguro] Pagamento concluído em ${elapsed}ms`);
-    return { success: true, ...result };
+    return result as PagSeguroPayResult;
   } catch (raceError) {
     if (timeoutId) clearTimeout(timeoutId);
     throw raceError;
@@ -238,6 +248,30 @@ export async function isSmart2Available(): Promise<boolean> {
     return await nativePagSeguro.isAvailable();
   } catch {
     return false;
+  }
+}
+
+/**
+ * Obtém informações do equipamento PagSeguro Smart 2
+ * @returns Informações do dispositivo incluindo serial number, logical number, version, etc.
+ */
+export async function getPagSeguroDeviceInfo(): Promise<{ success: boolean; data?: PagSeguroDeviceInfo; error?: string }> {
+  if (!nativePagSeguro) {
+    return {
+      success: false,
+      error: 'PagSeguro Smart 2 não disponível (use build Android nativo)',
+    };
+  }
+
+  try {
+    const deviceInfo = await nativePagSeguro.getDeviceInfo();
+    return { success: true, data: deviceInfo };
+  } catch (e: unknown) {
+    const err = e as { code?: string; message?: string };
+    return {
+      success: false,
+      error: err?.message ?? String(e),
+    };
   }
 }
 
@@ -365,4 +399,5 @@ export default {
   isSmart2PrintSupported,
   isPlugPagPrintFromFileAvailable,
   isSmart2PrintAvailable,
+  getPagSeguroDeviceInfo,
 };

@@ -271,6 +271,21 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
 
             if (result.success) {
                 try {
+                    // Imprimir automaticamente o comprovante de pagamento após pagamento aprovado
+                    try {
+                        console.log('[PagSeguro] Imprimindo comprovante de pagamento automaticamente...');
+                        // Imprimir via do estabelecimento primeiro
+                        const paymentReceiptText = buildPaymentReceiptText(result.transactionId, result.transactionCode, paymentType, amountInCents);
+                        const printResult = await printOnSmart2(paymentReceiptText);
+                        if (printResult.success) {
+                            console.log('[PagSeguro] Comprovante de pagamento impresso com sucesso');
+                        } else {
+                            console.error('[PagSeguro] Erro ao imprimir comprovante de pagamento:', printResult.message);
+                        }
+                    } catch (printError: any) {
+                        console.error('[PagSeguro] Exceção ao imprimir comprovante de pagamento:', printError);
+                    }
+
                     const closeResult = await closeMesaOnBackend(paymentType);
                     if (closeResult?.synced) {
                         Alert.alert(
@@ -653,6 +668,44 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         return itemTotal;
     }, [parseFraction]);
 
+    /** Monta o texto do comprovante de pagamento para impressão térmica */
+    const buildPaymentReceiptText = useCallback((transactionId: string, transactionCode: string, paymentType: PagSeguroPaymentType, amountInCents: number): string => {
+        const W = 40;
+        const line = (s: string) => s + '\n';
+        const padNum = (n: number, width: number): string => {
+            const s = n.toFixed(2).replace('.', ',');
+            return s.length >= width ? s.slice(-width) : ' '.repeat(width - s.length) + s;
+        };
+
+        let out = '';
+        out += line('='.repeat(W));
+        out += line('COMPROVANTE DE PAGAMENTO');
+        out += line('='.repeat(W));
+        out += line('');
+
+        // Informações da transação
+        out += line(`ID: ${transactionId}`);
+        out += line(`Codigo: ${transactionCode}`);
+        out += line(`Tipo: ${paymentType}`);
+        out += line(`Valor: R$ ${padNum(amountInCents / 100, 12)}`);
+        out += line('');
+
+        // Data e hora
+        const now = new Date();
+        out += line(`Data: ${now.toLocaleDateString('pt-BR')}`);
+        out += line(`Hora: ${now.toLocaleTimeString('pt-BR')}`);
+        out += line('');
+
+        // Informações da mesa
+        out += line(`Mesa: ${mesaCartao}`);
+        out += line('='.repeat(W));
+        out += line('');
+        out += line('ESTE DOCUMENTO NAO POSSUI VALOR FISCAL');
+        out += line('');
+
+        return out;
+    }, [mesaCartao]);
+
     // Memoiza o cálculo do total (depende de calculateItemTotal)
     const total = useMemo(() => {
         if (!data?.vendas || data.vendas.length === 0) return 0;
@@ -669,21 +722,17 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         return 0;
     }, [parameters, total]);
 
-    // Total final considerando se o cliente quer pagar a taxa de serviço
-    const finalTotal = useMemo(() => {
-        const serviceTax = includeServiceTax ? getServiceTax() : 0;
-        return total + serviceTax;
-    }, [total, getServiceTax, includeServiceTax]);
-
     /** Monta o texto da conta para impressão térmica na Smart2. Itens principais + relacionais (ex.: PIZZA GRANDE com sabores) como no recibo. */
     const buildBillTextForThermal = useCallback((): string => {
-        if (!data?.vendas?.length) return '';
+        if (!data?.vendas) return '';
+
         const W = 40;
         const line = (s: string) => s + '\n';
         const padNum = (n: number, width: number): string => {
             const s = n.toFixed(2).replace('.', ',');
             return s.length >= width ? s.slice(-width) : ' '.repeat(width - s.length) + s;
         };
+
         let out = '';
         out += line('   ' + t('viewBill.table') + ' - ' + mesaCartao);
         out += line('-'.repeat(W));
@@ -764,6 +813,13 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
         out += line('');
         return out;
     }, [data?.vendas, data?.antecipacoes, mesaCartao, total, calculateItemTotal, parseFraction, t, includeServiceTax, getServiceTax]);
+
+    const finalTotal = useMemo(() => {
+        const serviceTax = includeServiceTax ? getServiceTax() : 0;
+        const totalComTaxa = total + serviceTax;
+        const totalDescontos = data?.antecipacoes?.reduce((sum, a) => sum + a.vl_moeda_prin, 0) || 0;
+        return totalComTaxa - totalDescontos;
+    }, [total, includeServiceTax, getServiceTax, data?.antecipacoes]);
 
     return (
         <>
@@ -934,7 +990,7 @@ export const ViewBillModal: React.FC<ViewBillModalProps> = ({
                         </TouchableOpacity>
                     </View>
                 </View>
-            </Modal>
+            </Modal >
 
             {/* Modal: escolher onde imprimir (local ou servidor) */}
             < Modal
@@ -1111,4 +1167,6 @@ const BillItem = memo<{
 });
 
 BillItem.displayName = 'BillItem';
+
+export default ViewBillModal;
 

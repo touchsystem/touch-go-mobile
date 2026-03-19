@@ -137,4 +137,31 @@ public class PagSeguroSmart2Module extends ReactContextBaseJavaModule {
             promise.resolve(false);
         }
     }
+
+    @ReactMethod
+    public void getDeviceInfo(Promise promise) {
+        try {
+            PagSeguroHelper.getInstance(getReactApplicationContext(), helper -> {
+                if (helper == null || helper.getPlugPag() == null) {
+                    promise.reject("NOT_AVAILABLE", "PlugPag não inicializado");
+                    return;
+                }
+                try {
+                    WritableMap map = Arguments.createMap();
+                    // Obter informações do equipamento
+                    map.putString("serialNumber", helper.getPlugPag().getSerialNumber());
+                    map.putString("logicalNumber", helper.getPlugPag().getLogicalNumber());
+                    map.putString("version", helper.getPlugPag().getVersion());
+                    map.putString("date", helper.getPlugPag().getDate());
+                    map.putString("time", helper.getPlugPag().getTime());
+                    promise.resolve(map);
+                } catch (Throwable t) {
+                    Log.e(TAG, "getDeviceInfo error", t);
+                    promise.reject("DEVICE_INFO_ERROR", t.getMessage());
+                }
+            });
+        } catch (Throwable t) {
+            promise.reject("DEVICE_INFO_ERROR", t.getMessage());
+        }
+    }
 }

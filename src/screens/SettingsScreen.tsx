@@ -305,11 +305,10 @@ export default function SettingsScreen() {
             <Text style={styles.inputLabel}>{t('settings.equipmentNumber')}</Text>
             <TextInput
               style={styles.input}
-              value={settings.cellphoneNumber || '20'}
+              value={settings.cellphoneNumber || ''}
               onChangeText={(text) => updateSetting('cellphoneNumber', text)}
-              placeholder="20"
+              placeholder="Digite o código do equipamento"
               placeholderTextColor={colors.textSecondary}
-              keyboardType="numeric"
             />
             <Text style={styles.infoText}>{t('settings.equipmentNumberHelp')}</Text>
           </View>
